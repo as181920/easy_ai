@@ -1,0 +1,49 @@
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
+
+plugins:
+  - rubocop-erb
+  - rubocop-rake
+  - rubocop-minitest
+
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  Exclude:
+    - bin/bundle
+
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Layout/EndAlignment:
+    Enabled: true
+    EnforcedStyleAlignWith: keyword
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  EnforcedStyle: no_space
+
+Layout/LineLength:
+  Max: 150
+
+Metrics/AbcSize:
+  Max: 35
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Metrics/MethodLength:
+  Max: 10
+
+Metrics/BlockLength:
+  Exclude:
+    - "Gemfile"
+
+Minitest/MultipleAssertions:
+  Max: 5
