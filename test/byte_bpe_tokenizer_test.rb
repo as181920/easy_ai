@@ -3,13 +3,14 @@ require_relative "../byte_bpe_tokenizer"
 
 describe ByteBpeTokenizer do
   before do
-    @corpus = File.read File.expand_path("../data/xiaojing.txt", __dir__)
+    @en_corpus = "low low low low low lower lower newest newest newest newest newest newest widest widest widest"
+    @cjk_corpus = File.read File.expand_path("../data/xiaojing.txt", __dir__)
   end
 
   describe "train" do
     it "should train tokenizer" do
       tokenizer = ByteBpeTokenizer.new
-      tokenizer.train(@corpus)
+      tokenizer.train(@cjk_corpus)
 
       assert_includes tokenizer.merges.values, (+"之").force_encoding(Encoding::ASCII_8BIT)
       assert_includes tokenizer.merges.values, (+"。").force_encoding(Encoding::ASCII_8BIT)
@@ -19,7 +20,7 @@ describe ByteBpeTokenizer do
   describe "tokenize" do
     before do
       @tokenizer = ByteBpeTokenizer.new
-      @tokenizer.train(@corpus)
+      @tokenizer.train(@cjk_corpus)
     end
 
     it "should handle CJK words" do

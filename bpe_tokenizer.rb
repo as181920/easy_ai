@@ -98,10 +98,13 @@ class BpeTokenizer
     end
 
     def apply_merge(tokens, pair, replacement = nil)
-      index = tokens.each_cons(PAIR_SIZE).with_index.find { |sub_tokens, _| sub_tokens == pair }&.last
-      return tokens unless index
+      loop do
+        index = tokens.each_cons(PAIR_SIZE).with_index.find { |sub_tokens, _| sub_tokens == pair  }&.last
+        break unless index
 
-      tokens[index, PAIR_SIZE] = [replacement || merges[pair]]
+        tokens[index, PAIR_SIZE] = [replacement || merges[pair]]
+      end
+
       tokens
     end
 

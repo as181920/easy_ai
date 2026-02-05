@@ -114,7 +114,7 @@ class ByteBpeTokenizer
 
     def rebuild_vocab!(corpus)
       @vocab = Hash.new(0)
-      corpus.each { |tokens| @vocab[tokens.join(" ")] += 1 }
+      corpus.each { |tokens| @vocab[tokens.join] += 1 }
     end
 
     def decode_word(byte_tokens)
