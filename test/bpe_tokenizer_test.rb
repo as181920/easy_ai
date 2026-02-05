@@ -32,7 +32,7 @@ describe BpeTokenizer do
     it "should handle CJK words" do
       result = @tokenizer.tokenize("你好")
 
-      assert_equal ["你", "好", "<|w|>"], result
+      assert_equal ["你", "<|w|>", "好", "<|w|>"], result
     end
   end
 end

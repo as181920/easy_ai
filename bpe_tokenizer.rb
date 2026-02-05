@@ -4,6 +4,7 @@ require "active_support/all"
 class BpeTokenizer
   PAIR_SIZE = 2
   END_OF_WORD_TOKEN = "<|w|>".freeze
+  CJK_CHAR_REGEX = /[\p{Han}\p{Katakana}\p{Hiragana}\p{Hangul}]/.freeze
 
   attr_accessor :num_merges, :min_freq, :logger
 
@@ -23,7 +24,7 @@ class BpeTokenizer
   end
 
   def train(text)
-    words = text.split.each_with_object(Hash.new(0)) do |word, counts|
+    words = pre_tokenize(text).split.each_with_object(Hash.new(0)) do |word, counts|
       counts[word.chars + [END_OF_WORD_TOKEN]] += 1
     end
 
@@ -42,7 +43,7 @@ class BpeTokenizer
   def tokenize(text)
     logger.info "#{self.class} tokenize text: #{text}"
 
-    word_tokens = text.split.map do |word|
+    word_tokens = pre_tokenize(text).split.map do |word|
       (word.chars + [END_OF_WORD_TOKEN]).tap do |word_tokens|
         merges.each { |pair, replacement| word_tokens = apply_merge(word_tokens, pair, replacement) }
       end
@@ -73,5 +74,9 @@ class BpeTokenizer
 
       tokens[index, PAIR_SIZE] = [replacement || merges[pair]]
       tokens
+    end
+
+    def pre_tokenize(text)
+      text.gsub(CJK_CHAR_REGEX) { |char| " #{char} " }
     end
 end
