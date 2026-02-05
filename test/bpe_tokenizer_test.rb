@@ -35,4 +35,21 @@ describe BpeTokenizer do
       assert_equal ["你", "<|w|>", "好", "<|w|>"], result
     end
   end
+
+  describe "detokenize" do
+    before do
+      @tokenizer = BpeTokenizer.new
+      # corpus = "low low low low low lower lower newest newest newest newest newest newest widest widest widest"
+      # @tokenizer.train(corpus)
+    end
+
+    it "should detokenize tokens" do
+      tokens = ["low", "e", "r", "<|w|>"]
+      result = @tokenizer.detokenize(tokens)
+
+      assert_equal "lower", result
+
+      assert_equal "你好", @tokenizer.detokenize(["你", "<|w|>", "好", "<|w|>"])
+    end
+  end
 end

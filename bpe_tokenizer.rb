@@ -5,6 +5,8 @@ class BpeTokenizer
   PAIR_SIZE = 2
   END_OF_WORD_TOKEN = "<|w|>".freeze
   CJK_CHAR_REGEX = /[\p{Han}\p{Katakana}\p{Hiragana}\p{Hangul}]/.freeze
+  SPACE_BEFORE_CJK = Regexp.new("\\s+(?=#{CJK_CHAR_REGEX.source})").freeze
+  SPACE_AFTER_CJK = Regexp.new("(?<=#{CJK_CHAR_REGEX.source})\\s+").freeze
 
   attr_accessor :num_merges, :min_freq, :logger
 
@@ -54,6 +56,29 @@ class BpeTokenizer
     word_tokens.flatten.tap { logger.info "#{self.class} tokenize result: #{_1}" }
   end
 
+  def detokenize(tokens)
+    logger.info "#{self.class} detokenize tokens: #{tokens}"
+
+    words = []
+    buffer = []
+
+    tokens.each do |token|
+      if token == END_OF_WORD_TOKEN
+        next if buffer.empty?
+
+        words << buffer.join
+        buffer.clear
+      else
+        buffer << token
+      end
+    end
+    words << buffer.join unless buffer.empty?
+
+    result = post_detokenize(words.join(" ")).strip
+    logger.info "#{self.class} detokenize result: #{result}"
+    result
+  end
+
   private
 
     def get_stats(words)
@@ -80,5 +105,9 @@ class BpeTokenizer
 
     def pre_tokenize(text)
       text.gsub(CJK_CHAR_REGEX) { |char| " #{char} " }
+    end
+
+    def post_detokenize(text)
+      text.gsub(SPACE_BEFORE_CJK, "").gsub(SPACE_AFTER_CJK, "")
     end
 end

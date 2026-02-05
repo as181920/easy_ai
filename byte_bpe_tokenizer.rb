@@ -43,6 +43,25 @@ class ByteBpeTokenizer
     end
   end
 
+  def detokenize(tokens)
+    words = []
+    buffer = []
+
+    tokens.each do |token|
+      if token == END_OF_WORD_TOKEN
+        next if buffer.empty?
+
+        words << decode_word(buffer)
+        buffer.clear
+      else
+        buffer << token
+      end
+    end
+
+    words << decode_word(buffer) unless buffer.empty?
+    words.join(" ")
+  end
+
   private
 
     def build_corpus(text)
@@ -96,5 +115,11 @@ class ByteBpeTokenizer
     def rebuild_vocab!(corpus)
       @vocab = Hash.new(0)
       corpus.each { |tokens| @vocab[tokens.join(" ")] += 1 }
+    end
+
+    def decode_word(byte_tokens)
+      byte_tokens.join.force_encoding(Encoding::UTF_8)
+    rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+      byte_tokens.join.force_encoding(Encoding::ASCII_8BIT)
     end
 end
