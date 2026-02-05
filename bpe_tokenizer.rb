@@ -18,7 +18,7 @@ class BpeTokenizer
     @num_merges = num_merges
     @min_freq = min_freq
     @merges = {}
-    @vocab = []
+    @vocab = Hash.new(0)
     @logger = ActiveSupport::Logger.new(
       ENV.fetch("LOG_PATH", STDOUT),
       level: ENV.fetch("LOG_LEVEL", "DEBUG")
@@ -42,6 +42,8 @@ class BpeTokenizer
       words = merge_vocab(words, best_pair, replacement)
       logger.debug "Iteration #{nth_merge.succ}: Merging #{best_pair} -> #{merges[best_pair]}"
     end
+
+    rebuild_vocab!(words)
   end
 
   def tokenize(text)
@@ -109,5 +111,14 @@ class BpeTokenizer
 
     def post_detokenize(text)
       text.gsub(SPACE_BEFORE_CJK, "").gsub(SPACE_AFTER_CJK, "")
+    end
+
+    def rebuild_vocab!(words)
+      @vocab = Hash.new(0)
+
+      words.each do |word_tokens, count|
+        cleaned = word_tokens.reject { |token| token == END_OF_WORD_TOKEN }
+        @vocab[cleaned.join] += count
+      end
     end
 end
