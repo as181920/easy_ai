@@ -120,8 +120,11 @@ class BpeTokenizer
       @vocab = Hash.new(0)
 
       words.each do |word_tokens, count|
-        cleaned = word_tokens.reject { |token| token == END_OF_WORD_TOKEN }
-        @vocab[cleaned.join] += count
+        word_tokens.each do |token|
+          next if token == END_OF_WORD_TOKEN
+
+          @vocab[token] += count
+        end
       end
     end
 end

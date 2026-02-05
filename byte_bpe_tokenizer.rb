@@ -10,7 +10,7 @@ class ByteBpeTokenizer
 
   attr_reader :merges, :vocab
 
-  def initialize(num_merges: 10, min_freq: 2)
+  def initialize(num_merges: 100, min_freq: 2)
     @num_merges = num_merges
     @min_freq = min_freq
     @merges = {}
@@ -114,7 +114,14 @@ class ByteBpeTokenizer
 
     def rebuild_vocab!(corpus)
       @vocab = Hash.new(0)
-      corpus.each { |tokens| @vocab[tokens.join] += 1 }
+
+      corpus.each do |tokens|
+        tokens.each do |token|
+          next if token == END_OF_WORD_TOKEN
+
+          @vocab[token] += 1
+        end
+      end
     end
 
     def decode_word(byte_tokens)
