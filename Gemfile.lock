@@ -187,6 +187,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  activesupport
   debug
   guard
   guard-bundler

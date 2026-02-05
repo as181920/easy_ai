@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "active_support"
+gem "activesupport"
 gem "debug"
 gem "rubocop"
 gem "rubocop-minitest"

@@ -16,7 +16,10 @@ class BpeTokenizer
     @min_freq = min_freq
     @merges = {}
     @vocab = []
-    @logger = ActiveSupport::Logger.new(STDOUT, level: ENV.fetch("LOG_LEVEL", "DEBUG"))
+    @logger = ActiveSupport::Logger.new(
+      ENV.fetch("LOG_PATH", STDOUT),
+      level: ENV.fetch("LOG_LEVEL", "DEBUG")
+    )
   end
 
   def train(text)
@@ -29,21 +32,23 @@ class BpeTokenizer
       return if pair_stats.empty?
 
       best_pair = pair_stats.max_by { |_, v| v }.first
-      @merges[best_pair] = best_pair.join
+      @merges[best_pair] = replacement = best_pair.join
 
-      words = merge_vocab(words, best_pair)
+      words = merge_vocab(words, best_pair, replacement)
       logger.info "Iteration #{nth_merge.succ}: Merging #{best_pair} -> #{merges[best_pair]}"
     end
   end
 
   def tokenize(text)
-    text.split.map do |word|
-      word_tokens = word.chars + [END_OF_WORD_TOKEN]
-      merges.each do |pair, _replacement|
-        word_tokens = apply_merge(word_tokens, pair)
+    logger.info "#{self.class} tokenize text: #{text}"
+
+    word_tokens = text.split.map do |word|
+      (word.chars + [END_OF_WORD_TOKEN]).tap do |word_tokens|
+        merges.each { |pair, replacement| word_tokens = apply_merge(word_tokens, pair, replacement) }
       end
-      word_tokens
     end
+
+    word_tokens.flatten.tap { logger.info "#{self.class} tokenize result: #{_1}" }
   end
 
   private
@@ -58,17 +63,15 @@ class BpeTokenizer
       stats
     end
 
-    def merge_vocab(words, pair)
-      words.each do |word_tokens, _count|
-        word_tokens = apply_merge(word_tokens, pair)
-      end
+    def merge_vocab(words, pair, replacement = nil)
+      words.each { |word_tokens, _count| word_tokens = apply_merge(word_tokens, pair, replacement || merges[pair]) }
     end
 
-    def apply_merge(tokens, pair)
+    def apply_merge(tokens, pair, replacement = nil)
       index = tokens.each_cons(PAIR_SIZE).with_index.find { |sub_tokens, _| sub_tokens == pair }&.last
       return tokens unless index
 
-      tokens[index, PAIR_SIZE] = [merges[pair]]
+      tokens[index, PAIR_SIZE] = [replacement || merges[pair]]
       tokens
     end
 end
