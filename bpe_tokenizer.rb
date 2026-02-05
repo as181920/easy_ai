@@ -32,11 +32,13 @@ class BpeTokenizer
       pair_stats = get_stats(words)
       return if pair_stats.empty?
 
-      best_pair = pair_stats.max_by { |_, v| v }.first
+      best_pair, frequency = pair_stats.max_by { |_, v| v }
+      break if frequency < min_freq
+
       @merges[best_pair] = replacement = best_pair.join
 
       words = merge_vocab(words, best_pair, replacement)
-      logger.info "Iteration #{nth_merge.succ}: Merging #{best_pair} -> #{merges[best_pair]}"
+      logger.debug "Iteration #{nth_merge.succ}: Merging #{best_pair} -> #{merges[best_pair]}"
     end
   end
 
@@ -57,9 +59,9 @@ class BpeTokenizer
     def get_stats(words)
       stats = Hash.new(0)
       words.each do |word_tokens, count|
-        word_tokens.each_cons(PAIR_SIZE).with_object(stats) do |pair, stats|
-          stats[pair] += count
-        end
+        next if word_tokens.length < PAIR_SIZE
+
+        word_tokens.each_cons(PAIR_SIZE) { |pair| stats[pair] += count }
       end
       stats
     end
