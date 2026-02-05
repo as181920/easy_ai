@@ -36,6 +36,16 @@ class BpeTokenizer
     end
   end
 
+  def tokenize(text)
+    text.split.map do |word|
+      word_tokens = word.chars + [END_OF_WORD_TOKEN]
+      merges.each do |pair, _replacement|
+        word_tokens = apply_merge(word_tokens, pair)
+      end
+      word_tokens
+    end
+  end
+
   private
 
     def get_stats(words)
@@ -56,7 +66,7 @@ class BpeTokenizer
 
     def apply_merge(tokens, pair)
       index = tokens.each_cons(PAIR_SIZE).with_index.find { |sub_tokens, _| sub_tokens == pair }&.last
-      return unless index
+      return tokens unless index
 
       tokens[index, PAIR_SIZE] = [merges[pair]]
       tokens
