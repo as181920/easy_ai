@@ -2,10 +2,7 @@ source "https://rubygems.org"
 
 gem "activesupport"
 gem "debug"
-gem "rubocop"
-gem "rubocop-minitest"
-gem "rubocop-rails-omakase"
-gem "rubocop-rake"
+gem "torch-rb"
 
 gem "guard"
 gem "guard-bundler"
@@ -15,6 +12,10 @@ gem "guard-rubocop"
 gem "minitest"
 gem "minitest-reporters"
 gem "mocha"
+gem "rubocop"
+gem "rubocop-minitest"
+gem "rubocop-rails-omakase"
+gem "rubocop-rake"
 
 group :test do
 end
