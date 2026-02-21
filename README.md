@@ -30,21 +30,50 @@ The project depends on:
 This script stitches tokenizer → dataset → GPT → trainer and displays a Unicode loss plot plus a sampled continuation.
 
 ```bash
-# Example: train on Song lyrics with byte BPE and a tiny GPT
+# Example: train on every *.txt under data/song_corpus with byte BPE
 bundle exec ruby bin/train_basic.rb \
-  -d data/song.txt \
+  -d data/song_corpus \
   --tokenizer byte \
   -m 2000 \
   -B 64 \
   -i 400
+
+# Example: train on a single file with a word-level tokenizer
+bundle exec ruby bin/train_basic.rb \
+  -d data/xiaojing.txt \
+  --tokenizer word \
+  -b 32 \
+  -B 2 \
+  -m 40 \
+  -i 5
 ```
 
 Key behaviors:
 
 - **Device selection** – defaults to CUDA when available (tested on 6 GB RTX 3000); otherwise uses CPU. If CUDA throws an error mid-run, the script automatically retries on CPU.
 - **Tokenizer training** – if the tokenizer only contains the `<|unk|>` entry, the script auto-trains it on the provided corpus before building the dataset.
+- **Flexible `-d` input** – pass a single file or a directory; directories are scanned recursively for `*.txt` files and concatenated.
 - **Configuration knobs** – every CLI flag mirrors an environment variable (`EASY_AI_*`). Run `bundle exec ruby bin/train_basic.rb --help` for the full list.
 - **Output** – after training it prints a Unicode loss chart and a greedy sample seeded by `--prompt` (default: `人间有味是清欢`).
+
+### CLI Parameters
+
+| Flag | Environment | Description | Default |
+| --- | --- | --- | --- |
+| `-d, --data PATH` | `EASY_AI_DATA` | Path to a single text file or a directory (recursively scans for `*.txt`). | `data/song.txt` |
+| `-t, --tokenizer TYPE` | `EASY_AI_TOKENIZER` | `word` or `byte`, selecting `WordBpe` or `ByteBpe`. | `word` |
+| `-m, --merges N` | `EASY_AI_MERGES` | Number of BPE merge operations during tokenizer training. | `2000` |
+| `-f, --min-freq N` | `EASY_AI_MIN_FREQ` | Minimum pair frequency before a merge is accepted. | `2` |
+| `-b, --block-size N` | `EASY_AI_BLOCK_SIZE` | Sequence length (context window) for GPT. | `64` |
+| `-l, --layers N` | `EASY_AI_LAYERS` | Number of transformer blocks. | `2` |
+| `-H, --heads N` | `EASY_AI_HEADS` | Attention heads per block. | `2` |
+| `-e, --embed N` | `EASY_AI_EMBED` | Embedding/hidden dimension. | `128` |
+| `-B, --batch N` | `EASY_AI_BATCH` | Batch size (in samples) per iteration. | `16` |
+| `-i, --iters N` | `EASY_AI_ITERS` | Training iterations (steps). | `200` |
+| `--device DEVICE` | `EASY_AI_DEVICE` | `cuda` or `cpu`. CUDA auto-fallback is enforced. | auto-detect |
+| `-p, --prompt TEXT` | `EASY_AI_PROMPT` | Prompt used for post-training sampling. | `人间有味是清欢` |
+
+Additional options (`EASY_AI_LR`, `EASY_AI_WEIGHT_DECAY`, `EASY_AI_LOG`, `EASY_AI_GRAD_CLIP`, `EASY_AI_SEED`, etc.) mirror the config defaults in `EasyAI::Config`. Use the env vars to tweak optimizer settings when running long experiments.
 
 ## Tests
 
@@ -60,10 +89,11 @@ Add future tests under `test/easy_ai/{data,modules,models,...}` to keep parity w
 ## Acknowledgements
 
 - **torch-rb** by [Andrew Kane](https://github.com/ankane) and contributors brings PyTorch ergonomics to Ruby—this project would not exist without it.
-- **unicode_plot** by [Red Data Tools](https://github.com/red-data-tools/unicode_plot.rb) and collaborators makes it easy to visualize training curves directly in the terminal.
+- **unicode_plot** by the [Red Data Tools](https://github.com/red-data-tools/unicode_plot.rb) makes it easy to visualize training curves directly in the terminal.
 
 ## Next Steps
 
 1. Add CLI commands for dataset prep / sampling so the training script can optionally skip optimizer steps.
 2. Write smoke tests for `EasyAI::Data::Batcher` and the GPT forward pass shapes.
 3. Persist trained tokenizers/models from `bin/train_basic.rb` so experiments can resume without retraining.
+4. Implement a preprocessing pipeline (scheme #1) that tokenizes large corpora offline into chunked binary files so training can memory-map or stream IDs instead of loading entire directories.

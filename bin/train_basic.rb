@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "bundler/setup"
+require "debug"
 require "optparse"
 require "unicode_plot"
 
@@ -11,11 +12,11 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "easy_ai"
 
 CUDA_ERROR = if defined?(Torch::CUDA::Error)
-  Torch::CUDA::Error
+               Torch::CUDA::Error
              elsif defined?(Torch::Error)
-  Torch::Error
+               Torch::Error
              else
-  StandardError
+               StandardError
              end
 
 DEFAULT_DATA_PATH = ENV.fetch("EASY_AI_DATA", "data/song.txt")
@@ -62,7 +63,23 @@ OptionParser.new do |opts|
   opts.on("--device NAME", "Device to train on (cpu/cuda)") { |v| options[:device_name] = v }
 end.parse!
 
-raise "Training text not found at #{options[:data_path]}" unless File.exist?(options[:data_path])
+def read_text_file(path)
+  File.read(path, mode: "rb").encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
+end
+
+def locate_corpus(path)
+  if File.directory?(path)
+    files = Dir.glob(File.join(path, "**", "*.txt")).sort
+    raise "No .txt files found under #{path}" if files.empty?
+
+    text = files.map { |f| read_text_file(f) }.join("\n\n")
+    { text: text, label: "#{path} (#{files.count} *.txt files)", file_count: files.count }
+  elsif File.file?(path)
+    { text: read_text_file(path), label: path, file_count: 1 }
+  else
+    raise "Path not found: #{path}"
+  end
+end
 
 def resolve_device(name)
   device = Torch.device(name)
@@ -112,7 +129,8 @@ def train_with_device(device, dataset, tokenizer, model_opts, training_opts)
 end
 
 preferred_device = resolve_device(options[:device_name])
-text = File.read(options[:data_path])
+corpus_info = locate_corpus(options[:data_path])
+text = corpus_info[:text]
 
 tokenizer_class = case options[:tokenizer]
                   when "byte" then EasyAI::Tokenizers::ByteBpe
@@ -129,7 +147,7 @@ dataset = EasyAI::Data::TextDataset.new(
 model_config = options[:model].merge(vocab_size: tokenizer.vocab_size)
 training_config = options[:training]
 
-puts "Training on #{options[:data_path]} (#{text.length} chars) with #{tokenizer.vocab_size} tokens"
+puts "Training on #{corpus_info[:label]} (#{text.length} chars) with #{tokenizer.vocab_size} tokens"
 
 trainer = nil
 model = nil
