@@ -78,14 +78,13 @@ Additional options (`EASY_AI_LR`, `EASY_AI_WEIGHT_DECAY`, `EASY_AI_LOG`, `EASY_A
 
 ## Tests
 
-Tokenizers mirror the `lib/` layout under `test/easy_ai/`:
+Tokenizers mirror the `lib/` layout under `test/easy_ai/`. Instead of running each file manually, start Guard to watch the suite:
 
 ```bash
-bundle exec ruby -Itest test/easy_ai/tokenizers/word_bpe_test.rb
-bundle exec ruby -Itest test/easy_ai/tokenizers/byte_bpe_test.rb
+bin/guard
 ```
 
-Add future tests under `test/easy_ai/{data,modules,models,...}` to keep parity with the library tree.
+Guard will automatically rerun the impacted tests when files change. You can still run specific files with `bundle exec ruby -Itest test/easy_ai/...` if you need a one-off check. Add future tests under `test/easy_ai/{data,modules,models,...}` to keep parity with the library tree.
 
 ## Acknowledgements
 
