@@ -32,7 +32,7 @@ This script stitches tokenizer → dataset → GPT → trainer and displays a Un
 ```bash
 # Example: train on every *.txt under data/song_corpus with byte BPE
 bundle exec ruby bin/train_basic.rb \
-  -d data/song_corpus \
+  -d data \
   --tokenizer byte \
   -m 2000 \
   -B 64 \
@@ -40,7 +40,7 @@ bundle exec ruby bin/train_basic.rb \
 
 # Example: train on a single file with a word-level tokenizer
 bundle exec ruby bin/train_basic.rb \
-  -d data/xiaojing.txt \
+  -d data \
   --tokenizer word \
   -b 32 \
   -B 2 \
@@ -55,6 +55,7 @@ Key behaviors:
 - **Flexible `-d` input** – pass a single file or a directory; directories are scanned recursively for `*.txt` files and concatenated.
 - **Configuration knobs** – every CLI flag mirrors an environment variable (`EASY_AI_*`). Run `bundle exec ruby bin/train_basic.rb --help` for the full list.
 - **Output** – after training it prints a Unicode loss chart and a greedy sample seeded by `--prompt` (default: `人间有味是清欢`).
+- **Logging** – every iteration’s loss is written to the global logger (`log/train.log` by default, override with `EASY_AI_LOG_PATH` / `EASY_AI_LOG_LEVEL`).
 
 ### CLI Parameters
 

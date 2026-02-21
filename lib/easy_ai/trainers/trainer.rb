@@ -1,15 +1,16 @@
 module EasyAI
   module Trainers
     class Trainer
-      attr_reader :model, :batcher, :config, :optimizer, :device, :loss_history
+      attr_reader :model, :batcher, :config, :optimizer, :device, :loss_history, :logger
 
-      def initialize(model:, batcher:, config: EasyAI::Config.new.training)
+      def initialize(model:, batcher:, config: EasyAI::Config.new.training, logger: EasyAI.logger)
         @model = model
         @batcher = batcher
         @config = config
         @device = config[:device]
         @optimizer = Torch::Optim::AdamW.new(model.parameters, lr: config[:lr], betas: [0.9, 0.95], weight_decay: config[:weight_decay])
         @loss_history = []
+        @logger = logger
       end
 
       def train
@@ -34,10 +35,11 @@ module EasyAI
 
           loss_value = loss.item
           loss_history << loss_value
+          logger.debug { "[Trainer] iter=#{iter} loss=#{loss_value}" }
           yield(iter, loss_value) if block_given?
 
           if (iter % log_interval).zero?
-            puts "iter=#{iter} loss=#{loss_value}"
+            logger.info { "[Trainer] iter=#{iter} loss=#{loss_value}" }
           end
         end
       end

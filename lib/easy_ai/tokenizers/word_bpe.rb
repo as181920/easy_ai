@@ -41,7 +41,7 @@ module EasyAI
       end
 
       def tokenize(text)
-        logger.info "#{self.class} tokenize text: #{text}"
+        logger.info "#{self.class} tokenize text: #{EasyAI::Logger.summary(text)}"
 
         word_tokens = pre_tokenize(text).split.map do |word|
           tokens = word.chars + [END_OF_WORD_TOKEN]
@@ -50,7 +50,7 @@ module EasyAI
         end
 
         result = word_tokens.flatten
-        logger.info "#{self.class} tokenize result: #{result}"
+        logger.info "#{self.class} tokenize result: #{EasyAI::Logger.summary(result, literal: true)}"
         result
       end
 

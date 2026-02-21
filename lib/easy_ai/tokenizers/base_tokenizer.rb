@@ -10,7 +10,7 @@ module EasyAI
 
       attr_reader :logger, :token_to_id, :id_to_token
 
-      def initialize(logger: default_logger)
+      def initialize(logger: EasyAI.logger)
         @logger = logger
         @token_to_id = { UNKNOWN_TOKEN => 0 }
         @id_to_token = { 0 => UNKNOWN_TOKEN }
@@ -87,13 +87,6 @@ module EasyAI
         end
 
       private
-
-        def default_logger
-          ActiveSupport::Logger.new(
-            ENV.fetch("LOG_PATH", STDOUT),
-            level: ENV.fetch("LOG_LEVEL", "INFO")
-          )
-        end
     end
   end
 end
