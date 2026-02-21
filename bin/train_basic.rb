@@ -11,6 +11,8 @@ ENV["LOG_LEVEL"] ||= "WARN"
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "easy_ai"
 
+logger = EasyAI.logger
+
 CUDA_ERROR = if defined?(Torch::CUDA::Error)
                Torch::CUDA::Error
              elsif defined?(Torch::Error)
@@ -64,7 +66,8 @@ OptionParser.new do |opts|
 end.parse!
 
 def read_text_file(path)
-  File.read(path, mode: "rb").encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
+  # File.read(path, mode: "rb").encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
+  File.read(path).encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
 end
 
 def locate_corpus(path)
@@ -147,7 +150,7 @@ dataset = EasyAI::Data::TextDataset.new(
 model_config = options[:model].merge(vocab_size: tokenizer.vocab_size)
 training_config = options[:training]
 
-puts "Training on #{corpus_info[:label]} (#{text.length} chars) with #{tokenizer.vocab_size} tokens"
+logger.info { "Training on #{corpus_info[:label]} (#{text.length} chars) with #{tokenizer.vocab_size} tokens" }
 
 trainer = nil
 model = nil
