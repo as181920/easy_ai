@@ -14,7 +14,7 @@ module EasyAI
         @k_proj = Torch::NN::Linear.new(embed_dim, embed_dim)
         @v_proj = Torch::NN::Linear.new(embed_dim, embed_dim)
         @o_proj = Torch::NN::Linear.new(embed_dim, embed_dim)
-        @dropout = Torch::NN::Dropout.new(dropout)
+        @dropout = Torch::NN::Dropout.new(p: dropout)
       end
 
       def forward(x)
@@ -27,7 +27,7 @@ module EasyAI
         attn_scores = Torch.matmul(q, k.transpose(-2, -1)) / Math.sqrt(head_dim)
         mask = EasyAI::Utils::TensorOps.causal_mask(seq_len, device: x.device)
         mask = mask.unsqueeze(0).unsqueeze(0)
-        attn_scores = attn_scores.masked_fill(mask == 0, -1e9)
+        attn_scores = attn_scores.masked_fill(Torch.logical_not(mask), -1e9)
 
         attn_weights = Torch::NN::Functional.softmax(attn_scores, dim: -1)
         attn_weights = @dropout.call(attn_weights)

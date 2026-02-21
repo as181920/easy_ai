@@ -6,12 +6,14 @@ require "active_support/isolated_execution_state"
 module EasyAI
   module Tokenizers
     class BaseTokenizer
+      UNKNOWN_TOKEN = "<|unk|>".freeze
+
       attr_reader :logger, :token_to_id, :id_to_token
 
       def initialize(logger: default_logger)
         @logger = logger
-        @token_to_id = {}
-        @id_to_token = {}
+        @token_to_id = { UNKNOWN_TOKEN => 0 }
+        @id_to_token = { 0 => UNKNOWN_TOKEN }
       end
 
       def train(_corpus)
@@ -27,7 +29,7 @@ module EasyAI
       end
 
       def encode(text)
-        tokenize(text).map { |token| token_to_id.fetch(token.to_s) }
+        tokenize(text).map { |token| lookup_token_id(token) }
       end
 
       def decode(ids)
@@ -54,14 +56,34 @@ module EasyAI
         attr_writer :token_to_id, :id_to_token
 
         def rebuild_token_mappings!(tokens)
-          unique_tokens = tokens.flatten.uniq
-          mapping = unique_tokens.each_with_index.to_h { |token, index| [token.to_s, index] }
+          mapping = { UNKNOWN_TOKEN => 0 }
+          tokens.flatten.each do |token|
+            key = token.to_s
+            next if mapping.key?(key)
+
+            mapping[key] = mapping.length
+          end
           assign_token_mappings!(mapping)
         end
 
         def assign_token_mappings!(mapping)
-          self.token_to_id = mapping.transform_keys(&:to_s)
+          normalized = mapping.transform_keys(&:to_s)
+          normalized[UNKNOWN_TOKEN] ||= 0
+          normalized = normalized.sort_by { |token, id| token == UNKNOWN_TOKEN ? [-1, 0] : [0, id] }.each_with_index.to_h do |(token, _), idx|
+            [token, idx]
+          end
+
+          self.token_to_id = normalized
           self.id_to_token = token_to_id.invert
+        end
+
+        def lookup_token_id(token)
+          key = token.to_s
+          token_to_id.fetch(key, unknown_token_id)
+        end
+
+        def unknown_token_id
+          token_to_id[UNKNOWN_TOKEN] || 0
         end
 
       private

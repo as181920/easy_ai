@@ -8,7 +8,7 @@ module EasyAI
         @ln2 = Torch::NN::LayerNorm.new(embed_dim)
         ff_hidden = embed_dim * 4
         @ff = FeedForward.new(embed_dim: embed_dim, hidden_dim: ff_hidden, dropout: dropout)
-        @dropout = Torch::NN::Dropout.new(dropout)
+        @dropout = Torch::NN::Dropout.new(p: dropout)
       end
 
       def forward(x)

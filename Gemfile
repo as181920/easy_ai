@@ -3,6 +3,7 @@ source "https://rubygems.org"
 gem "activesupport"
 gem "debug"
 gem "torch-rb"
+gem "unicode_plot"
 gem "zeitwerk"
 
 gem "guard"

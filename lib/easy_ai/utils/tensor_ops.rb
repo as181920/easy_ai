@@ -4,7 +4,7 @@ module EasyAI
       module_function
 
       def causal_mask(size, device: Torch.device("cpu"))
-        Torch.tril(Torch.ones([size, size], device: device))
+        Torch.tril(Torch.ones([size, size], dtype: :bool, device: device))
       end
 
       def gelu(x)

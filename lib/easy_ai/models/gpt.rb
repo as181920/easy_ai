@@ -19,10 +19,11 @@ module EasyAI
           embedding_dim: n_embd
         )
 
-        @dropout = Torch::NN::Dropout.new(dropout)
-        @blocks = Torch::NN::ModuleList.new(
-          Array.new(n_layer) { EasyAI::Modules::TransformerBlock.new(embed_dim: n_embd, num_heads: n_head, dropout: dropout) }
-        )
+        @dropout = Torch::NN::Dropout.new(p: dropout)
+        transformer_blocks = Array.new(n_layer) do
+          EasyAI::Modules::TransformerBlock.new(embed_dim: n_embd, num_heads: n_head, dropout: dropout)
+        end
+        @blocks = Torch::NN::ModuleList.new(transformer_blocks)
         @ln_f = Torch::NN::LayerNorm.new(n_embd)
         @lm_head = Torch::NN::Linear.new(n_embd, vocab_size, bias: false)
       end

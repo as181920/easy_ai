@@ -5,7 +5,7 @@ module EasyAI
         super()
         @linear1 = Torch::NN::Linear.new(embed_dim, hidden_dim)
         @linear2 = Torch::NN::Linear.new(hidden_dim, embed_dim)
-        @dropout = Torch::NN::Dropout.new(dropout)
+        @dropout = Torch::NN::Dropout.new(p: dropout)
       end
 
       def forward(x)
