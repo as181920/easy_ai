@@ -1,13 +1,9 @@
-require_relative "../test_helper"
-require_relative "../bpe_tokenizer"
+require "test_helper"
 
-describe BpeTokenizer do
-  # before do
-  # end
-
+describe EasyAI::Tokenizers::WordBpe do
   describe "train" do
-    it "should train tokenizer" do
-      tokenizer = BpeTokenizer.new
+    it "trains tokenizer" do
+      tokenizer = EasyAI::Tokenizers::WordBpe.new
       corpus = "low low low low low lower lower newest newest newest newest newest newest widest widest widest"
       tokenizer.train(corpus)
 
@@ -18,18 +14,18 @@ describe BpeTokenizer do
 
   describe "tokenize" do
     before do
-      @tokenizer = BpeTokenizer.new
+      @tokenizer = EasyAI::Tokenizers::WordBpe.new
       corpus = "low low low low low lower lower newest newest newest newest newest newest widest widest widest"
       @tokenizer.train(corpus)
     end
 
-    it "should tokenize english word" do
+    it "tokenizes english words" do
       result = @tokenizer.tokenize("lower")
 
       assert_equal ["low", "e", "r", "<|w|>"], result
     end
 
-    it "should handle CJK words" do
+    it "handles CJK words" do
       result = @tokenizer.tokenize("你好")
 
       assert_equal ["你", "<|w|>", "好", "<|w|>"], result
@@ -38,17 +34,13 @@ describe BpeTokenizer do
 
   describe "detokenize" do
     before do
-      @tokenizer = BpeTokenizer.new
-      # corpus = "low low low low low lower lower newest newest newest newest newest newest widest widest widest"
-      # @tokenizer.train(corpus)
+      @tokenizer = EasyAI::Tokenizers::WordBpe.new
     end
 
-    it "should detokenize tokens" do
+    it "detokenizes tokens" do
       tokens = ["low", "e", "r", "<|w|>"]
-      result = @tokenizer.detokenize(tokens)
 
-      assert_equal "lower", result
-
+      assert_equal "lower", @tokenizer.detokenize(tokens)
       assert_equal "你好", @tokenizer.detokenize(["你", "<|w|>", "好", "<|w|>"])
     end
   end

@@ -3,6 +3,7 @@ source "https://rubygems.org"
 gem "activesupport"
 gem "debug"
 gem "torch-rb"
+gem "zeitwerk"
 
 gem "guard"
 gem "guard-bundler"
