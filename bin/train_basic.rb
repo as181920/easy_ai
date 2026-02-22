@@ -53,7 +53,7 @@ OptionParser.new do |opts|
 
   opts.on("-d", "--data PATH", "Path to training text") { |v| options[:data_path] = v }
   opts.on("-t", "--tokenizer TYPE", "word, byte, or qwen") { |v| options[:tokenizer] = v }
-  opts.on("--qwen-model NAME", "Qwen model to use (e.g., qwen3-0.6b, qwen3-8b, qwen3-next-80b-a3b)") { |v| options[:qwen_model] = v }
+  opts.on("--qwen-model NAME", "Qwen model to use (e.g., qwen3-0.6b, qwen3-8b, qwen3-next, qwen3.5-plus)") { |v| options[:qwen_model] = v }
   opts.on("-m", "--merges N", Integer, "Number of BPE merges") { |v| options[:num_merges] = v }
   opts.on("-f", "--min-freq N", Integer, "Minimum pair frequency") { |v| options[:min_freq] = v }
   opts.on("-b", "--block-size N", Integer) { |v| options[:model][:block_size] = v }

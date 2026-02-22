@@ -93,7 +93,7 @@ Key behaviors:
 | --- | --- | --- | --- |
 | `-d, --data PATH` | `EASY_AI_DATA` | Path to a single text file or a directory (recursively scans for `*.txt`). | `data/song.txt` |
 | `-t, --tokenizer TYPE` | `EASY_AI_TOKENIZER` | `word`, `byte`, or `qwen`, selecting `WordBpe`, `ByteBpe`, or `QwenBpe`. | `word` |
-| `--qwen-model NAME` | - | Qwen model variant when using `--tokenizer qwen` (e.g., `qwen3-0.6b`, `qwen3-8b`, `qwen3-next-80b-a3b`). | `qwen3-next-80b-a3b` |
+| `--qwen-model NAME` | - | Qwen model variant when using `--tokenizer qwen` (e.g., `qwen3-0.6b`, `qwen3-8b`, `qwen3-next`, `qwen3.5-plus`). | `qwen3.5-plus` |
 | `-m, --merges N` | `EASY_AI_MERGES` | Number of BPE merge operations during tokenizer training. | `2000` |
 | `-f, --min-freq N` | `EASY_AI_MIN_FREQ` | Minimum pair frequency before a merge is accepted. | `2` |
 | `-b, --block-size N` | `EASY_AI_BLOCK_SIZE` | Sequence length (context window) for GPT. | `64` |
@@ -112,18 +112,18 @@ Additional options (`EASY_AI_LR`, `EASY_AI_WEIGHT_DECAY`, `EASY_AI_LOG`, `EASY_A
 **QwenBpe** (`--tokenizer qwen`) uses the Hugging Face `tokenizers` gem to load pre-trained Qwen models directly from the Hugging Face Hub. Unlike `word` or `byte` tokenizers which must be trained on your corpus first, `QwenBpe` is ready to use immediately:
 
 ```bash
-# Use default qwen3-next-80b-a3b model
+# Use default qwen3.5-plus model
 bundle exec ruby bin/train_basic.rb -d data/corpus --tokenizer qwen
 
 # Use a specific Qwen model
-bundle exec ruby bin/train_basic.rb -d data/corpus --tokenizer qwen --qwen-model qwen3-8b
+bundle exec ruby bin/train_basic.rb -d data/corpus --tokenizer qwen --qwen-model qwen3.5-plus
 ```
 
-Available models include: `qwen3-0.6b`, `qwen3-1.7b`, `qwen3-4b`, `qwen3-8b`, `qwen3-14b`, `qwen3-32b`, `qwen3-30b-a3b`, `qwen3-next-80b-a3b`.
+Available models include: `qwen3-0.6b`, `qwen3-1.7b`, `qwen3-4b`, `qwen3-8b`, `qwen3-14b`, `qwen3-32b`, `qwen3-next`, `qwen3.5-plus`.
 
 ```ruby
 # In code
-tokenizer = EasyAI::Tokenizers::QwenBpe.new(model_name: "qwen3-8b")
+tokenizer = EasyAI::Tokenizers::QwenBpe.new(model_name: "qwen3.5-plus")
 ids = tokenizer.encode("Hello, 世界!")
 text = tokenizer.decode(ids)
 ```

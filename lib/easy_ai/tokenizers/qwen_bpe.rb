@@ -14,10 +14,11 @@ module EasyAI
         "qwen3-14b" => "Qwen/Qwen3-14B",
         "qwen3-32b" => "Qwen/Qwen3-32B",
         "qwen3-30b-a3b" => "Qwen/Qwen3-30B-A3B",
-        "qwen3-next-80b-a3b" => "Qwen/Qwen3-Next-80B-A3B-Instruct"
+        "qwen3-next" => "Qwen/Qwen3-Next-80B-A3B-Instruct",
+        "qwen3.5-plus" => "Qwen/Qwen3.5-397B-A17B"
       }.freeze
 
-      DEFAULT_MODEL = "qwen3-next-80b-a3b".freeze
+      DEFAULT_MODEL = "qwen3.5-plus".freeze
 
       def initialize(model_name: nil, **kwargs)
         super(**kwargs)
