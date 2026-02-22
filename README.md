@@ -60,7 +60,13 @@ irb(main):004:0> tokenizer.decode([0, 1, 2])
 This script stitches tokenizer → dataset → GPT → trainer and displays a Unicode loss plot plus a sampled continuation.
 
 ```bash
-# Example: train on every *.txt under data/song_corpus with byte BPE
+# Example: train on Song lyrics with Qwen tokenizer (pre-trained, no tokenizer training needed)
+bundle exec ruby bin/train_basic.rb \
+  -d data/song.txt \
+  -t qwen --qwen-model qwen3-0.6b \
+  -b 32 -B 2 -e 128 -i 200
+
+# Example: train on every *.txt under a directory with byte BPE
 bundle exec ruby bin/train_basic.rb \
   -d data \
   --tokenizer byte \
@@ -77,6 +83,31 @@ bundle exec ruby bin/train_basic.rb \
   -m 40 \
   -i 5
 ```
+
+### Example Output
+
+Training on `data/song.txt` with Qwen tokenizer, 200 iterations:
+
+```
+                                        Training Loss
+           ┌──────────────────────────────────────────────────────────────────────┐
+        13 │                                                                      │
+           │⠣⠤⠢⢄⣠⢀⣀                                                               │
+           │     ⠈⠉⠈⠋⠋⠋⠲⢆⢀                                                        │
+           │               ⠉⠉⠒⠦⡀⡄                                                 │
+           │                   ⠙⠸⡰⣤⢄                                              │
+   Loss    │                       ⠓⠖⡼⠶⣀⢴  ⡀                                      │
+           │                            ⢄⠷⠻⡀⢀  ⡄  ⢀                               │
+           │                              ⠓⠹⠋⢱⣆⢿⢰⣀⢸⡀                              │
+           │                                ⠘⠹ ⠁⠉⠞⡷⢲⣤⡶⣇⣄⣤⣠⢰⣼⢰⡀ ⡀  ⡀⢀⢄⡄    ⢠⣤ ⡞⡆   │
+           │                                          ⠘⠁⠁⠟⠛⠿⠛⡎⠛⠃⣧⢷⣧⣄⣰⢧⠎⠘⣷⣆⣶⣄⡸⠏⣿⡟ ⣇│
+           │                                                    ⢿⠈⠃   ⡿⠉⠹   ⠇⠃  ⠘⢿│
+         6 │                                                                      │
+           └──────────────────────────────────────────────────────────────────────┘
+           0                                                                    200
+                                          Iteration
+```
+
 
 Key behaviors:
 

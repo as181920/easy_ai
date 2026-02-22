@@ -21,7 +21,7 @@ CUDA_ERROR = if defined?(Torch::CUDA::Error)
                StandardError
              end
 
-DEFAULT_DATA_PATH = ENV.fetch("EASY_AI_DATA", "data/song.txt")
+DEFAULT_DATA_PATH = ENV.fetch("EASY_AI_DATA", "data")
 
 options = {
   data_path: DEFAULT_DATA_PATH,
