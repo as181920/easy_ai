@@ -52,7 +52,8 @@ OptionParser.new do |opts|
   opts.banner = "Usage: bin/train_basic.rb [options]"
 
   opts.on("-d", "--data PATH", "Path to training text") { |v| options[:data_path] = v }
-  opts.on("-t", "--tokenizer TYPE", "word or byte") { |v| options[:tokenizer] = v }
+  opts.on("-t", "--tokenizer TYPE", "word, byte, or qwen") { |v| options[:tokenizer] = v }
+  opts.on("--qwen-model NAME", "Qwen model to use (e.g., qwen3-0.6b, qwen3-8b, qwen3-next-80b-a3b)") { |v| options[:qwen_model] = v }
   opts.on("-m", "--merges N", Integer, "Number of BPE merges") { |v| options[:num_merges] = v }
   opts.on("-f", "--min-freq N", Integer, "Minimum pair frequency") { |v| options[:min_freq] = v }
   opts.on("-b", "--block-size N", Integer) { |v| options[:model][:block_size] = v }
@@ -135,12 +136,11 @@ preferred_device = resolve_device(options[:device_name])
 corpus_info = locate_corpus(options[:data_path])
 text = corpus_info[:text]
 
-tokenizer_class = case options[:tokenizer]
-                  when "byte" then EasyAI::Tokenizers::ByteBpe
-                  else EasyAI::Tokenizers::WordBpe
-                  end
-
-tokenizer = tokenizer_class.new(num_merges: options[:num_merges], min_freq: options[:min_freq])
+tokenizer = case options[:tokenizer]
+            when "byte" then EasyAI::Tokenizers::ByteBpe.new(num_merges: options[:num_merges], min_freq: options[:min_freq])
+            when "qwen" then EasyAI::Tokenizers::QwenBpe.new(model_name: options[:qwen_model]) # Qwen uses pre-trained tokenizer from Hugging Face, no training needed
+            else EasyAI::Tokenizers::WordBpe.new(num_merges: options[:num_merges], min_freq: options[:min_freq])
+            end
 
 dataset = EasyAI::Data::TextDataset.new(
   tokenizer: tokenizer,

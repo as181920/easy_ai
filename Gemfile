@@ -1,8 +1,10 @@
 source "https://rubygems.org"
 
+gem "tokenizers"
+gem "torch-rb"
+
 gem "activesupport"
 gem "debug"
-gem "torch-rb"
 gem "unicode_plot"
 gem "zeitwerk"
 
