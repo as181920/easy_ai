@@ -22,7 +22,7 @@ module EasyAI
       def initialize(model_name: nil, **kwargs)
         super(**kwargs)
         @model_name = model_name.presence || DEFAULT_MODEL
-        @tokenizer = load_tokenizer(model_name)
+        @tokenizer = load_tokenizer(@model_name)
       end
 
       def train(text)
@@ -74,6 +74,8 @@ module EasyAI
       private
 
         def load_tokenizer(name)
+          raise ArgumentError, "Model name cannot be nil or empty" if name.nil? || name.empty?
+
           model_id = PRETRAINED_MODELS[name] || name
           logger.info { "#{self.class} loading pre-trained tokenizer: #{model_id}" }
 
