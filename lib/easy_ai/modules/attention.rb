@@ -15,6 +15,7 @@ module EasyAI
         @v_proj = Torch::NN::Linear.new(embed_dim, embed_dim)
         @o_proj = Torch::NN::Linear.new(embed_dim, embed_dim)
         @dropout = Torch::NN::Dropout.new(p: dropout)
+        @mask_cache = {}
       end
 
       def forward(x)
@@ -25,8 +26,9 @@ module EasyAI
         v = reshape_heads(@v_proj.call(x))
 
         attn_scores = Torch.matmul(q, k.transpose(-2, -1)) / Math.sqrt(head_dim)
-        mask = EasyAI::Utils::TensorOps.causal_mask(seq_len, device: x.device)
-        mask = mask.unsqueeze(0).unsqueeze(0)
+
+        # Cache causal mask per (seq_len, device) to avoid repeated GPU allocations
+        mask = causal_mask_for(seq_len, x.device)
         attn_scores = attn_scores.masked_fill(Torch.logical_not(mask), -1e9)
 
         attn_weights = Torch::NN::Functional.softmax(attn_scores, dim: -1)
@@ -42,6 +44,14 @@ module EasyAI
         def reshape_heads(tensor)
           batch_size, seq_len, embed_dim = tensor.shape
           tensor.view([batch_size, seq_len, num_heads, head_dim]).transpose(1, 2)
+        end
+
+        def causal_mask_for(seq_len, device)
+          cache_key = [seq_len, device.type.to_s]
+          @mask_cache[cache_key] ||= begin
+            mask = EasyAI::Utils::TensorOps.causal_mask(seq_len, device: device)
+            mask.unsqueeze(0).unsqueeze(0)
+          end
         end
     end
   end

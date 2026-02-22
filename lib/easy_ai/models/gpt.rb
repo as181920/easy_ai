@@ -43,17 +43,19 @@ module EasyAI
 
       def generate(input_ids, max_new_tokens:, temperature: 1.0, top_k: nil)
         generated = input_ids.clone
-        max_new_tokens.times do
-          total_length = generated.shape[1]
-          start = [total_length - config[:block_size], 0].max
-          length = total_length - start
-          idx_cond = generated.narrow(1, start, length)
-          logits = forward(idx_cond)
-          logits = logits.narrow(1, logits.shape[1] - 1, 1).squeeze(1) / temperature
-          logits = top_k_filter(logits, top_k) if top_k
-          probs = Torch::NN::Functional.softmax(logits, dim: -1)
-          next_token = Torch.multinomial(probs, num_samples: 1)
-          generated = Torch.cat([generated, next_token], dim: 1)
+        Torch.no_grad do
+          max_new_tokens.times do
+            total_length = generated.shape[1]
+            start = [total_length - config[:block_size], 0].max
+            length = total_length - start
+            idx_cond = generated.narrow(1, start, length)
+            logits = forward(idx_cond)
+            logits = logits.narrow(1, logits.shape[1] - 1, 1).squeeze(1) / temperature
+            logits = top_k_filter(logits, top_k) if top_k
+            probs = Torch::NN::Functional.softmax(logits, dim: -1)
+            next_token = Torch.multinomial(probs, num_samples: 1)
+            generated = Torch.cat([generated, next_token], dim: 1)
+          end
         end
         generated
       end

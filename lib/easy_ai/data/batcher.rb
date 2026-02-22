@@ -10,22 +10,24 @@ module EasyAI
         @rng = Random.new(seed)
       end
 
+      # Build batches on CPU, let trainer move to GPU as needed.
+      # This avoids accumulating stale GPU tensors from previous batches.
       def next_batch
         raise ArgumentError, "Dataset too small for block size" if max_start_index.negative?
 
         starts = Array.new(batch_size) { rng.rand(0..max_start_index) }
         block_size = dataset.block_size
 
-        x = Torch.zeros(batch_size, block_size, dtype: :int64, device: device)
-        y = Torch.zeros(batch_size, block_size, dtype: :int64, device: device)
+        x = Torch.zeros(batch_size, block_size, dtype: :int64)
+        y = Torch.zeros(batch_size, block_size, dtype: :int64)
 
         starts.each_with_index do |start, row|
           chunk = dataset.token_ids.slice(start, block_size + 1)
           input_ids = chunk[0...block_size]
           target_ids = chunk[1, block_size]
 
-          x[row] = Torch.tensor(input_ids, dtype: :int64, device: device)
-          y[row] = Torch.tensor(target_ids, dtype: :int64, device: device)
+          x[row] = Torch.tensor(input_ids, dtype: :int64)
+          y[row] = Torch.tensor(target_ids, dtype: :int64)
         end
 
         [x, y]

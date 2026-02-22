@@ -19,11 +19,12 @@ module EasyAI
 
         model.train
         max_iters.times do |iter|
+          optimizer.zero_grad
+
           inputs, targets = batcher.next_batch
           inputs = inputs.to(device)
           targets = targets.to(device)
 
-          optimizer.zero_grad
           logits = model.call(inputs)
           loss = Torch::NN::Functional.cross_entropy(
             logits.view([-1, logits.shape[-1]]),
@@ -33,7 +34,20 @@ module EasyAI
           clip_gradients(model.parameters, config[:grad_clip]) if config[:grad_clip]
           optimizer.step
 
-          loss_value = loss.item
+          # Detach loss to free computation graph memory
+          loss_value = loss.detach.item
+
+          # Explicitly clear tensors to help GC
+          loss = nil
+          logits = nil
+          inputs = nil
+          targets = nil
+
+          # Periodically force Ruby GC to reclaim C++ tensor wrappers
+          # that hold GPU memory. Ruby GC doesn't know about VRAM pressure,
+          # so without this, stale wrappers accumulate and leak GPU memory.
+          GC.start if (iter % 10).zero?
+
           loss_history << loss_value
           logger.debug { "[Trainer] iter=#{iter} loss=#{loss_value}" }
           yield(iter, loss_value) if block_given?
