@@ -29,6 +29,7 @@ options = {
   num_merges: ENV.fetch("EASY_AI_MERGES", 2000).to_i,
   min_freq: ENV.fetch("EASY_AI_MIN_FREQ", 2).to_i,
   prompt: ENV.fetch("EASY_AI_PROMPT", "人间有味是清欢"),
+  chunk_shift: ENV.fetch("EASY_AI_CHUNK_SHIFT", 1).to_i,
   model: {
     block_size: ENV.fetch("EASY_AI_BLOCK_SIZE", 64).to_i,
     n_layer: ENV.fetch("EASY_AI_LAYERS", 2).to_i,
@@ -63,6 +64,7 @@ OptionParser.new do |opts|
   opts.on("-B", "--batch N", Integer) { |v| options[:training][:batch_size] = v }
   opts.on("-i", "--iters N", Integer) { |v| options[:training][:max_iters] = v }
   opts.on("-p", "--prompt PROMPT", "Prompt for sampling") { |v| options[:prompt] = v }
+  opts.on("-c", "--chunk-shift N", Integer, "Skip-gram shift amount (1=standard, N=skip N tokens)") { |v| options[:chunk_shift] = v }
   opts.on("--device NAME", "Device to train on (cpu/cuda)") { |v| options[:device_name] = v }
 end.parse!
 
@@ -105,7 +107,7 @@ rescue StandardError
   Torch.device("cpu")
 end
 
-def train_with_device(device, dataset, tokenizer, model_opts, training_opts)
+def train_with_device(device, dataset, tokenizer, model_opts, training_opts, chunk_shift: 1)
   training_cfg = training_opts.merge(device: device)
   config = EasyAI::Config.new(model: model_opts, training: training_cfg)
 
@@ -118,7 +120,8 @@ def train_with_device(device, dataset, tokenizer, model_opts, training_opts)
     dataset: dataset,
     batch_size: config.training[:batch_size],
     device: device,
-    seed: config.training[:seed]
+    seed: config.training[:seed],
+    chunk_shift: chunk_shift
   )
 
   trainer = EasyAI::Trainers::Trainer.new(
@@ -150,7 +153,7 @@ dataset = EasyAI::Data::TextDataset.new(
 model_config = options[:model].merge(vocab_size: tokenizer.vocab_size)
 training_config = options[:training]
 
-logger.info { "Training on #{corpus_info[:label]} (#{text.length} chars) with #{tokenizer.vocab_size} tokens" }
+logger.info { "Training on #{corpus_info[:label]} (#{text.length} chars) with #{tokenizer.vocab_size} tokens, chunk_shift=#{options[:chunk_shift]}" }
 
 trainer = nil
 model = nil
@@ -158,11 +161,11 @@ config = nil
 device_used = preferred_device
 
 begin
-  trainer, model, config = train_with_device(preferred_device, dataset, tokenizer, model_config, training_config)
+  trainer, model, config = train_with_device(preferred_device, dataset, tokenizer, model_config, training_config, chunk_shift: options[:chunk_shift])
 rescue CUDA_ERROR => e
   warn "CUDA error during training (#{e.message}); retrying on cpu"
   device_used = Torch.device("cpu")
-  trainer, model, config = train_with_device(device_used, dataset, tokenizer, model_config, training_config)
+  trainer, model, config = train_with_device(device_used, dataset, tokenizer, model_config, training_config, chunk_shift: options[:chunk_shift])
 end
 
 loss_history = trainer.loss_history
@@ -183,7 +186,7 @@ prompt_ids = tokenizer.encode(options[:prompt])
 prompt_ids = prompt_ids.last(config.model[:block_size])
 input_tensor = Torch.tensor([prompt_ids], dtype: :int64, device: device_used)
 
-generated = model.generate(input_tensor, max_new_tokens: 64)
+generated = model.generate(input_tensor, max_new_tokens: 64, chunk_shift: options[:chunk_shift])
 output_ids = generated.cpu[0].to_a
 puts "\nSample:"
 puts tokenizer.decode(output_ids)

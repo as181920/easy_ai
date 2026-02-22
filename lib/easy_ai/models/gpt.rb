@@ -41,28 +41,32 @@ module EasyAI
         @lm_head.call(x)
       end
 
-      def generate(input_ids, max_new_tokens:, temperature: 1.0, top_k: nil)
+      def generate(input_ids, max_new_tokens:, temperature: 1.0, top_k: nil, chunk_shift: 1)
         generated = input_ids.clone
         Torch.no_grad do
-          max_new_tokens.times do
+          while generated.shape[1] < input_ids.shape[1] + max_new_tokens
             total_length = generated.shape[1]
             start = [total_length - config[:block_size], 0].max
             length = total_length - start
             idx_cond = generated.narrow(1, start, length)
             logits = forward(idx_cond)
-            logits = logits.narrow(1, logits.shape[1] - 1, 1).squeeze(1) / temperature
-            logits = top_k_filter(logits, top_k) if top_k
-            probs = Torch::NN::Functional.softmax(logits, dim: -1)
-            next_token = Torch.multinomial(probs, num_samples: 1)
-            generated = Torch.cat([generated, next_token], dim: 1)
+
+            take_count = [chunk_shift, length].min
+            last_logits = logits.narrow(1, length - take_count, take_count).squeeze(0) / temperature
+
+            last_logits = top_k_filter(last_logits, top_k) if top_k
+            probs = Torch::NN::Functional.softmax(last_logits, dim: -1)
+
+            next_tokens = Torch.multinomial(probs, num_samples: 1)
+            next_tokens = next_tokens.reshape([-1])
+
+            generated = Torch.cat([generated, next_tokens.unsqueeze(0)], dim: 1)
           end
         end
         generated
       end
 
-      private
-
-        def top_k_filter(logits, k)
+      def top_k_filter(logits, k)
           values, _ = Torch.topk(logits, k)
           min_values = values.narrow(1, values.shape[1] - 1, 1)
           logits.masked_fill(logits < min_values, -Float::INFINITY)
