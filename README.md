@@ -182,3 +182,119 @@ Guard will automatically rerun the impacted tests when files change. You can sti
 2. Write smoke tests for `EasyAI::Data::Batcher` and the GPT forward pass shapes.
 3. Persist trained tokenizers/models from `bin/train_basic.rb` so experiments can resume without retraining.
 4. Implement a preprocessing pipeline (scheme #1) that tokenizes large corpora offline into chunked binary files so training can memory-map or stream IDs instead of loading entire directories.
+
+---
+
+## DeepSeek R1-Zero Implementation Plan
+
+This section documents the plan to implement DeepSeek R1-Zero style reinforcement learning training, which uses GRPO (Group Relative Policy Optimization) to train the model to develop reasoning capabilities through self-evolution.
+
+### Core Idea
+
+DeepSeek R1-Zero trains a base model using RL without any supervised fine-tuning (SFT). The key components are:
+
+1. **Reasoning Prompt Template** - Forces the model to output chain-of-thought (CoT) reasoning before giving the final answer
+2. **GRPO Algorithm** - Samples multiple responses per question, computes relative advantages, and updates policy
+3. **Rule-based Rewards** - Accuracy reward + Format reward (no need for reward model)
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    RL Training Loop                       │
+├─────────────────────────────────────────────────────────┤
+│  1. Sample G responses per question                     │
+│     ↓                                                    │
+│  2. Compute rewards (accuracy + format)                │
+│     ↓                                                    │
+│  3. Compute advantages: A_i = (r_i - μ) / σ           │
+│     ↓                                                    │
+│  4. Policy gradient update                              │
+│     ↓                                                    │
+│  5. Repeat                                              │
+└─────────────────────────────────────────────────────────┘
+```
+
+### File Structure
+
+```
+lib/easy_ai/
+├── prompts/
+│   └── reasoning_prompt.rb        # CoT prompt template
+├── data/
+│   ├── qa_dataset.rb               # QA dataset (question + answer)
+│   └── math_problem_generator.rb   # Built-in math problem generator
+├── rewards/
+│   └── reward_system.rb            # Accuracy + Format rewards
+├── trainers/
+│   └── grpo_trainer.rb             # GRPO training loop
+└── models/
+    └── gpt.rb                      # Modified: returns log probabilities
+```
+
+### Implementation Tasks
+
+| # | Task | Description |
+|---|------|-------------|
+| 1 | MathProblemGenerator | Generate simple math problems (addition, subtraction, multiplication, simple equations, sequences) with verifiable answers |
+| 2 | QADataset | Dataset class for question-answer pairs |
+| 3 | ReasoningPrompt | Prompt template that forces CoT output using `<think>` and `<answer>` tags |
+| 4 | GPT log_probs | Modify GPT model to return log probabilities alongside predictions |
+| 5 | RewardSystem | Compute accuracy reward (answer matching) and format reward (presence of CoT tags) |
+| 6 | GRPOTrainer | Implement GRPO training loop with group-based advantage computation |
+| 7 | train_rl.rb | CLI script for RL training |
+
+### Algorithm Details
+
+**GRPO Loss (simplified)**:
+```ruby
+# For each question, sample G responses
+advantages = (rewards - rewards.mean) / (rewards.std + 1e-8)
+
+# Policy gradient
+loss = -log_probs * advantages
+```
+
+**Reward Computation**:
+- **Accuracy Reward**: Extract answer from `<answer>...</answer>`, compare with ground truth → 1.0 if correct, 0.0 otherwise
+- **Format Reward**: Check for `<think>` and `</answer>` tags → 0.1 bonus (encourages proper formatting)
+
+**Reasoning Prompt Template**:
+```
+A conversation between User and Assistant. The User asks a question and the Assistant solves it. The Assistant first thinks about the reasoning process in the mind and then provides the user with the answer. Enclose your final answer within <answer></answer>.
+
+User: {question}
+Assistant:
+<think>
+{reasoning}
+</answer>
+<answer>
+{final_answer}
+</answer>
+```
+
+### Training Data
+
+**Phase 1: Built-in Simple Math Problems**
+- Addition: "1 + 2 + 3 = ?" → "6"
+- Subtraction: "10 - 3 = ?" → "7"
+- Multiplication: "4 × 5 = ?" → "20"
+- Simple equations: "x + 5 = 12, x = ?" → "7"
+- Sequences: "1, 2, 4, 8, ?" → "16"
+
+**Phase 2: Public Datasets** (future)
+- DeepMath-103K (HuggingFace)
+- OpenR1-Math-220k (HuggingFace)
+- MATH benchmark
+
+### Expected Outcomes
+
+1. Model learns to output reasoning before the final answer
+2. Through RL optimization, reasoning capabilities improve over time
+3. Similar to DeepSeek R1-Zero's "self-evolution" process
+
+### References
+
+- [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/pdf/2501.12948)
+- [GRPO-Zero Implementation](https://github.com/policy-gradient/GRPO-Zero)
+- [DeepMath-103K Dataset](https://huggingface.co/datasets/deepseek-ai/DeepMath-103K)
