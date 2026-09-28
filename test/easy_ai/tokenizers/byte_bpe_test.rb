@@ -1,42 +1,40 @@
 require "test_helper"
 
-describe EasyAI::Tokenizers::ByteBpe do
-  before do
-    @en_corpus = "low low low low low lower lower newest newest newest newest newest newest widest widest widest"
-    data_path = File.expand_path("../../../data/xiaojing.txt", __dir__)
-    @cjk_corpus = File.read(data_path)
+class ByteBpeTest < Minitest::Test
+  def test_unseen_scripts_and_whitespace_round_trip
+    tokenizer = EasyAI::Tokenizers::ByteBpe.new.train(["hello hello 中文 中文"], vocab_size: 300)
+    text = "你好\t世界\n  مرحبا Привет 🌈 e\u0301 [PAD]"
+
+    assert_equal text, tokenizer.decode(tokenizer.encode(text))
+    refute_includes tokenizer.encode(text), tokenizer.id(:unk)
   end
 
-  describe "train" do
-    it "trains tokenizer" do
-      tokenizer = EasyAI::Tokenizers::ByteBpe.new
-      tokenizer.train(@cjk_corpus)
+  def test_save_and_load_preserve_ids_and_merges
+    tokenizer = EasyAI::Tokenizers::ByteBpe.new.train(["abcabc hello hello"], vocab_size: 300)
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "tokenizer.json")
+      tokenizer.save(path)
+      restored = EasyAI::Tokenizers::Registry.load(path)
 
-      assert_includes tokenizer.merges.values, ("之".dup).force_encoding(Encoding::ASCII_8BIT)
-      assert_includes tokenizer.merges.values, ("。".dup).force_encoding(Encoding::ASCII_8BIT)
-    end
-  end
-
-  describe "tokenize" do
-    before do
-      @tokenizer = EasyAI::Tokenizers::ByteBpe.new
-      @tokenizer.train(@cjk_corpus)
-    end
-
-    it "handles CJK words" do
-      result = @tokenizer.tokenize("你好")
-
-      assert_equal "你好<|w|>", result.join.force_encoding("utf-8")
+      assert_equal tokenizer.encode("abcabc 未知字"), restored.encode("abcabc 未知字")
+      assert_equal tokenizer.fingerprint, restored.fingerprint
+      assert_equal tokenizer.merges, restored.merges
     end
   end
 
-  describe "detokenize" do
-    before do
-      @tokenizer = EasyAI::Tokenizers::ByteBpe.new
-    end
+  def test_native_backend_is_self_trained_and_round_trips
+    tokenizer = EasyAI::Tokenizers::NativeBpe.new.train(["hello 世界 مرحبا " * 4], vocab_size: 300)
+    text = "new\n中文字 🌈 مرحبا"
 
-    it "detokenizes tokens" do
-      assert_equal "你好", @tokenizer.detokenize(["\xE4", "\xBD", "\xA0", "\xE5", "\xA5", "\xBD", "<|w|>"])
-    end
+    assert_equal text, tokenizer.decode(tokenizer.encode(text))
+    restored = EasyAI::Tokenizers::NativeBpe.from_h(tokenizer.to_h)
+
+    assert_equal tokenizer.fingerprint, restored.fingerprint
+    assert_equal 0, tokenizer.id(:pad)
+  end
+
+  def test_invalid_merges_are_rejected
+    data = EasyAI::Tokenizers::ByteBpe.new.to_h.merge("merges" => [[999, 6]])
+    assert_raises(ArgumentError) { EasyAI::Tokenizers::ByteBpe.from_h(data) }
   end
 end

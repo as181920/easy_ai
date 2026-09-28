@@ -1,0 +1,31 @@
+model:
+  vocab_size: 32000
+  hidden_size: 256
+  encoder_layers: 4
+  attention_heads: 4
+  ffn_size: 768
+  interaction_layers: 1
+  dropout: 0.1
+input:
+  state_max_tokens: 256
+  question_option_max_tokens: 64
+  truncation: error
+training:
+  device: auto
+  precision: float32
+  choice_microbatch: 4
+  mlm_microbatch: 8
+  gradient_accumulation: 8
+  learning_rate: 0.0003
+  warmup_steps: 100
+  steps: 1000
+  eval_every: 100
+  checkpoint_every: 100
+runtime:
+  gpu_memory_budget_mib: 4096
+  candidate_chunk_size: 16
+  cache_entries: 16
+growth:
+  enabled: false
+  max_layers: 6
+  operation: add_block

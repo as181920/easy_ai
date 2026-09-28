@@ -10,6 +10,9 @@ AllCops:
   NewCops: enable
   Exclude:
     - bin/bundle
+    - "data/**/*"
+    - "runs/**/*"
+    - "tmp/**/*"
 
 Style/StringLiterals:
   Enabled: true

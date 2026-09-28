@@ -1,0 +1,20 @@
+model:
+  vocab_size: 4096
+  hidden_size: 32
+  encoder_layers: 2
+  attention_heads: 4
+  ffn_size: 64
+  dropout: 0.0
+input:
+  state_max_tokens: 128
+  question_option_max_tokens: 64
+  truncation: truncate
+training:
+  device: auto
+  choice_microbatch: 2
+  mlm_microbatch: 4
+  gradient_accumulation: 1
+  warmup_steps: 2
+  steps: 10
+  eval_every: 5
+  checkpoint_every: 5

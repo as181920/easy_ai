@@ -10,25 +10,14 @@ require "irb"
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "easy_ai"
 
-# Pre-load commonly used modules for convenience
-include EasyAI
-
-# Print welcome message
 puts "EasyAI Debug Console"
 puts "=" * 50
-puts "Loaded modules:"
-puts "  - EasyAI (main namespace)"
-puts "  - EasyAI::Tokenizers (WordBpe, ByteBpe, QwenBpe)"
-puts "  - EasyAI::Data (TextDataset, Batcher)"
-puts "  - EasyAI::Models (GPT)"
-puts "  - EasyAI::Trainers (Trainer)"
-puts "  - EasyAI::Logger (logging utilities)"
-puts ""
-puts "Examples:"
-puts "  tokenizer = EasyAI::Tokenizers::WordBpe.new"
-puts "  tokenizer.train(\"hello world\")"
-puts "  tokenizer.encode(\"hello\")"
-puts ""
+puts "EasyAI::Decision: ChoiceModel, Trainer, Predictor"
+puts "EasyAI::Tokenizers: ByteBpe, NativeBpe, Registry"
+puts 'tokenizer = EasyAI::Tokenizers::ByteBpe.new'
+puts 'tokenizer.train(["你好，世界"], vocab_size: 512)'
+puts 'tokenizer.encode("你好")'
+puts "Teaching code: see learning/README.md (EasyAILearning)."
 puts "Press Ctrl+D or type 'exit' to quit"
 puts "=" * 50
 

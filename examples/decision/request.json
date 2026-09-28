@@ -1,0 +1,9 @@
+{
+  "state": "明天早上七点叫醒我。",
+  "question": "Intent?",
+  "options": [
+    {"id": "alarm_set", "text": "alarm set"},
+    {"id": "play_music", "text": "play music"},
+    {"id": "weather_query", "text": "weather query"}
+  ]
+}

@@ -58,8 +58,4 @@ module EasyAI
       text.gsub(/\r?\n+/, " ").squeeze(" ").strip
     end
   end
-
-  def self.logger
-    Logger.logger
-  end
 end

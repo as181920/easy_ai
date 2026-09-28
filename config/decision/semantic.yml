@@ -1,0 +1,36 @@
+# Research recipe: scratch multilingual representation + conditional semantic supervision.
+model:
+  vocab_size: 12000
+  hidden_size: 256
+  encoder_layers: 4
+  attention_heads: 4
+  ffn_size: 768
+  interaction_layers: 1
+  position_scale: 0.02
+  embedding_norm: true
+  score_mode: matching
+  dropout: 0.1
+input:
+  state_max_tokens: 256
+  question_option_max_tokens: 128
+  truncation: error
+training:
+  device: auto
+  choice_microbatch: 16
+  mlm_microbatch: 16
+  gradient_accumulation: 2
+  learning_rate: 0.0003
+  warmup_steps: 100
+  steps: 2000
+  eval_every: 200
+  checkpoint_every: 500
+  early_stopping_patience: 6
+  balance_sources: true
+  balance_labels: false
+  resample_negatives: false
+runtime:
+  gpu_memory_budget_mib: 4096
+  candidate_chunk_size: 16
+  cache_entries: 16
+growth:
+  enabled: false

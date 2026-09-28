@@ -3,5 +3,19 @@
 /pkg/
 /tmp/
 /data/
+/runs/
+/log/
+/downloads/
+/checkpoints/
+/.cache/
+/cache/
+
+# Model weights and downloaded archives belong in ignored artifact directories.
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.tar.gz
+*.part
 
 temp.rb

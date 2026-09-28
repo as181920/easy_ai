@@ -4,6 +4,7 @@ gem "tokenizers"
 gem "torch-rb"
 
 gem "activesupport"
+gem "faraday", "~> 2.0"
 gem "debug"
 gem "unicode_plot"
 gem "zeitwerk"

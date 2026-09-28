@@ -12,14 +12,14 @@ end
 
 guard :rubocop, cli: ["--parallel", "--format", "fuubar"], cmd: "bin/rubocop" do
   watch(/.+\.rb$/)
-  watch(%r{^app/views/(.+)/.+})
   watch(%r{(?:.+/)?\.rubocop(?:_todo)?\.yml$}) { |m| File.dirname(m[0]) }
 end
 
 require "debug"
 guard :minitest do
-  # with Minitest::Unit
-  watch(%r{\A(.+)\.rb\z}) { |m| "test/#{m[1]}_test.rb" }
-  watch(%r{^test/(.*)/?(.*)_test\.rb$})
-  watch(%r{\Atest_helper\.rb$}) { "test" }
+  watch(%r{\Alib/easy_ai/(decision|nn|optim|runtime)/.+\.rb\z}) { "test/easy_ai/decision" }
+  watch(%r{\Alib/easy_ai/tokenizers/.+\.rb\z}) { "test/easy_ai/tokenizers" }
+  watch(%r{\Alib/easy_ai\.rb\z}) { "test" }
+  watch(%r{\Atest/.+_test\.rb\z})
+  watch(%r{\Atest/test_helper\.rb\z}) { "test" }
 end

@@ -10,7 +10,7 @@ end
 
 loader = Zeitwerk::Loader.new
 loader.tag = "easy_ai"
-loader.inflector.inflect("gpt" => "GPT")
+loader.inflector.inflect("nn" => "NN", "adamw" => "AdamW")
 loader.push_dir(File.join(__dir__, "easy_ai"), namespace: EasyAI)
 loader.setup
 
