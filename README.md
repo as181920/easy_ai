@@ -120,7 +120,9 @@ bundle exec ruby benchmarks/decision/relations.rb --variants rotary --seeds 1337
 
 每个种子先训练 1000 步 sanity，再用这组自训权重训练完整数据 2000 步；总计 3000 步。报告同时列出完整训练集、验证集与两种测试句式的成绩，保留失败门槛，不自动推广为默认模型。
 
-最新用户复测确认：两条“买票”例子已在训练集中，课程模型仍不能稳定判断谁买了票；这些请求清空缓存后的结果没有变化。下一轮先增加主体/角色评估与成组采样对照，再扩展课程。接手请先读[开发交接记录](docs/decision/handover.md)，其中包含当前权重路径与指纹、复现命令、已知失败、待办顺序和验收标准；这些新优化尚未实现。
+最新用户复测确认：两条“买票”例子已在训练集中，旧课程模型仍不能稳定判断谁买了票。现已完成主体/角色评估、四条成组采样及三种子对照：平均 test accuracy 从 **80.03% 到 82.55%**，混合真假四条组全对率从 **33.96% 到 48.33%**，但部分种子退步，仍未达标。扩大为 512 条代表性热身的后续试验也不稳定，完整结果、失败记录与可加载权重见[人物绑定对照](docs/decision/binding.md)。新关系训练与评估统一使用 v3 元数据，历史 v2 权重可在文本和 tokenizer 不变的 v3 数据上补测。接手入口为[开发交接记录](docs/decision/handover.md)。
+
+![主体绑定的全部种子对照](docs/images/decision-binding-comparison.png)
 
 原有 MASSIVE 多语言意图匹配实验保留：
 
@@ -171,6 +173,9 @@ runs/decision/<run>/
 - [本机验收](docs/decision/validation.md)：实际参数、时延、显存、测试与质量限制。
 - [从零语义训练](docs/decision/semantics.md)：中英公开判断数据、MLM 对照、按任务诊断。
 - [关系学习实验](docs/decision/relations.md)：否定绑定、位置编码对照、小样本拟合与独立泛化。
+- [人物绑定对照](docs/decision/binding.md)：v3 数据、主体/角色评估、四条成组采样与实验入口。
+- [迭代回顾与经验](docs/decision/retrospective.md)：从初版到 v3 的成功、失败、证据边界，以及从零训练与教师蒸馏的下一步取舍。
+- [可复用蒸馏设计](docs/decision/distillation.md)：规划中的 `EasyAI::Distillation` 与 Decision 适配边界，尚未实现。
 - [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
 - [学习目录](learning/README.md)：原代码迁移位置和建议阅读顺序。

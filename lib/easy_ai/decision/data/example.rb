@@ -2,7 +2,7 @@ module EasyAI
   module Decision
     module Data
       class Example
-        attr_reader :id, :group_id, :language, :state, :question, :options, :target, :source, :contrast_group
+        attr_reader :id, :group_id, :language, :state, :question, :options, :target, :source, :contrast_group, :contrast_groups
 
         def initialize(row, require_target: true)
           row = row.transform_keys(&:to_s)
@@ -12,6 +12,13 @@ module EasyAI
           @source = row.fetch("source", "local").to_s
           @contrast_group = row["contrast_group"]
           validate_text!(@contrast_group) if @contrast_group
+          @contrast_groups = row.fetch("contrast_groups", {})
+          raise ArgumentError, "contrast_groups must be a mapping" unless @contrast_groups.is_a?(Hash)
+          @contrast_groups = @contrast_groups.transform_keys(&:to_s)
+          @contrast_groups.each do |key, value|
+            validate_text!(key)
+            validate_text!(value)
+          end
           @state, @question = row.fetch("state"), row.fetch("question")
           @options = row.fetch("options").map { |option| option.transform_keys(&:to_s) }
           [@state, @question].each { |text| validate_text!(text) }
@@ -38,6 +45,7 @@ module EasyAI
           result = { "id" => id, "group_id" => group_id, "language" => language, "source" => source,
            "state" => state, "question" => question, "options" => options, "target" => target }
           result["contrast_group"] = contrast_group if contrast_group
+          result["contrast_groups"] = contrast_groups unless contrast_groups.empty?
           result
         end
 

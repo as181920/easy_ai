@@ -41,7 +41,8 @@ module EasyAI
       end
 
       def command_prepare_relations
-        Data::RelationCorpus.new(seed: @options[:seed]).write(output: required(:output), vocab_size: @options.fetch(:vocab_size, 400))
+        Data::RelationCorpus.new(seed: @options[:seed]).write(output: required(:output), vocab_size: @options.fetch(:vocab_size, 400),
+          sanity_families: @options.fetch(:sanity_families, 1))
       end
 
       def command_evaluate_relations
@@ -274,7 +275,7 @@ module EasyAI
           %i[output archive data input config tokenizer validation checkpoint resume init device backend sha256 descriptions language reference_data].each do |key|
             parser.on("--#{key.to_s.tr('_', '-')} VALUE") { |value| @options[key] = value }
           end
-          %i[candidates limit train_limit seed vocab_size steps layer size mlm_steps choice_steps eval_every].each do |key|
+          %i[candidates limit train_limit seed vocab_size steps layer size mlm_steps choice_steps eval_every sanity_families].each do |key|
             parser.on("--#{key.to_s.tr('_', '-')} N", Integer) { |value| @options[key] = value }
           end
           parser.on("--locales LIST", Array) { |value| @options[:locales] = value }

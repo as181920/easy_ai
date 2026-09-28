@@ -13,6 +13,9 @@ module EasyAI
       def evaluate(dataset, controls: false)
         examples = dataset.to_a
         metadata = File.foreach(dataset.path).reject { |line| line.strip.empty? }.map { |line| JSON.parse(line).fetch("relation") }
+        unless metadata.all? { |row| row["binding_group"] && row.fetch("checks").key?("subject_switch") }
+          raise ArgumentError, "Relation evaluation requires v3 metadata; prepare a new relations-v3 dataset"
+        end
         logits = collect(examples)
         result = metrics(examples, metadata, logits)
         reversed = examples.map { |example| Data::Example.new(example.to_h.merge("options" => example.options.reverse)) }
@@ -79,16 +82,49 @@ module EasyAI
         result = Evaluator.metrics(logits, examples.map(&:target_index), @predictor.calibrator)
         chosen = logits.each_with_index.map { |row, i| examples[i].options[row.each_index.max_by { |j| row[j] }].fetch("id") }
         correct = examples.each_index.map { |i| chosen[i] == examples[i].target }
-        result["pairs"] = %w[question_flip fact_flip irrelevant_fact order].to_h do |kind|
-          groups = metadata.each_index.group_by { |i| metadata[i].fetch("checks").fetch(kind) }.values
-          raise ArgumentError, "Incomplete relation pairs: #{kind}" unless groups.all? { |indices| indices.size == 2 }
-          flip = %w[question_flip fact_flip].include?(kind)
-          valid = groups.all? { |a, b| (examples[a].target != examples[b].target) == flip }
-          raise ArgumentError, "Inconsistent relation labels: #{kind}" unless valid
-          [kind, { "count" => groups.size, "both_correct" => groups.count { |a, b| correct[a] && correct[b] }.fdiv(groups.size),
-            "expected_relation_rate" => groups.count { |a, b| (chosen[a] != chosen[b]) == flip }.fdiv(groups.size) }]
+        result["pairs"] = %w[question_flip fact_flip irrelevant_fact order subject_switch role_swap].to_h do |kind|
+          indices = metadata.each_index.select { |i| kind != "role_swap" || metadata[i].fetch("facts").uniq.length == 2 }
+          groups = indices.group_by { |i| metadata[i].fetch("checks").fetch(kind) }.values
+          [kind, pair_metrics(kind, groups, examples, metadata, chosen, correct)]
         end
-        result.slice("count", "accuracy", "nll", "brier", "ece", "pairs")
+        groups = metadata.each_index.group_by { |i| metadata[i].fetch("binding_group") }.values
+        raise ArgumentError, "Incomplete binding groups" unless groups.all? { |indices| indices.size == 4 }
+        result["groups"] = { "binding" => group_metrics(groups, correct) }
+        %w[same_truth mixed_truth].each do |pattern|
+          subset = groups.select { |indices| (metadata[indices.first].fetch("facts").uniq.length == 2) == (pattern == "mixed_truth") }
+          result["groups"]["binding"][pattern] = group_metrics(subset, correct)
+        end
+        result.slice("count", "accuracy", "nll", "brier", "ece", "pairs", "groups")
+      end
+
+      def pair_metrics(kind, groups, examples, metadata, chosen, correct)
+        raise ArgumentError, "Incomplete relation pairs: #{kind}" unless groups.all? { |indices| indices.size == 2 }
+        flips = groups.map do |a, _b|
+          kind == "subject_switch" ? metadata[a].fetch("facts").uniq.length == 2 : %w[question_flip fact_flip role_swap].include?(kind)
+        end
+        unless groups.zip(flips).all? { |(a, b), flip| (examples[a].target != examples[b].target) == flip }
+          raise ArgumentError, "Inconsistent relation labels: #{kind}"
+        end
+        result = { "count" => groups.size,
+          "both_correct" => fraction(groups) { |a, b| correct[a] && correct[b] },
+          "expected_relation_rate" => fraction(groups.zip(flips)) { |(a, b), flip| (chosen[a] != chosen[b]) == flip } }
+        if kind == "subject_switch"
+          %w[same_truth mixed_truth].each do |pattern|
+            subset = groups.zip(flips).select { |_pair, flip| flip == (pattern == "mixed_truth") }
+            result[pattern] = { "count" => subset.size,
+              "both_correct" => fraction(subset) { |(a, b), _flip| correct[a] && correct[b] },
+              "expected_relation_rate" => fraction(subset) { |(a, b), flip| (chosen[a] != chosen[b]) == flip } }
+          end
+        end
+        result
+      end
+
+      def group_metrics(groups, correct)
+        { "count" => groups.size, "all_correct" => fraction(groups) { |indices| indices.all? { |i| correct[i] } } }
+      end
+
+      def fraction(items, &block)
+        items.empty? ? nil : items.count(&block).fdiv(items.size)
       end
     end
   end

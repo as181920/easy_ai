@@ -71,6 +71,11 @@ class RelationTest < Minitest::Test
       assert_equal [[0, 1], [3]], styles
       assert_equal 108, datasets.first.groups.size
       assert_equal 20, datasets.last.groups.size
+      expanded = File.join(dir, "coverage")
+      EasyAI::Decision::Data::RelationCorpus.new.write(output: expanded, vocab_size: 400, sanity_families: 8)
+
+      assert %w[train validation calibration test test-familiar].all? { |split| File.binread(File.join(output, "#{split}.jsonl")) == File.binread(File.join(expanded, "#{split}.jsonl")) }
+      assert_equal File.binread(File.join(output, "tokenizer.json")), File.binread(File.join(expanded, "tokenizer.json"))
     end
   end
 

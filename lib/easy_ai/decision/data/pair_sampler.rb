@@ -1,16 +1,23 @@
 module EasyAI
   module Decision
     module Data
-      # Keep both members of each explicit contrast pair in the same microbatch.
+      # Keep complete contrast groups in each optimizer update. GPU recovery may
+      # split them across accumulation microbatches; the loss remains per-row CE.
       class PairSampler
-        def initialize(dataset)
+        GROUP_SIZES = { "question_flip" => 2, "binding" => 4 }.freeze
+
+        attr_reader :group_size
+
+        def initialize(dataset, strategy: "question_flip")
+          @group_size = GROUP_SIZES.fetch(strategy) { raise ArgumentError, "Unknown contrast strategy: #{strategy}" }
           groups = Hash.new { |hash, key| hash[key] = [] }
           dataset.each_with_index do |example, index|
-            raise ArgumentError, "paired_sampling requires contrast_group on every example" unless example.contrast_group
-            groups[[example.language, example.contrast_group]] << [index, example.group_id]
+            key = strategy == "question_flip" ? example.contrast_group : example.contrast_groups[strategy]
+            raise ArgumentError, "Missing #{strategy} contrast group" unless key
+            groups[[example.language, key]] << [index, example.group_id]
           end
-          unless groups.values.all? { |rows| rows.length == 2 && rows.map(&:last).uniq.length == 1 }
-            raise ArgumentError, "Every contrast group must contain two rows in one split group"
+          unless groups.any? && groups.values.all? { |rows| rows.length == group_size && rows.map(&:last).uniq.length == 1 }
+            raise ArgumentError, "Every contrast group must contain #{group_size} rows in one split group"
           end
           @languages = groups.group_by { |(language, _key), _rows| language }.transform_values do |pairs|
             pairs.map { |_key, rows| rows.map(&:first) }
@@ -18,8 +25,8 @@ module EasyAI
         end
 
         def sample(size, rng:)
-          raise ArgumentError, "Paired sample size must be positive and even" unless size > 0 && size.even?
-          Array.new(size / 2) do
+          raise ArgumentError, "Sample size must be a positive multiple of #{group_size}" unless size.is_a?(Integer) && size > 0 && (size % group_size).zero?
+          Array.new(size / group_size) do
             language = @languages.keys.sort.sample(random: rng)
             @languages.fetch(language).sample(random: rng)
           end.flatten

@@ -29,7 +29,13 @@ class RelationExperiment
     raise ArgumentError, "Output exists: #{@output}" if File.exist?(@output)
     raise ArgumentError, "At least one variant and seed are required" if options[:variants].empty? || options[:seeds].empty?
     raise ArgumentError, "Unknown variants" unless (options[:variants] - VARIANTS.keys).empty?
+    unless %w[question_flip binding].include?(options.fetch(:contrast_strategy, "question_flip"))
+      raise ArgumentError, "Unknown contrast strategy"
+    end
     raise ArgumentError, "Seeds must be nonnegative" unless options[:seeds].all? { |seed| seed >= 0 }
+    if options[:sanity_families] && !(1..108).cover?(options[:sanity_families])
+      raise ArgumentError, "sanity_families must be between 1 and 108"
+    end
     raise ArgumentError, "Step budgets must be positive" unless options[:steps] > 0 && options[:sanity_steps] > 0
     raise ArgumentError, "Evaluation batch size must be positive" unless options[:evaluation_batch_size] > 0
     if options[:curriculum] && options.fetch(:patience, 0) != 0
@@ -42,10 +48,14 @@ class RelationExperiment
 
   def run
     unless File.directory?(@data)
-      stage(@output, "prepare", "prepare-relations", "--output", @data, "--vocab-size", "400")
+      stage(@output, "prepare", "prepare-relations", "--output", @data, "--vocab-size", "400",
+        "--sanity-families", @options.fetch(:sanity_families, 1).to_s)
     end
     manifest = JSON.parse(File.read(File.join(@data, "manifest.json")))
     raise ArgumentError, "Unexpected relation corpus version" unless manifest["version"] == EasyAI::Decision::Data::RelationCorpus::VERSION
+    if @options[:sanity_families] && manifest["sanity_rows"] != @options[:sanity_families] * 64
+      raise ArgumentError, "Existing sanity data does not match --sanity-families; use a new data directory"
+    end
     manifest.fetch("files_sha256").each do |file, hash|
       raise ArgumentError, "Dataset changed: #{file}" unless Digest::SHA256.file(File.join(@data, file)).hexdigest == hash
     end
@@ -57,6 +67,7 @@ class RelationExperiment
       @options[:variants].each do |variant|
         root = File.join(@output, "#{variant}-seed-#{seed}")
         training = { seed: seed, device: @options[:device] }
+        training[:contrast_strategy] = @options.fetch(:contrast_strategy, "question_flip")
         training[:early_stopping_patience] = @options[:patience] if @options.key?(:patience)
         training[:early_stopping_patience] = 0 if @options[:curriculum]
         config = @config.with(model: VARIANTS.fetch(variant), training: training)
@@ -75,7 +86,8 @@ class RelationExperiment
             row[split] = evaluate(File.join(root, "generalization"), split, selected, split, controls: split == "test")
           end
           row["generalization_passed"] = row["test"]["by_language"].values.all? do |metrics|
-            metrics["accuracy"] >= 0.95 && metrics["pairs"].values.all? { |pair| pair["both_correct"] >= 0.9 }
+            metrics["accuracy"] >= 0.95 && metrics["pairs"].values.all? { |pair| pair["both_correct"] >= 0.9 } &&
+              %w[same_truth mixed_truth].all? { |pattern| metrics.dig("groups", "binding", pattern, "all_correct") >= 0.9 }
           end
         end
         @summary["runs"] << row
@@ -86,7 +98,8 @@ class RelationExperiment
     @summary["status"] = "complete"
     @summary["scope"] = "Controlled synthetic task, uncalibrated probabilities. Gate failure is a recorded experimental result, never deployment approval. Paired test variants share semantic families."
     save
-    puts JSON.pretty_generate(@summary)
+    puts File.read(File.join(@output, "comparison.txt"))
+    puts "Report: #{File.join(@output, 'index.html')}"
   rescue StandardError, Interrupt => error
     @summary["status"], @summary["error"] = "failed", error.message
     save
@@ -171,14 +184,15 @@ class RelationExperiment
   end
 end
 
-options = { config: "config/decision/relations.yml", data: "data/decision/relations-v2",
+options = { config: "config/decision/relations.yml", data: "data/decision/relations-v3",
   output: "runs/decision/relations-#{Time.now.strftime('%Y%m%d-%H%M%S')}-#{SecureRandom.hex(3)}",
   seeds: [1337, 2027, 3407], variants: %w[all candidate], sanity_steps: 1000, steps: 2000, evaluation_batch_size: 64, device: "auto" }
 OptionParser.new do |parser|
   %i[config data output device].each { |key| parser.on("--#{key} VALUE") { |value| options[key] = value } }
-  %i[sanity_steps steps patience evaluation_batch_size].each { |key| parser.on("--#{key.to_s.tr('_', '-')} N", Integer) { |value| options[key] = value } }
+  %i[sanity_steps steps patience evaluation_batch_size sanity_families].each { |key| parser.on("--#{key.to_s.tr('_', '-')} N", Integer) { |value| options[key] = value } }
   parser.on("--seeds LIST", Array) { |values| options[:seeds] = values.map { |value| Integer(value) } }
   parser.on("--variants LIST", Array) { |values| options[:variants] = values }
+  parser.on("--contrast-strategy NAME", "question_flip (default) or binding (four rows)") { |value| options[:contrast_strategy] = value }
   parser.on("--sanity-only") { options[:sanity_only] = true }
   parser.on("--curriculum", "Initialize full training from this run's fitted sanity weights; no early stopping") { options[:curriculum] = true }
 end.parse!

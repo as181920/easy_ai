@@ -29,6 +29,7 @@ training:
   early_stopping_patience: 4
   balance_sources: false
   paired_sampling: true
+  contrast_strategy: question_flip
 runtime:
   gpu_memory_budget_mib: 4096
   candidate_chunk_size: 16

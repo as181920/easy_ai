@@ -51,7 +51,12 @@ module EasyAI
           @label_indexes[language][[example.question, example.target]] << index if @task == :choice
         end
         @candidate_sampler = Data::CandidateSampler.new(dataset) if @task == :choice && @config[:training]["resample_negatives"]
-        @pair_sampler = Data::PairSampler.new(dataset) if @task == :choice && @config[:training]["paired_sampling"]
+        if @task == :choice && @config[:training]["paired_sampling"]
+          @pair_sampler = Data::PairSampler.new(dataset, strategy: @config[:training]["contrast_strategy"])
+          unless (@microbatch * @accumulation % @pair_sampler.group_size).zero?
+            raise ArgumentError, "Restored effective batch must contain complete contrast groups"
+          end
+        end
         FileUtils.mkdir_p(output)
         save_checkpoint # CPU snapshot exists before trying GPU allocations.
         transfer_to(@policy.resolve)

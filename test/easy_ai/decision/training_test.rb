@@ -107,6 +107,35 @@ class TrainingTest < Minitest::Test
     end
   end
 
+  def test_binding_training_resumes_with_complete_groups_after_microbatch_reduction
+    Dir.mktmpdir do |dir|
+      rows = 4.times.map do |i|
+        example(id: i.to_s, state: i.even? ? "red" : "blue", target: i.even? ? "r" : "b")
+          .to_h.merge("group_id" => "family", "contrast_groups" => { "binding" => "four" })
+      end
+      data = write_dataset(File.join(dir, "train.jsonl"), rows)
+      config = tiny_config(model: { dropout: 0.1 }, training: { paired_sampling: true, contrast_strategy: "binding", choice_microbatch: 4 })
+      Torch.manual_seed(33)
+      instance = trainer(EasyAI::Decision::ChoiceModel.new(config), data, File.join(dir, "full"))
+      # Exercise the actual GPU recovery path without requiring CUDA in CI.
+      instance.define_singleton_method(:transfer_to) { |_destination| @device = "cpu" }
+      error = EasyAI::Runtime::DevicePolicy::MemoryBudgetExceeded.new("simulated capacity failure")
+      instance.send(:recover_from_gpu, error)
+
+      assert_equal 2, instance.instance_variable_get(:@microbatch)
+      assert_equal 2, instance.instance_variable_get(:@accumulation)
+      instance.train(steps: 2)
+      resume_path = instance.last_checkpoint
+      instance.train(steps: 4)
+      resumed = EasyAI::Decision::Trainer.resume(resume_path, dataset: data, output: File.join(dir, "resumed"), steps: 4, device: "cpu")
+      resumed.train
+
+      instance.model.state_dict.each { |name, tensor| assert_tensor_close tensor, resumed.model.state_dict.fetch(name), 1e-7 }
+      assert_equal 16, resumed.state["examples_seen"]
+      assert_equal "binding", resumed.model.config[:training]["contrast_strategy"]
+    end
+  end
+
   def test_checkpoint_corruption_is_detected
     Dir.mktmpdir do |dir|
       model = EasyAI::Decision::ChoiceModel.new(tiny_config)

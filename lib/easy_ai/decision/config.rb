@@ -44,6 +44,7 @@ module EasyAI
           "balance_labels" => false,
           "balance_sources" => false,
           "paired_sampling" => false,
+          "contrast_strategy" => "question_flip",
           "resample_negatives" => false,
           "mask_probability" => 0.15
         },
@@ -149,6 +150,12 @@ module EasyAI
         end
         if training["paired_sampling"] && (!training["choice_microbatch"].is_a?(Integer) || !training["choice_microbatch"].even?)
           raise ArgumentError, "paired_sampling needs an even choice_microbatch"
+        end
+        unless %w[question_flip binding].include?(training["contrast_strategy"])
+          raise ArgumentError, "contrast_strategy must be question_flip or binding"
+        end
+        if training["contrast_strategy"] == "binding" && (!training["paired_sampling"] || (training["choice_microbatch"] % 4) != 0)
+          raise ArgumentError, "binding requires paired_sampling and choice_microbatch divisible by 4"
         end
         raise ArgumentError, "seed must be a nonnegative integer" unless training["seed"].is_a?(Integer) && training["seed"] >= 0
         raise ArgumentError, "device must be auto, cuda or cpu" unless %w[auto cuda cpu].include?(training["device"])

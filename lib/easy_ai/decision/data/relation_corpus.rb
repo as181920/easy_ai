@@ -8,7 +8,7 @@ module EasyAI
       # A closed, explicitly boolean world. Negating a question is not used to
       # label uncertain/modal language: those phenomena need a separate task.
       class RelationCorpus
-        VERSION = 2
+        VERSION = 3
         ACTORS = [
           ["小林", "Alice"], ["小周", "Bob"], ["小陈", "Carol"], ["小王", "David"],
           ["小李", "Emma"], ["小张", "Frank"], ["小吴", "Grace"], ["小赵", "Henry"]
@@ -27,8 +27,11 @@ module EasyAI
           @seed = seed
         end
 
-        def write(output:, vocab_size: 400)
+        def write(output:, vocab_size: 400, sanity_families: 1)
           raise ArgumentError, "Output exists: #{output}" if File.exist?(output)
+          unless sanity_families.is_a?(Integer) && (1..108).cover?(sanity_families)
+            raise ArgumentError, "sanity_families must be between 1 and 108"
+          end
           families = (0...ACTORS.size).to_a.combination(2).flat_map do |actors|
             ACTIONS.each_index.map { |action| [*actors, action] }
           end.sort_by { |family| digest([@seed, family]) }
@@ -45,13 +48,15 @@ module EasyAI
           end
           FileUtils.mkdir_p(output)
           rows.each { |split, items| write_rows(File.join(output, "#{split}.jsonl"), items) }
-          write_rows(File.join(output, "sanity.jsonl"), examples(families.first, style: 0))
+          warmup_families = select_sanity_families(families.first(108), sanity_families)
+          warmup = warmup_families.flat_map { |family| examples(family, style: 0) }
+          write_rows(File.join(output, "sanity.jsonl"), warmup)
           tokenizer = Tokenizers::NativeBpe.new
           tokenizer.train(rows.fetch("train").flat_map { |row| Example.new(row).texts }, vocab_size: vocab_size)
           tokenizer.save(File.join(output, "tokenizer.json"))
           Dataset.assert_disjoint!(*%w[train validation calibration test].map { |split| Dataset.new(File.join(output, "#{split}.jsonl")) })
           manifest = { "version" => VERSION, "seed" => @seed, "families" => families.size,
-            "rows" => rows.transform_values(&:size), "sanity_rows" => 64,
+            "rows" => rows.transform_values(&:size), "sanity_rows" => warmup.size, "sanity_families" => warmup_families,
             "tokenizer_fingerprint" => tokenizer.fingerprint, "tokenizer_vocab_size" => tokenizer.vocab_size,
             "files_sha256" => Dir.glob(File.join(output, "*.jsonl")).to_h { |path| [File.basename(path), Digest::SHA256.file(path).hexdigest] },
             "split_policy" => "All translations, fact flips, question flips and order variants of an actor-pair/action family stay together. Train styles 0/1, validation/calibration style 2, test style 3. test-familiar shares test families; sanity is a training subset, never a generalization test.",
@@ -77,17 +82,38 @@ module EasyAI
                 "irrelevant_fact" => [group, facts[subject], subject, assertion, language, order, style],
                 "order" => [group, facts, subject, assertion, language, style]
               }.transform_values { |key| digest(key) }
+              mixed = facts.uniq.length == 2
+              checks["subject_switch"] = digest([group, facts, assertion, language, order, style])
+              checks["role_swap"] = digest([group, subject, assertion, language, order, style]) if mixed
+              binding = digest([group, mixed, assertion, language, order, style])
               { "id" => digest(identity), "group_id" => group, "source" => "relations", "language" => language,
                 "contrast_group" => checks.fetch("question_flip"),
+                "contrast_groups" => { "binding" => binding },
                 "state" => state, "question" => question,
                 "options" => options.map { |id, text| { "id" => id, "text" => text } }.shuffle(random: Random.new(digest(identity).to_i(16))),
                 "target" => facts[subject] == assertion ? "yes" : "no",
-                "relation" => { "family" => family, "facts" => facts, "subject" => subject, "assertion" => assertion, "style" => style, "checks" => checks } }
+                "relation" => { "family" => family, "facts" => facts, "subject" => subject, "assertion" => assertion,
+                  "order" => order, "style" => style, "binding_group" => binding, "checks" => checks } }
             end
           end
         end
 
         private
+
+        # Select only from training families, retaining the original first family.
+        # Cover new actions first, then prefer previously unseen people. Ties use
+        # the seeded family order; no validation/test result enters this choice.
+        def select_sanity_families(families, count)
+          selected = [families.first]
+          while selected.size < count
+            actors = selected.flat_map { |family| family.first(2) }.uniq
+            actions = selected.map(&:last)
+            selected << (families - selected).max_by do |family|
+              (actions.include?(family.last) ? 0 : 3) + (family.first(2) - actors).size
+            end
+          end
+          selected
+        end
 
         def clause(actor, action, positive, language)
           offset = language == "zh-CN" ? 0 : 2

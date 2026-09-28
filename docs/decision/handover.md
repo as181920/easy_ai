@@ -2,6 +2,12 @@
 
 更新：2026-09-28。代码基线：`d57b118`（`Feat: add Decision training and inference pipeline`）。本文记录该提交之后的用户复测、实际排查与下一轮计划；下文标为“待做”的能力尚未实现。
 
+完整学习脉络见[迭代回顾](retrospective.md)。最新策略建议见其第 7 节：对课程排查设置预算上限，同时推进自然语义覆盖；Qwen 离线教师作为待评估的独立对照。用户已提出是否改用蒸馏的讨论，尚未切换路线或执行教师训练；下文的从零约束描述当前实现，不代表排除未来教师实验。
+
+新增设计约束：蒸馏应可跨场景复用，规划为与 Decision 并列的 `EasyAI::Distillation`；公共教师/产物/损失与任务适配分开。详见[可复用蒸馏设计](distillation.md)，当前只记录设计，尚无运行入口。
+
+后续进度：已继续实现主体切换、角色互换、四条组合评估与成组采样，当前实验与操作入口见[人物绑定对照](binding.md)。本页的“待做”段落保留最初交接计划，具体完成状态以新记录为准。用户明确全局策略为**向前迭代优先于向后兼容**；新训练/评估统一使用 v3 元数据，v2 产物保留作历史对照。
+
 **当前结论：训练与推理流程可运行，课程学习带来改善，但人物—事实绑定仍不稳定，而且会错在已有训练样本上。下一轮先修正训练对照和课程设计，不直接扩大模型或宣称通用语义已经可用。**
 
 ## 1. 接手时的约束与状态
@@ -12,11 +18,11 @@
 - 语言目标不局限英语；本轮关系与公开语义实验是中文、英文，不能因此声称已有任意语言能力。
 - 正式能力在 `lib/easy_ai/`；历史教学代码在 `learning/`；实验编排在 `benchmarks/decision/`。配置每行一个参数，README 与旧 learning 曲线继续保留。
 - `data/`、`runs/`、下载文件、权重被 Git 忽略。文档和精选图表在 Git 中。只 clone 仓库**不会得到本机训练产物**。
-- 最近代码验收：正式测试 71 tests / 640 assertions，教学 7 tests / 14 assertions，RuboCop 95 files，全通过。这是现有代码的验收结果，不是未来修改自动通过的保证。
+- 交接基线验收：正式测试 71 tests / 640 assertions，教学 7 tests / 14 assertions，RuboCop 95 files，全通过。后续代码的最新验收记录见 [人物绑定对照](binding.md)，不能用基线结果代替新修改的验证。
 
 已完成：数据准备、MLM/候选训练、checkpoint/续训、校准、CPU/CUDA 推理、RoPE、两种池化和联合编码对照、成对评估、课程实验、训练图表与显存累积修复。**当前所有课程种子仍未通过泛化门槛。**
 
-## 2. 正在测试的权重与可复现入口
+## 2. 原诊断权重与可复现入口
 
 本机项目根目录：`/home/andersen/as_projects/AI/easy_ai`。以下命令均从项目根目录运行。
 
@@ -47,10 +53,10 @@ tokenizer fingerprint:
 
 本地数据：`data/decision/relations-v2/`。train 13824 条、108 个家庭；validation / calibration / test 各 1280 条、20 个家庭。sanity 是 train 中一个家庭的 64 条。test-familiar 与 test 共用家庭，仅句式不同；不能当成两份独立测试证据。
 
-数据缺失时可重建（输出目录必须不存在；不要覆盖现有 v2）：
+当前代码生成 v3 数据（输入文本/标签与 v2 相同，增加分组元数据；输出目录必须不存在，不覆盖历史 v2）：
 
 ```bash
-bundle exec ruby bin/easy-ai prepare-relations --output data/decision/relations-v2 --vocab-size 400 --seed 1337
+bundle exec ruby bin/easy-ai prepare-relations --output data/decision/relations-v3 --vocab-size 400 --seed 1337
 ```
 
 一条命令重训当前课程基线，自动生成新 run 目录、日志与图表：
@@ -64,7 +70,7 @@ bundle exec ruby benchmarks/decision/relations.rb --variants rotary --seeds 1337
 单独评估已有最佳权重：
 
 ```bash
-bundle exec ruby bin/easy-ai evaluate-relations --checkpoint runs/decision/relations-v2-curriculum/choice/best --data data/decision/relations-v2/validation.jsonl --batch-size 128 --controls
+bundle exec ruby bin/easy-ai evaluate-relations --checkpoint runs/decision/relations-v2-curriculum/choice/best --data data/decision/relations-v3/validation.jsonl --batch-size 128 --controls
 ```
 
 当前结果汇总：`runs/decision/relations-v2-comparison/index.html`。其他课程 seed 在 `runs/decision/relations-v2-curriculum-2027/`、`runs/decision/relations-v2-curriculum-3407/`。详细拆分、全部对照、图表见 [关系实验](relations.md)。上一轮全量审计曾使用 `/tmp` 临时脚本；接手不依赖该脚本，使用已入库的实验入口和 `evaluate-relations`。
@@ -152,11 +158,13 @@ p [first, second]
 
 三种子共享同一测试拆分；各实验预算不同，这不是严格等计算量的因果证明。当前权重的总体训练 accuracy 仍有约 6% 错误，不能将小规模 sanity 的 100% 误写成完整训练集全对。
 
-代码事实：`RelationCorpus` 把 `question_flip` 写入 `contrast_group`，`PairSampler` 每次将这两个样本一起采样。目前没有专门的主体切换/人物角色互换训练分组；现有评估包含 question_flip、fact_flip、irrelevant_fact、order 四类。
+交接基线的代码事实：`RelationCorpus` 把 `question_flip` 写入 `contrast_group`，`PairSampler` 每次将这两个样本一起采样。当时没有专门的主体切换/人物角色互换训练分组，评估包含 question_flip、fact_flip、irrelevant_fact、order 四类；v3 已扩展这些能力，见新实验记录。
 
 待验证假设：现有配对更容易强化问题肯定/否定变化，而对“否定属于谁”的约束不足。全局池化可能弱化局部关系，但已有 cross-attention，不能把错误直接归因于“没有 attention”。单家庭热身、固定学习率、有限句式都可能影响训练；需要逐项对照。
 
-## 5. 下一轮待办与顺序（尚未实现）
+## 5. 原始推进计划与顺序
+
+本节保留交接时的任务定义。当前已实现 P0 的新行为指标、P1 的四条采样，并完成两策略三种子对照；还新增了 P2 的代表性热身集配置与试验。新的隔离挑战集、更细的多阶段课程、学习率调度、额外监督和公开语义混合仍未实现。逐轮实验结论以 [人物绑定对照](binding.md) 为准。
 
 ### P0：先把主体绑定变成明确的评估项
 
@@ -243,4 +251,4 @@ bundle exec rake lint
 | 实验编排和门槛 | [relations.rb](../../benchmarks/decision/relations.rb)、[relations.yml](../../config/decision/relations.yml) |
 | 必须覆盖的回归 | [relation_test.rb](../../test/easy_ai/decision/relation_test.rb)、[training_test.rb](../../test/easy_ai/decision/training_test.rb)、[memory_test.rb](../../test/easy_ai/decision/memory_test.rb)、[rotary_test.rb](../../test/easy_ai/decision/rotary_test.rb) |
 
-接手第一步：核实权重与数据版本，重现本页买票成对样本的判断错误；随后实现 P0 的主体/角色评估，再做 P1 的采样对照。这里记录了可执行顺序，不表示这些新功能已经完成。
+接手第一步：先读 [人物绑定对照](binding.md) 的最新结果，再核实权重与数据版本。本页保留原始失败证据和任务顺序，不应重复实现已经完成的新指标与采样器。
