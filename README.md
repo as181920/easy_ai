@@ -120,6 +120,8 @@ bundle exec ruby benchmarks/decision/relations.rb --variants rotary --seeds 1337
 
 每个种子先训练 1000 步 sanity，再用这组自训权重训练完整数据 2000 步；总计 3000 步。报告同时列出完整训练集、验证集与两种测试句式的成绩，保留失败门槛，不自动推广为默认模型。
 
+最新用户复测确认：两条“买票”例子已在训练集中，课程模型仍不能稳定判断谁买了票；这些请求清空缓存后的结果没有变化。下一轮先增加主体/角色评估与成组采样对照，再扩展课程。接手请先读[开发交接记录](docs/decision/handover.md)，其中包含当前权重路径与指纹、复现命令、已知失败、待办顺序和验收标准；这些新优化尚未实现。
+
 原有 MASSIVE 多语言意图匹配实验保留：
 
 ```bash
@@ -169,6 +171,7 @@ runs/decision/<run>/
 - [本机验收](docs/decision/validation.md)：实际参数、时延、显存、测试与质量限制。
 - [从零语义训练](docs/decision/semantics.md)：中英公开判断数据、MLM 对照、按任务诊断。
 - [关系学习实验](docs/decision/relations.md)：否定绑定、位置编码对照、小样本拟合与独立泛化。
+- [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
 - [学习目录](learning/README.md)：原代码迁移位置和建议阅读顺序。
 
