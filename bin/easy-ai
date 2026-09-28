@@ -2,4 +2,8 @@
 require "bundler/setup"
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "easy_ai"
+if %w[distill-collect distill-export].include?(ARGV.first)
+  command = ARGV.shift
+  exit EasyAI::Distillation::Cli.run(ARGV, command: command)
+end
 exit EasyAI::Decision::Cli.run(ARGV)

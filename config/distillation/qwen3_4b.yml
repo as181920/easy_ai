@@ -1,0 +1,10 @@
+endpoint: http://127.0.0.1:18081/v1
+model: qwen3-4b-q4km
+revision: Qwen/Qwen3-4B-GGUF@bc640142c66e1fdd12af0bd68f40445458f3869b;sha256=7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5
+backend_revision: llama.cpp@7fe450e19305b828c199d602c23a8337aaa1f03b (b11146);CUDA-12.9;sm75
+parameters:
+  temperature: 0
+  seed: 1337
+  max_tokens: 64
+  chat_template_kwargs:
+    enable_thinking: false

@@ -1,4 +1,6 @@
-# 可复用蒸馏能力设计（尚未实现）
+# 可复用蒸馏能力设计（原始方案）
+
+Implementation update: the first reusable collector/artifact/loss layer and Decision content-label integration are now implemented. See the [English implementation and usage guide](../distillation/README.md) for current commands and limitations. The original design below records the proposal; generative/representation students and a Qwen soft-probability scorer remain unimplemented.
 
 本设计回应“蒸馏能否独立于 Decision，供以后其他场景复用”。建议命名为 **`EasyAI::Distillation`**，作为与 `Decision` 并列的能力。首个使用者是候选概率任务；公开硬标签从零训练继续作为对照。本文不是已可运行 API 的说明，也不代表已下载、验收或训练 Qwen 教师。
 

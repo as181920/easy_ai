@@ -219,6 +219,14 @@ module EasyAI
         raise ArgumentError, "Use either --resume or --init" if @options[:resume] && @options[:init]
         dataset = Data::Dataset.new(required(:data), kind: task)
         validation = @options[:validation] && Data::Dataset.new(@options[:validation], kind: task)
+        if !@options[:teacher_artifact] && (@options[:teacher_weight] || @options[:teacher_temperature])
+          raise ArgumentError, "Teacher loss options require --teacher-artifact"
+        end
+        distillation = if @options[:teacher_artifact]
+          raise ArgumentError, "Teacher supervision is only supported by train" unless task == :choice
+          DistillationSupervision.new(artifact: @options[:teacher_artifact], dataset: dataset,
+            weight: @options.fetch(:teacher_weight, 1.0), temperature: @options.fetch(:teacher_temperature, 1.0))
+                       end
         output = required(:output)
         if @options[:resume]
           loaded = Checkpoint.load(@options[:resume])
@@ -226,15 +234,16 @@ module EasyAI
           raise ArgumentError, "Inference-only checkpoint cannot resume optimizer; use --init" unless loaded[:metadata]["optimizer"]
           raise ArgumentError, "--config and --tokenizer are not accepted with resume; only --steps and --device may change" if @options[:config] || @options[:tokenizer]
           trainer = Trainer.resume(@options[:resume], dataset: dataset, validation: validation, output: output,
-            steps: @options[:steps], device: @options[:device])
+            steps: @options[:steps], device: @options[:device], distillation: distillation)
         else
           model, tokenizer, restored = initial_model(task)
           trainer = Trainer.new(model: model, tokenizer: tokenizer, dataset: dataset, output: output,
-            validation: validation, task: task, restored: restored, device: @options[:device])
+            validation: validation, task: task, restored: restored, device: @options[:device], distillation: distillation)
         end
         progress = Progress.new(task: task, total: trainer.model.config[:training]["steps"], out: @err) if @options[:progress]
         path = trainer.train { |state, loss| progress&.update(state, loss, device: trainer.device) }
         { "checkpoint" => path, "step" => trainer.state["step"], "device" => trainer.device,
+         "distillation" => trainer.state["distillation"],
          "best_checkpoint" => trainer.state["best_checkpoint"], "best_step" => trainer.state["best_step"],
          "stop_reason" => trainer.state["stop_reason"],
          "parameters" => trainer.model.parameter_count, "last_train_loss" => trainer.state["last_train_loss"] }
@@ -272,8 +281,11 @@ module EasyAI
             parser.separator "Defaults: small model; 5 languages, 200 rows per locale/split, 8 choices; MLM 100 steps, choice 300 steps."
             parser.separator "Pipeline --data is a prepared directory. --output must be a new directory. Charts require gnuplot."
           end
-          %i[output archive data input config tokenizer validation checkpoint resume init device backend sha256 descriptions language reference_data].each do |key|
+          %i[output archive data input config tokenizer validation checkpoint resume init device backend sha256 descriptions language reference_data teacher_artifact].each do |key|
             parser.on("--#{key.to_s.tr('_', '-')} VALUE") { |value| @options[key] = value }
+          end
+          %i[teacher_weight teacher_temperature].each do |key|
+            parser.on("--#{key.to_s.tr('_', '-')} N", Float) { |value| @options[key] = value }
           end
           %i[candidates limit train_limit seed vocab_size steps layer size mlm_steps choice_steps eval_every sanity_families].each do |key|
             parser.on("--#{key.to_s.tr('_', '-')} N", Integer) { |value| @options[key] = value }
@@ -290,7 +302,7 @@ module EasyAI
       end
 
       def help
-        @out.puts("Usage: bin/easy-ai COMMAND [options]\nCommands: #{COMMANDS.join(', ')}\nUse COMMAND --help for flags. See docs/decision/usage.md.")
+        @out.puts("Usage: bin/easy-ai COMMAND [options]\nCommands: #{COMMANDS.join(', ')}, distill-collect, distill-export\nUse COMMAND --help for flags. See docs/decision/usage.md.")
         0
       end
     end

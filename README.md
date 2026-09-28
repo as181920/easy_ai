@@ -13,6 +13,8 @@ question + each option ---> shared bidirectional encoder ----> cross-attention
                                                    Ruby Hash -> JSON probabilities
 ```
 
+Semantic judgments come from the trained network, not keyword rules. Coverage auditing uses declared dataset metadata only. The tokenizer and inference interface accept multilingual text, but current Chinese/English experiments do not establish semantic ability in other languages. See the [coverage experiment and limitations](docs/decision/coverage.md).
+
 默认 `small` 配置的参数层级（共享模块只计数一次）：
 
 ```text
@@ -58,6 +60,7 @@ question + option -> encoder -> cross-attention -> q ----+
 easy_ai/
 |-- lib/easy_ai/
 |   |-- decision/           # 正式维护的候选概率能力、数据、训练、推理、扩容
+|   |-- distillation/       # Reusable teacher collection, artifacts and supervision losses
 |   |-- nn/                 # attention、FFN、encoder block
 |   |-- optim/              # 可保存状态的 Ruby AdamW
 |   |-- runtime/            # GPU 优先、显存预算、CPU 回退
@@ -101,6 +104,10 @@ bundle exec ruby bin/easy-ai semantic-pipeline
 本轮从零 MLM + 监督的实测曲线如下。相同 test 上，来源宏平均 accuracy 从直接监督的 57.56% 变成 55.11%；这个预算下 MLM 没有改善下游判断，迟到/否定探针仍有错误，详细对照和后续排查见上述语义训练说明。
 
 ![从零 MLM 与候选监督曲线](docs/images/decision-semantic-loss.png)
+
+Latest controlled experiment (2026-09-29): extending gold-supervised training from 1k to 4k updates raises fresh-challenge source-macro accuracy from **54.31% to 57.36%** across three seeds, but raw NLL worsens. Adding task/candidate wording variants drops accuracy to **55.39%** and is rejected as an improvement. English negation and person binding still fail known probes. See the [complete results, training curves, checkpoint path and next experiment](docs/decision/coverage.md); these are experimental weights, not a reliable general semantic model.
+
+![Gold-supervised coverage comparison](docs/images/decision-coverage-comparison.png)
 
 针对否定错误，新增了中英关系学习对照：先验证 64 条样本能否完全拟合，再训练 13824 条可验证标签的关系数据，按人物/动作家庭与句式隔离评估。相同 663 万参数、1000 步预算下，v2 小样本实验的原位置编码 accuracy 为 75%，RoPE 为 100%；这是训练拟合结果，泛化需要另行评估。
 
@@ -175,7 +182,10 @@ runs/decision/<run>/
 - [关系学习实验](docs/decision/relations.md)：否定绑定、位置编码对照、小样本拟合与独立泛化。
 - [人物绑定对照](docs/decision/binding.md)：v3 数据、主体/角色评估、四条成组采样与实验入口。
 - [迭代回顾与经验](docs/decision/retrospective.md)：从初版到 v3 的成功、失败、证据边界，以及从零训练与教师蒸馏的下一步取舍。
-- [可复用蒸馏设计](docs/decision/distillation.md)：规划中的 `EasyAI::Distillation` 与 Decision 适配边界，尚未实现。
+- [Reusable distillation](docs/distillation/README.md): offline teacher content, pseudo-label export, candidate-level supervision and Decision integration; includes the original design link.
+- [First Qwen teacher screening](docs/distillation/teacher-v1.md): fits the 6 GiB GPU, but fails the candidate-order stability gate; no student weights promoted.
+- [Task-specific teacher comparison](docs/distillation/teacher-task-v1.md): explicit task definitions regressed order agreement (91.67% → 85.42%); includes reproducible comparison, both-correct metrics and lessons from the failed experiment.
+- [Gold-supervised coverage round](docs/decision/coverage.md): completed six-run comparison; longer training gains 3.05 accuracy points but worsens raw probability metrics, while wording expansion loses 1.97 points. Includes exposure, memory recovery, failure probes and reproduction; no keyword-based semantic rules or pretrained LLM.
 - [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
 - [学习目录](learning/README.md)：原代码迁移位置和建议阅读顺序。

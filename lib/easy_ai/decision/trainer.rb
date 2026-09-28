@@ -7,24 +7,39 @@ module EasyAI
       attr_reader :model, :tokenizer, :optimizer, :state, :device, :last_checkpoint
 
       def initialize(model:, tokenizer:, dataset:, output:, validation: nil, task: :choice,
-                     restored: nil, device: nil, logger: EasyAI.logger)
+                     restored: nil, device: nil, logger: EasyAI.logger, distillation: nil)
         @model, @tokenizer, @dataset, @output, @validation, @task, @logger = model, tokenizer, dataset, output, validation, task.to_sym, logger
         raise ArgumentError, "Unknown training task" unless %i[choice mlm].include?(@task)
         raise ArgumentError, "Dataset task mismatch" unless @dataset.kind == @task
         raise ArgumentError, "Tokenizer exceeds model vocabulary" if tokenizer.vocab_size > model.config[:model]["vocab_size"]
         @config = model.config
+        raise ArgumentError, "Coverage tracking currently supports choice training" if @config[:training]["track_coverage"] && @task != :choice
+        @distillation = distillation
+        if distillation && (@task != :choice || @config[:training]["resample_negatives"])
+          raise ArgumentError, "Distillation requires fixed-candidate choice training"
+        end
         raise ArgumentError, "Automatic growth needs validation data" if @config[:growth]["enabled"] && !validation
         raise ArgumentError, "Early stopping needs validation data" if @config[:training]["early_stopping_patience"] > 0 && !validation
         Data::Dataset.assert_disjoint!(dataset, validation)
         @state = restored ? deep_copy(restored.fetch("training")) : { "step" => 0, "examples_seen" => 0, "architecture_version" => 1,
           "history" => [], "task" => @task.to_s, "datasets" => {}, "groups" => { "train" => [], "validation" => [] } }
         raise ArgumentError, "Resume task mismatch; use init for transfer" unless state.fetch("task") == @task.to_s
+        if restored && state.fetch("datasets", {}).key?("train") && state["distillation"] != distillation&.signature
+          raise ArgumentError, "Resume teacher artifact or loss configuration mismatch"
+        end
+        state["distillation"] = distillation&.signature
         expected = state.fetch("datasets", {})["train"]
         raise ArgumentError, "Resume dataset fingerprint mismatch" if expected && expected != dataset.fingerprint
         if state.fetch("datasets", {}).key?("validation") && state["datasets"]["validation"] != validation&.fingerprint
           raise ArgumentError, "Resume validation fingerprint mismatch"
         end
         state["datasets"] = { "train" => dataset.fingerprint, "validation" => validation&.fingerprint }
+        if @config[:training]["track_coverage"]
+          state["coverage"] ||= { "row_visits" => Array.new(dataset.size, 0), "input_tokens" => 0 }
+          unless state["coverage"]["row_visits"].size == dataset.size && state["coverage"]["row_visits"].sum == state["examples_seen"]
+            raise ArgumentError, "Coverage counters do not match committed training state"
+          end
+        end
         state["groups"] ||= { "train" => [], "validation" => [] }
         state["groups"]["train"] |= dataset.groups.to_a
         state["groups"]["validation"] |= validation.groups.to_a if validation
@@ -44,6 +59,7 @@ module EasyAI
         @source_indexes = Hash.new { |sources, source| sources[source] = Hash.new { |languages, language| languages[language] = [] } }
         @label_indexes = Hash.new { |hash, language| hash[language] = Hash.new { |labels, label| labels[label] = [] } }
         dataset.each_with_index do |example, index|
+          raise ArgumentError, "Choice training requires targets; export unlabeled teacher records first" if @task == :choice && example.target.nil?
           language = example.is_a?(Data::Example) ? example.language : example.fetch("language", "und")
           @language_indexes[language] << index
           source = example.is_a?(Data::Example) ? example.source : example.fetch("source", "local")
@@ -161,6 +177,7 @@ module EasyAI
         end
         all_indices = @pair_sampler.sample(@microbatch * @accumulation, rng: rng) if @pair_sampler
         total_loss = 0.0
+        input_tokens = 0
         all_indices.each_slice(@microbatch).with_index do |indices, micro|
           seed = (@config[:training]["seed"] + step * 1009 + micro) % (2**31)
           Torch.manual_seed(seed)
@@ -170,7 +187,8 @@ module EasyAI
             candidate_rng = Random.new(seed ^ 0x5EED)
             examples = examples.map { |example| @candidate_sampler.call(example, rng: candidate_rng) }
           end
-          loss = loss_for(examples, seed: seed)
+          loss = loss_for(examples, seed: seed, teacher: true)
+          input_tokens += @collator.input_token_counts.sum if state["coverage"]
           number = loss.item
           raise FloatDomainError, "Non-finite training loss" unless number.finite?
           @policy.check_budget!(device) if micro.zero?
@@ -182,13 +200,19 @@ module EasyAI
         optimizer.clip_grad_norm!(@config[:training]["grad_clip"])
         optimizer.step
         @policy.check_budget!(device)
+        if state["coverage"]
+          all_indices.each { |index| state["coverage"]["row_visits"][index] += 1 }
+          state["coverage"]["input_tokens"] += input_tokens
+        end
         total_loss
       end
 
-      def loss_for(examples, seed:)
+      def loss_for(examples, seed:, teacher: false)
         if @task == :choice
           batch = @collator.call(examples, device: device)
-          Torch::NN::Functional.cross_entropy(model.call(batch), batch[:targets])
+          logits = model.call(batch)
+          loss = Torch::NN::Functional.cross_entropy(logits, batch[:targets])
+          teacher && @distillation ? loss + @distillation.loss(logits, examples) : loss
         else
           batch = @masking.call(examples, seed: seed, device: device)
           logits = model.mlm_logits(batch[:ids], mask: batch[:mask], positions: batch[:positions])
@@ -283,6 +307,7 @@ module EasyAI
       def rollback_growth(reason)
         current_step = state["step"]
         examples_seen = state["examples_seen"]
+        coverage = state["coverage"] && deep_copy(state["coverage"])
         parent = @growth.reject(step: current_step, reason: reason)
         growth_state = deep_copy(@growth.state)
         restore_checkpoint(parent, destination: device)
@@ -290,6 +315,7 @@ module EasyAI
         # Trial compute consumes the overall budget; do not silently repeat it.
         state["step"] = current_step
         state["examples_seen"] = examples_seen
+        state["coverage"] = coverage if coverage
         state["growth"] = growth_state
       end
 

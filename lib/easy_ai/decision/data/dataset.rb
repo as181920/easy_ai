@@ -9,8 +9,9 @@ module EasyAI
         include Enumerable
         attr_reader :path, :fingerprint, :kind
 
-        def initialize(path, kind: :choice)
+        def initialize(path, kind: :choice, require_target: true)
           @path, @kind = File.expand_path(path), kind
+          @require_target = require_target
           @offsets = []
           File.open(@path, "rb") do |file|
             until file.eof?
@@ -53,7 +54,7 @@ module EasyAI
         def parse(line)
           row = JSON.parse(line.force_encoding("UTF-8"))
           if kind == :choice
-            Example.new(row)
+            Example.new(row, require_target: @require_target)
           else
             text = row.fetch("text")
             raise ArgumentError, "Empty corpus text" unless text.is_a?(String) && !text.strip.empty?

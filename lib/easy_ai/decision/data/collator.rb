@@ -2,7 +2,7 @@ module EasyAI
   module Decision
     module Data
       class Collator
-        attr_reader :tokenizer, :config, :truncated
+        attr_reader :tokenizer, :config, :truncated, :input_token_counts
 
         def initialize(tokenizer:, config:)
           @tokenizer, @config, @truncated = tokenizer, config, 0
@@ -12,6 +12,11 @@ module EasyAI
         def call(examples, device: "cpu")
           states = examples.map { |example| state_tokens(example.state) }
           candidates = examples.map { |example| example.options.map { |option| option_tokens(example.question, option.fetch("text")) } }
+          # Actual unpadded encoder input tokens, including specials and repeated questions.
+          @input_token_counts = states.each_with_index.map do |state, index|
+            options = candidates[index]
+            config[:model]["encoding_mode"] == "joint" ? options.sum { |option| state.size + option.size - 1 } : state.size + options.sum(&:size)
+          end
           max_k = candidates.map(&:length).max
           max_m = candidates.flatten(1).map(&:length).max
           max_l = states.map(&:length).max

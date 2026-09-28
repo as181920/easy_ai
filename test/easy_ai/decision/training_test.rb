@@ -158,7 +158,7 @@ class TrainingTest < Minitest::Test
     Dir.mktmpdir do |dir|
       dataset = write_dataset(File.join(dir, "train.jsonl"), [example(id: "train")])
       validation = write_dataset(File.join(dir, "validation.jsonl"), [example(id: "validation")])
-      config = tiny_config(training: { eval_every: 1, steps: 3 },
+      config = tiny_config(training: { eval_every: 1, steps: 3, track_coverage: true },
         growth: { enabled: true, patience: 1, min_delta: 100.0, trial_evaluations: 1, max_trials: 1 })
       instance = EasyAI::Decision::Trainer.new(model: EasyAI::Decision::ChoiceModel.new(config),
         tokenizer: EasyAI::Tokenizers::ByteBpe.new, dataset: dataset, validation: validation, output: dir)
@@ -166,7 +166,7 @@ class TrainingTest < Minitest::Test
 
       expected_examples = 3 * config[:training]["choice_microbatch"] * config[:training]["gradient_accumulation"]
 
-      assert_equal [3, expected_examples], instance.state.values_at("step", "examples_seen")
+      assert_equal [3, expected_examples, expected_examples], instance.state.values_at("step", "examples_seen") + [instance.state.dig("coverage", "row_visits").sum]
       assert_equal config[:model]["encoder_layers"], instance.model.config[:model]["encoder_layers"]
       assert_equal %w[trial_started rejected], instance.state["growth"]["events"].map { |event| event["action"] }
       assert_nil instance.state["growth"]["pending"]

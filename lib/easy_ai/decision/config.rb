@@ -46,6 +46,7 @@ module EasyAI
           "paired_sampling" => false,
           "contrast_strategy" => "question_flip",
           "resample_negatives" => false,
+          "track_coverage" => false,
           "mask_probability" => 0.15
         },
         "runtime" => {
@@ -139,7 +140,7 @@ module EasyAI
         end
         raise ArgumentError, "truncation must be error or truncate" unless %w[error truncate].include?(self[:input]["truncation"])
         training = self[:training]
-        %w[balance_labels balance_sources paired_sampling resample_negatives].each do |key|
+        %w[balance_labels balance_sources paired_sampling resample_negatives track_coverage].each do |key|
           raise ArgumentError, "#{key} must be boolean" unless [true, false].include?(training[key])
         end
         if training["balance_sources"] && training["balance_labels"]

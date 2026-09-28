@@ -1,5 +1,13 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
+Latest completed follow-up (2026-09-29): the [gold-supervised coverage round](coverage.md) measures actual exposure before attributing failures to insufficient data or capacity. Longer training improves mean challenge accuracy by 3.05 points but worsens raw probability metrics; wording expansion loses 1.97 points and fails its gate. Keyword-based semantic categorization was rejected and removed; the counters use declared metadata only. The teacher route remains deferred. Section 9 records the new lessons.
+
+Follow-up: the first [reusable distillation implementation](../distillation/README.md) now supports teacher content, pseudo-label export and candidate-level losses. Historical results below remain unchanged; implementing the pipeline is separate from demonstrating improved student semantics.
+
+The [first real Qwen teacher run](../distillation/teacher-v1.md) fit the local GPU but failed candidate-order stability (91.67% against 95%). This adds a teacher-quality failure to the learning record; no new student quality result is claimed.
+
+The [task-specific prompt follow-up](../distillation/teacher-task-v1.md) tested whether explicit task definitions fixed that failure. They corrected some inspected cases but introduced more regressions: agreement fell to 85.42% and correctness in both orders to 35/48 from 39/48. The lesson is to preserve the full fixed comparison, including regressions, rather than validate a prompt only against its motivating errors. Both profiles failed; student training has not used their audit labels.
+
 更新：2026-09-28。本文从初版候选模型回顾到 v3 人物绑定实验，只保留能帮助提出假设、设计对照和解释结果的经验。这里的“基础模型”指本项目的随机初始化网络与自训 MLM；截至本次记录，没有导入 Qwen/mmBERT 权重，也没有运行教师蒸馏。
 
 **当前结论：工程流程已经完整，状态依赖和小任务拟合取得进展，但通用语义没有建立，人物绑定也未稳定通过验收。语义覆盖不足与优化不稳定同时存在，不能用其中一个解释全部错误。** 下文实测与未来建议分别标明；不同任务的 accuracy 不能连成一条“能力持续提升”的曲线。
@@ -167,3 +175,23 @@ P2 将热身从 1 家庭/64 行改为覆盖全部人物与动作的 8 家庭/512
 实际证据入口：`runs/decision/pipeline-showcase`、`expanded-matching`、`semantic-supervised-v2`、`semantic-mlm-v1`、`relations-v2-comparison`、`relations-v3-comparison` 和 `relations-v3-coverage-{1337,2027,3407}`。各阶段文档提供命令、配置和子目录位置；本文件不替代原始日志。
 
 数据、tokenizer、权重和原始报告继续被 Git 忽略，交接需要另外复制完整产物；Git 保存本文、代码和精选图。原 [Learning 训练展示](../../README.md#learning-训练效果展示保留)保留，它属于独立教学实验，不能混入 Decision 成绩。
+
+## 9. Gold-supervised exposure: a limited gain and a rejected augmentation
+
+The completed [coverage experiment](coverage.md) fixes architecture, tokenizer and supervision, uses three seeds per data variant, preserves selections within 1k/4k budgets, and opens a newly reserved public-dev challenge after all training. It retains every seed. One expanded run recovered from GPU contention with smaller microbatches; that execution deviation is recorded rather than hidden.
+
+| Intervention | Challenge source-macro accuracy | Mean raw NLL | Decision |
+| --- | --- | --- | --- |
+| Original data, 1k → 4k updates | 54.31% → 57.36%; all seeds improve | 0.85508 → 0.88801; all seeds worsen | Narrow pass on the predeclared accuracy gate; probability improvement not established |
+| Original → wording-expanded data, both 4k | 57.36% → 55.39%; only one seed improves slightly | 0.88801 → 0.87430 | Fails the accuracy gate; do not adopt as an improvement |
+
+Useful lessons:
+
+- **Available rows are not learning exposure.** The 1k trajectories visit about 22% of unique rows, and 4k about 58%; source balancing revisits the small dataset much more often. Earlier validation-selected weights see less than those budget-end totals. Count retained row visits, source groups and tokens explicitly.
+- **More expressions are not more facts.** The 23,280 wording variants retain the same 38,413 source groups, add about 8% token work, and reduce accuracy here. They also change within-source sampling frequencies, so this experiment cannot isolate wording from repetition/label proportions. This failure does not rule out adding independently useful gold examples.
+- **Accuracy and probabilities need separate checks.** Longer training passes the accuracy rule by only 0.05 points above its threshold, while NLL, mean Brier and mean ECE worsen. Better argmax predictions do not establish trustworthy probabilities. Temperature calibration can adjust confidence, but cannot fix incorrect rankings or bindings.
+- **An aggregate gain can coexist with weak conditioning.** Original/4k BoolQ accuracy remains below its training-majority diagnostic. OCNLI validation diagnostics are much more sensitive to shuffling the hypothesis than the premise. DuReader strongly uses the answer/state. Measure each task instead of describing all of them as general reasoning.
+- **Known successes and failures both belong in the record.** Seed 2027 handles the four Chinese lateness probes but still fails English negation and person binding. Wording expansion makes the incorrect English answer more confident. These familiar probes are development diagnostics, not new held-out evidence.
+- **Audit categories are not semantics.** Word-presence rules were removed from both accounting and selection after user review. Use declared metadata for exposure; use explicitly annotated phenomenon slices when needed. Unicode handling and metadata tests do not demonstrate understanding in Japanese, Korean, Arabic or any other untrained language.
+
+The next hypothesis is that task-aligned, reviewed gold pairs can force dependence on the state for a fixed question/hypothesis. It remains to be tested with grouped splits and a new reserved evaluation, alongside probability-quality criteria. Neither another unbounded training extension nor automatic model growth follows from these results. The completed challenge is now observed; future tuning must not keep calling it fresh.
