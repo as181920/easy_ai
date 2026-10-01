@@ -109,6 +109,14 @@ Latest controlled experiment (2026-09-29): extending gold-supervised training fr
 
 ![Gold-supervised coverage comparison](docs/images/decision-coverage-comparison.png)
 
+2026-09-30 result: evidence supervision did not meaningfully improve novel-expression accuracy (50.71% vs 50.76%) or binding (both 7.60%). Broader natural-data and shared public-benchmark evaluations also expose weak transfer and input-limit failures. The 95% target is a narrow diagnostic, not the overall acceptance criterion. Benchmark tooling and reproducible downloads are now reviewed and tested. See the [handover](docs/decision/handover.md) and [next experiment protocol](docs/decision/next-experiment.md).
+
+![Evidence-supervision comparison](docs/images/decision-evidence-comparison.png)
+
+![Answer and evidence losses across three seeds](docs/images/decision-evidence-loss.png)
+
+The [evidence-supervision experiment](docs/decision/evidence.md) compares answer CE with answer + supporting-sentence CE using our own scratch-trained parents. It reserves 6,144 controlled Chinese/English test examples from 32 independent families plus a fresh 809-row public test. Lateness probes are informal checks, not acceptance criteria. The document includes the model ASCII diagram, a one-command reproduction, and published Jev/open-model comparisons; the 95% target is a narrow-task reliability gate, not a definition of general semantic understanding.
+
 针对否定错误，新增了中英关系学习对照：先验证 64 条样本能否完全拟合，再训练 13824 条可验证标签的关系数据，按人物/动作家庭与句式隔离评估。相同 663 万参数、1000 步预算下，v2 小样本实验的原位置编码 accuracy 为 75%，RoPE 为 100%；这是训练拟合结果，泛化需要另行评估。
 
 完整数据进一步对照后，直接训练的三种子新句式 test 平均约 69.90%；先学小样本再训练完整数据的课程版约 80.03%，各次为 78.91%–80.78%。单独延长到 6000 步没有改善该种子的最佳验证结果。课程版有进展，但尚未达到每语言 95% 与成对反例门槛，仍不能视为通用语义模型。

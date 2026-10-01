@@ -195,3 +195,24 @@ Useful lessons:
 - **Audit categories are not semantics.** Word-presence rules were removed from both accounting and selection after user review. Use declared metadata for exposure; use explicitly annotated phenomenon slices when needed. Unicode handling and metadata tests do not demonstrate understanding in Japanese, Korean, Arabic or any other untrained language.
 
 The next hypothesis is that task-aligned, reviewed gold pairs can force dependence on the state for a fixed question/hypothesis. It remains to be tested with grouped splits and a new reserved evaluation, alongside probability-quality criteria. Neither another unbounded training extension nor automatic model growth follows from these results. The completed challenge is now observed; future tuning must not keep calling it fresh.
+
+## 10. Evidence supervision and evaluation targets (2026-09-30)
+
+This round adds a question-conditioned supporting-sentence head to the scratch-trained public model and compares answer CE with answer + 0.2 × evidence CE. Both arms reuse the same public parent for each seed, the same tokenizer, samples, replay and fixed budget. The implementation, corpus construction, results and reproduction live in [evidence.md](evidence.md).
+
+Three lessons apply independently of the final score:
+
+1. **A narrow acceptance threshold is not a definition of general semantics.** The original 95% per-language target concerns simple, fully specified facts. It remains an aspirational diagnostic; stable performance against meaningful baselines across natural domains takes priority. Published Jev/open-model percentages use different benchmarks and training settings and cannot justify directly raising or lowering this test's threshold.
+2. **A larger generated test is not necessarily broad evaluation.** The 6,144 test rows come from only 32 actor/action families and fixed rendering templates. A familiar/novel-expression comparison isolates one form of shift but does not establish intent routing or emotion/news understanding. A supplemental 3,793-row zero-shot panel was therefore frozen before final evaluation, with full label sets, training-text overlap checks, majority/chance baselines and all-seed reporting.
+3. **Auxiliary learning and answer improvement are distinct.** On the 128-row capacity check, supporting-sentence accuracy improved from 51.56% to 75.78%, while answer accuracy changed from 75.00% to 74.22%. Learning where to look is not yet proof of using that information correctly. Keep both measurements rather than present only the improved auxiliary metric.
+
+A concrete engineering failure was also fixed: retaining zero gradients for an intermittently unused head advances AdamW state differently after checkpoint resume. Clear absent gradients consistently, and test interrupted versus uninterrupted training with mixed annotation coverage. Torch.rb 0.23's Parameter setter cannot clear a nil gradient safely; the Tensor setter can, and the local implementation is covered by regression tests.
+
+Final main and generalization results are recorded in the linked experiment document; the original gates and all seeds are retained, including negative outcomes.
+
+
+### Review completion — 2026-10-01
+
+The shared evaluator now rejects malformed probability vectors and derives correctness from the distribution rather than trusting a saved flag. Replaying all nine saved prediction files leaves the reported results unchanged. Treat validity checks as part of the evaluator contract, including failed inputs in the denominator. Pin downloads and verify cached files too; a revision-unpinned dataset service can change bytes even when its URL stays the same.
+
+The answer/evidence curves now accompany the README. Training answer loss falls while validation NLL rises; every main arm selects step 100. This warns against treating a decreasing training curve or a stronger auxiliary metric as successful transfer. The [next protocol](next-experiment.md) separates small-set fitting, natural-task supervision and context coverage, so each proposed remedy has a measurable failure mode.

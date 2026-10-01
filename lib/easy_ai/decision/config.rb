@@ -18,6 +18,7 @@ module EasyAI
           "score_mode" => "linear",
           "pooling" => "all",
           "encoding_mode" => "separate",
+          "evidence_head" => false,
           "dropout" => 0.1
         },
         "input" => {
@@ -47,6 +48,7 @@ module EasyAI
           "contrast_strategy" => "question_flip",
           "resample_negatives" => false,
           "track_coverage" => false,
+          "evidence_loss_weight" => 0.0,
           "mask_probability" => 0.15
         },
         "runtime" => {
@@ -133,6 +135,10 @@ module EasyAI
         raise ArgumentError, "score_mode must be linear or matching" unless %w[linear matching].include?(model["score_mode"])
         raise ArgumentError, "pooling must be all or candidate" unless %w[all candidate].include?(model["pooling"])
         raise ArgumentError, "encoding_mode must be separate or joint" unless %w[separate joint].include?(model["encoding_mode"])
+        raise ArgumentError, "evidence_head must be boolean" unless [true, false].include?(model["evidence_head"])
+        if model["evidence_head"] && model["encoding_mode"] != "separate"
+          raise ArgumentError, "Evidence supervision requires separate encoding"
+        end
         raise ArgumentError, "position_scale must be finite and positive" unless position_scale.is_a?(Numeric) && position_scale.finite? && position_scale > 0
         %w[state_max_tokens question_option_max_tokens].each do |key|
           positive_integer!(self[:input][key], key)
@@ -140,6 +146,10 @@ module EasyAI
         end
         raise ArgumentError, "truncation must be error or truncate" unless %w[error truncate].include?(self[:input]["truncation"])
         training = self[:training]
+        weight = training["evidence_loss_weight"]
+        unless weight.is_a?(Numeric) && weight.finite? && weight >= 0 && (weight.zero? || model["evidence_head"])
+          raise ArgumentError, "evidence_loss_weight must be finite, nonnegative and requires evidence_head"
+        end
         %w[balance_labels balance_sources paired_sampling resample_negatives track_coverage].each do |key|
           raise ArgumentError, "#{key} must be boolean" unless [true, false].include?(training[key])
         end

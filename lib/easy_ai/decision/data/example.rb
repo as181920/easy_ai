@@ -2,7 +2,7 @@ module EasyAI
   module Decision
     module Data
       class Example
-        attr_reader :id, :group_id, :language, :state, :question, :options, :target, :source, :contrast_group, :contrast_groups
+        attr_reader :id, :group_id, :language, :state, :question, :options, :target, :source, :contrast_group, :contrast_groups, :evidence_index
 
         def initialize(row, require_target: true)
           row = row.transform_keys(&:to_s)
@@ -22,6 +22,11 @@ module EasyAI
           @state, @question = row.fetch("state"), row.fetch("question")
           @options = row.fetch("options").map { |option| option.transform_keys(&:to_s) }
           [@state, @question].each { |text| validate_text!(text) }
+          @evidence_index = row["evidence_index"]
+          if !@evidence_index.nil? && (!@evidence_index.is_a?(Integer) || !@evidence_index.between?(0, @state.split("\n", -1).size - 1) ||
+            @state.split("\n", -1).fetch(@evidence_index).strip.empty?)
+            raise ArgumentError, "evidence_index must identify a nonempty state line"
+          end
           raise ArgumentError, "At least two options required" if @options.length < 2
           @options.each do |option|
             option["id"] = normalize_option_id(option.fetch("id"))
@@ -46,6 +51,7 @@ module EasyAI
            "state" => state, "question" => question, "options" => options, "target" => target }
           result["contrast_group"] = contrast_group if contrast_group
           result["contrast_groups"] = contrast_groups unless contrast_groups.empty?
+          result["evidence_index"] = evidence_index unless evidence_index.nil?
           result
         end
 

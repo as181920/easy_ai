@@ -1,30 +1,38 @@
 # Decision 开发交接：人物绑定与下一轮优化
 
-Latest completed work (2026-09-29): the [gold-supervised coverage round](coverage.md), excluding the pretrained-LLM route. All six runs and twelve checkpoint evaluations finished. Original-data 1k → 4k training improves mean challenge source-macro accuracy 54.31% → 57.36%, narrowly passing its gate; raw NLL worsens 0.85508 → 0.88801. Wording expansion reaches 55.39%, fails its gate, and is not adopted. Further teacher tuning remains deferred.
+## Current handover — 2026-10-01
 
-Keyword-based semantic tagging/selection was explicitly rejected and removed; exposure accounting uses only declared metadata. The abandoned v1 preparation was never trained. Completed data, protocol, checkpoints, reports and predictions are under `runs/decision/semantic-coverage-v2/`; aggregate entry is `index.html`. Training stayed on CUDA, with one capacity recovery changing expanded seed 3407 to microbatch 8 × accumulation 4. Keep this deviation visible in comparisons; use sequential execution for reproduction on this GPU.
+Resumed at the user's request. The evidence round and its supplemental evaluation tooling are complete. No additional training was launched during this review, and no checkpoint is promoted as reliable. Existing staged edits were preserved; the completed changes are being committed at the user's request.
 
-For inspection in a fresh Ruby process, load `runs/decision/semantic-coverage-v2/baseline-2027/selected-4000`. It is selected by validation NLL, uncalibrated, and still fails English negation and person binding. Four familiar Chinese lateness probes now give the expected direction. This is not a production recommendation. Full probes, all seeds, charts and the distinction between selected-checkpoint versus budget-end exposure are in the coverage document.
+Completed and verified:
 
-Next planned experiment: reviewed gold examples where changing the state changes the answer to the same question/hypothesis, with source-group isolation and paired correctness/state-sensitivity checks. OCNLI diagnostic accuracy barely changes when its premise is shuffled; investigate this shortcut before attributing failures solely to model capacity. Add explicit probability-quality acceptance criteria and independently fitted calibration. The completed challenge is now observed evidence, not a fresh target for further tuning. New languages require actual training/evaluation data, never keyword lists. This next experiment is not yet implemented.
+- Optional evidence head, sentence/token alignment, paired CE/CE+evidence experiment and conditional-parameter AdamW exact-resume fix.
+- Both 300-update capacity checks, all six 800-update main CUDA fits and all nine evaluations on each of the primary, natural-task and shared-benchmark panels. All main selected checkpoints remain step 100 by validation NLL.
+- No meaningful answer improvement from evidence supervision: novel accuracy 50.71% vs 50.76%, binding 7.60% vs 7.60%. Natural transfer is weak. Shared full-denominator accuracy is about 19–20% / 8.6–8.9%, with context coverage 58% / 27.5%. See [evidence.md](evidence.md).
+- Shared adapter/scorer/download review and 12 regression tests. Invalid vectors count as failures; correctness is recomputed from predictions. Replaying all nine stored prediction files preserves every correctness and support count.
+- Seven raw snapshot checksums verified from cache; rebuilding the 2,231-decision panel produces byte-identical data. CLI supports download/prepare/evaluate/report/all; absolute-path invocation is tested. HF service response snapshots are byte-pinned, not revision-pinned; changed response bytes must not be silently accepted.
+- Full suite: **137 tests / 1790 assertions**, zero failures/errors; learning: **7 tests / 14 assertions**, zero failures/errors. RuboCop: 131 files, no offenses. `git diff --check`: clean.
+- README and retrospective synchronized; reviewed comparison/loss charts copied into tracked `docs/images/`. Existing learning illustrations retained.
 
-Latest implementation update: `EasyAI::Distillation` now supports offline teacher collection, resumable artifacts, Decision pseudo-label export and hard/soft candidate supervision. See [distillation usage](../distillation/README.md). Subsequent conversations and new implementation notes use English at the user's request. Earlier statements below describe historical status; teacher screening and student quality evidence must be distinguished from infrastructure tests.
+Artifacts:
 
-The [first Qwen3-4B Q4_K_M screening](../distillation/teacher-v1.md) failed its predeclared candidate-order gate (44/48 agreement). The subsequent [task-specific prompt comparison](../distillation/teacher-task-v1.md) regressed to 41/48 agreement and 35/48 correct in both orders, also failing. Both runs and their raw artifacts are retained; no student was trained from these development labels. The task-owned teacher service has been stopped. Neither teacher profile produced new Decision student weights; the later scratch checkpoints above remain experimental.
+- `runs/decision/evidence-v1/report.json`, `generalization/{report.json,summary.txt}`, `shared-benchmarks/report.json`, per-run reports/predictions/checkpoints: gitignored.
+- Raw files: `data/decision/downloads/shared-benchmarks/jev-{original,easy,hard}.jsonl`, `typed-{000,001,002,003}.json`: gitignored.
+- Permanent runners: `benchmarks/decision/{evidence,evidence_evaluation,generalization,shared_benchmarks}.rb`; formal schema adapter: `lib/easy_ai/decision/data/benchmark_adapter.rb`.
+- Review logs: `tmp/resume-{full-tests,learning-tests,lint}.log`, `tmp/shared-benchmarks-{cache,score-audit,prepare-audit,tests}.log`.
 
-The prompt experiment is complete; avoid repeating it or treating its clearer instructions as an accepted improvement. A fixed-budget teacher-reasoning comparison was proposed then and is now deferred in favor of the gold-supervised round above. Bulk teacher labeling and teacher-generated paraphrase validation remain unimplemented. The latest distillation report gives exact artifact paths, fingerprints, metrics and reproduction commands; the coverage report tracks the newly reserved student evaluation set and current student comparisons.
+Next implementation: follow [next-experiment.md](next-experiment.md). First instrument and resolve the incomplete 128-row answer fit. Then freeze broader natural-task training and independent held-out evaluation, with a common validation panel across paired controls and real CUDA context-memory profiling. Keep shared test cases evaluation-only; all previously inspected tests are now regression diagnostics. Do not introduce teacher weights, keyword inference rules or model scaling to conceal an unresolved fitting failure. The larger-round protocol is proposed, not an executed result.
 
-Latest verification: 111 tests / 1549 assertions, learning 7 / 14, and RuboCop pass. The coverage tests include language-independent metadata accounting, exact resume, unchanged learning with tracking enabled, preserved augmentation labels, batched predictor equivalence and experiment gates. The real six-run aggregate report and PNG/SVG generation also completed successfully. The task-specific teacher audit replayed from cache after its service stopped.
+For the existing completed panel:
 
-更新：2026-09-28。代码基线：`d57b118`（`Feat: add Decision training and inference pipeline`）。本文记录该提交之后的用户复测、实际排查与下一轮计划；下文标为“待做”的能力尚未实现。
+```bash
+bundle exec ruby benchmarks/decision/shared_benchmarks.rb --phase download
+bundle exec ruby benchmarks/decision/shared_benchmarks.rb --phase report --output runs/decision/evidence-v1
+```
 
-完整学习脉络见[迭代回顾](retrospective.md)。最新策略建议见其第 7 节：对课程排查设置预算上限，同时推进自然语义覆盖；Qwen 离线教师作为待评估的独立对照。用户已提出是否改用蒸馏的讨论，尚未切换路线或执行教师训练；下文的从零约束描述当前实现，不代表排除未来教师实验。
+## Historical handover entries
 
-新增设计约束：蒸馏应可跨场景复用，规划为与 Decision 并列的 `EasyAI::Distillation`；公共教师/产物/损失与任务适配分开。详见[可复用蒸馏设计](distillation.md)，当前只记录设计，尚无运行入口。
-
-后续进度：已继续实现主体切换、角色互换、四条组合评估与成组采样，当前实验与操作入口见[人物绑定对照](binding.md)。本页的“待做”段落保留最初交接计划，具体完成状态以新记录为准。用户明确全局策略为**向前迭代优先于向后兼容**；新训练/评估统一使用 v3 元数据，v2 产物保留作历史对照。
-
-**当前结论：训练与推理流程可运行，课程学习带来改善，但人物—事实绑定仍不稳定，而且会错在已有训练样本上。下一轮先修正训练对照和课程设计，不直接扩大模型或宣称通用语义已经可用。**
+The entries below record earlier stages. Their “next” instructions and test counts are historical; the current state above takes precedence.
 
 ## 1. 接手时的约束与状态
 

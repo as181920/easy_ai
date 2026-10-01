@@ -99,6 +99,18 @@ module EasyAI
         bytes.pack("C*").force_encoding(Encoding::UTF_8)
       end
 
+      # Byte intervals in the original text, including byte fragments of CJK characters.
+      def encode_with_offsets(text)
+        position = 0
+        ids = encode(text)
+        offsets = ids.map do |token|
+          start = position
+          position += @pieces.fetch(token).size
+          [start, position]
+        end
+        [ids, offsets]
+      end
+
       def to_h
         { "format" => "easy_ai.byte_bpe", "version" => 1, "specials" => SPECIALS, "merges" => merges }
       end

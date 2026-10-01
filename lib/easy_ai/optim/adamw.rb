@@ -13,7 +13,11 @@ module EasyAI
       end
 
       def zero_grad
-        @parameters.each_value { |p| p.grad&.detach!&.zero! }
+        # Unused auxiliary parameters must remain absent, including after resume.
+        # Retained zero tensors would advance their moments only in uninterrupted runs.
+        # Torch.rb 0.23 Parameter#grad= cannot accept nil; Tensor's setter can.
+        setter = Torch::Tensor.instance_method(:_set_grad)
+        @parameters.each_value { |parameter| setter.bind_call(parameter, nil) if parameter.grad }
       end
 
       def clip_grad_norm!(limit)

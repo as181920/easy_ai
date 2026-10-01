@@ -13,6 +13,9 @@ module EasyAI
         raise ArgumentError, "Dataset task mismatch" unless @dataset.kind == @task
         raise ArgumentError, "Tokenizer exceeds model vocabulary" if tokenizer.vocab_size > model.config[:model]["vocab_size"]
         @config = model.config
+        if @task != :choice && @config[:training]["evidence_loss_weight"] > 0
+          raise ArgumentError, "Evidence supervision only supports choice training"
+        end
         raise ArgumentError, "Coverage tracking currently supports choice training" if @config[:training]["track_coverage"] && @task != :choice
         @distillation = distillation
         if distillation && (@task != :choice || @config[:training]["resample_negatives"])
@@ -105,6 +108,7 @@ module EasyAI
             state["last_train_loss"] = loss
             trace = { "step" => state["step"], "train_loss" => loss, "device" => device,
                       "learning_rate" => optimizer.learning_rate, "architecture_version" => state["architecture_version"] }
+            trace.merge!(@step_losses || {})
             File.open(File.join(@output, "training.jsonl"), "a") { |file| file.puts(JSON.generate(trace)) }
             @logger.info("Decision #{@task} step=#{state['step']} loss=#{loss.round(6)} device=#{device}")
             yield(state, loss) if block_given?
@@ -177,6 +181,7 @@ module EasyAI
         end
         all_indices = @pair_sampler.sample(@microbatch * @accumulation, rng: rng) if @pair_sampler
         total_loss = 0.0
+        @step_losses = Hash.new(0.0)
         input_tokens = 0
         all_indices.each_slice(@microbatch).with_index do |indices, micro|
           seed = (@config[:training]["seed"] + step * 1009 + micro) % (2**31)
@@ -188,6 +193,7 @@ module EasyAI
             examples = examples.map { |example| @candidate_sampler.call(example, rng: candidate_rng) }
           end
           loss = loss_for(examples, seed: seed, teacher: true)
+          (@batch_losses || {}).each { |key, value| @step_losses[key] += value / @accumulation }
           input_tokens += @collator.input_token_counts.sum if state["coverage"]
           number = loss.item
           raise FloatDomainError, "Non-finite training loss" unless number.finite?
@@ -209,9 +215,19 @@ module EasyAI
 
       def loss_for(examples, seed:, teacher: false)
         if @task == :choice
-          batch = @collator.call(examples, device: device)
-          logits = model.call(batch)
+          annotated = teacher && @config[:model]["evidence_head"] && examples.any? { |row| !row.evidence_index.nil? }
+          batch = @collator.call(examples, device: device, with_evidence: annotated)
+          outputs = annotated ? model.forward_with_evidence(batch) : { logits: model.call(batch) }
+          logits = outputs.fetch(:logits)
           loss = Torch::NN::Functional.cross_entropy(logits, batch[:targets])
+          if teacher
+            @batch_losses = { "choice_loss" => loss.item }
+            if annotated
+              auxiliary = Torch::NN::Functional.cross_entropy(outputs.fetch(:evidence_logits), batch.fetch(:evidence_targets))
+              @batch_losses["evidence_loss"] = auxiliary.item
+              loss = loss + auxiliary * @config[:training]["evidence_loss_weight"]
+            end
+          end
           teacher && @distillation ? loss + @distillation.loss(logits, examples) : loss
         else
           batch = @masking.call(examples, seed: seed, device: device)

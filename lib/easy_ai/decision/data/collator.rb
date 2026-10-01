@@ -9,7 +9,7 @@ module EasyAI
           @token_cache = {}
         end
 
-        def call(examples, device: "cpu")
+        def call(examples, device: "cpu", with_evidence: false)
           states = examples.map { |example| state_tokens(example.state) }
           candidates = examples.map { |example| example.options.map { |option| option_tokens(example.question, option.fetch("text")) } }
           # Actual unpadded encoder input tokens, including specials and repeated questions.
@@ -41,6 +41,10 @@ module EasyAI
             targets: tensor(examples.map { |e| e.target_index || 0 }, :int64, device)
           }
           batch.merge!(joint_batch(states, candidates, max_k, device)) if config[:model]["encoding_mode"] == "joint"
+          if with_evidence
+            @evidence_batch ||= EvidenceBatch.new(tokenizer)
+            batch.merge!(@evidence_batch.call(examples, states, max_l, device: device))
+          end
           batch
         end
 

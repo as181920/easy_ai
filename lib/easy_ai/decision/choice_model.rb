@@ -11,6 +11,7 @@ module EasyAI
         @interactions = Torch::NN::ModuleList.new(Array.new(separate ? config[:model]["interaction_layers"] : 0) { InteractionBlock.new(config) })
         @score = Torch::NN::Linear.new(config[:model]["hidden_size"], 1)
         @matching = Torch::NN::Linear.new(config[:model]["hidden_size"] * 4, config[:model]["hidden_size"]) if separate && config[:model]["score_mode"] == "matching"
+        @evidence_head = EvidenceHead.new(config[:model]["hidden_size"]) if config[:model]["evidence_head"]
         # Initialize tied embedding at a scale suitable for MLM logits.
         Torch.no_grad do
           @encoder.embedding.weight.normal!(mean: 0.0, std: 0.02)
@@ -35,11 +36,18 @@ module EasyAI
         @score.call(pooled).view([b, k]).masked_fill(Torch.logical_not(batch.fetch(:candidate_mask)), -Float::INFINITY)
       end
 
+      def forward_with_evidence(batch)
+        raise ArgumentError, "Model has no evidence head" unless @evidence_head
+        memory = encode_state(batch.fetch(:state_ids), batch.fetch(:state_mask))
+        score_candidates(memory, batch.fetch(:state_mask), batch.fetch(:option_ids), batch.fetch(:option_mask), batch.fetch(:candidate_mask),
+          answer_mask: batch[:answer_mask], sentence_mask: batch.fetch(:sentence_mask))
+      end
+
       def encode_state(ids, mask)
         encoder.call(ids, mask: mask)
       end
 
-      def score_candidates(memory, memory_mask, option_ids, option_mask, candidate_mask, answer_mask: nil)
+      def score_candidates(memory, memory_mask, option_ids, option_mask, candidate_mask, answer_mask: nil, sentence_mask: nil)
         b, k, m = option_ids.shape
         d = config[:model]["hidden_size"]
         query_mask = option_mask.view([b * k, m])
@@ -55,13 +63,15 @@ module EasyAI
                        end
         weights = pooling_mask.to(dtype: :float32).unsqueeze(-1)
         pooled = (query * weights).sum(dim: 1) / weights.sum(dim: 1).clamp(min: 1.0)
+        evidence = @evidence_head.call(pooled, memory: memory, sentence_mask: sentence_mask, candidate_mask: candidate_mask) if sentence_mask
         if @matching
           state_weights = states_mask.to(dtype: :float32).unsqueeze(-1)
           state_pooled = (states * state_weights).sum(dim: 1) / state_weights.sum(dim: 1).clamp(min: 1.0)
           features = Torch.cat([pooled, state_pooled, pooled * state_pooled, (pooled - state_pooled).abs], dim: -1)
           pooled = Torch::NN::Functional.gelu(@matching.call(features))
         end
-        @score.call(pooled).view([b, k]).masked_fill(Torch.logical_not(candidate_mask), -Float::INFINITY)
+        logits = @score.call(pooled).view([b, k]).masked_fill(Torch.logical_not(candidate_mask), -Float::INFINITY)
+        sentence_mask ? { logits: logits, evidence_logits: evidence } : logits
       end
 
       def mlm_logits(ids, mask:, positions:)

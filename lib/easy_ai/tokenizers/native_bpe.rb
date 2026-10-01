@@ -42,15 +42,21 @@ module EasyAI
       end
 
       def encode(text)
-        raise ArgumentError, "Expected valid UTF-8 text" unless text.is_a?(String) && text.valid_encoding?
-        # Added-token parsing in this gem version cannot be disabled. Reject
-        # literals explicitly instead of silently consuming them as control IDs.
-        raise ArgumentError, "Text contains a reserved native tokenizer token" if SPECIALS.any? { |token| text.include?(token) }
+        validate_text!(text)
         @backend.encode(text, add_special_tokens: false).ids
       end
 
       def decode(ids, skip_special: true)
         @backend.decode(ids, skip_special_tokens: skip_special)
+      end
+
+      # The Ruby binding returns character offsets; normalize to byte intervals.
+      def encode_with_offsets(text)
+        validate_text!(text)
+        encoded = @backend.encode(text, add_special_tokens: false)
+        boundaries = [0]
+        text.each_char { |character| boundaries << boundaries.last + character.bytesize }
+        [encoded.ids, encoded.offsets.map { |start, stop| [boundaries.fetch(start), boundaries.fetch(stop)] }]
       end
 
       def to_h
@@ -73,6 +79,12 @@ module EasyAI
       end
 
       private
+
+      def validate_text!(text)
+        raise ArgumentError, "Expected valid UTF-8 text" unless text.is_a?(String) && text.valid_encoding?
+        # Added-token parsing cannot be disabled in this binding version.
+        raise ArgumentError, "Text contains a reserved native tokenizer token" if SPECIALS.any? { |token| text.include?(token) }
+      end
 
       def canonical(value)
         case value
