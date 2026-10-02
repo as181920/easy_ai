@@ -11,7 +11,7 @@ module EasyAILearning
       def initialize(seed: 1337, device: :auto)
         super()
         @hidden = Torch::NN::Linear.new(2, 2)
-        @output = Torch::NN::Linear.new(2, 4)
+        @output = Torch::NN::Linear.new(2, 1)
         @device = EasyAI::Runtime::DevicePolicy.new(requested: device).resolve
         to(@device) # Place parameters before constructing the optimizer.
         set_parameters(ScalarLogicNetwork.new(seed: seed).parameters)
@@ -23,8 +23,8 @@ module EasyAILearning
 
       def self.load(path, device: :auto)
         saved = JSON.parse(File.read(path))
-        unless saved.fetch("architecture") == [2, 2, 4] && saved.fetch("activation") == "ReLU" && saved.fetch("outputs") == %w[and or nand xor]
-          raise ArgumentError, "Expected a 2 -> 2 ReLU -> 4 logic model"
+        unless saved.fetch("architecture") == [2, 2, 1] && saved.fetch("activation") == "ReLU" && saved.fetch("outputs") == %w[xor]
+          raise ArgumentError, "Expected a 2 -> 2 ReLU -> 1 XOR model"
         end
         new(device: device).tap { |model| model.set_parameters(saved.fetch("parameters")) }.eval
       end
@@ -35,6 +35,14 @@ module EasyAILearning
 
       def scores(input)
         batch_scores([input]).first
+      end
+
+      def score(input)
+        scores(input).first
+      end
+
+      def predict(input)
+        score(input) >= 0.5 ? 1 : 0
       end
 
       def batch_scores(inputs)

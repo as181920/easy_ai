@@ -212,7 +212,7 @@ runs/decision/<run>/
 - [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
 - [学习目录](learning/README.md)：模型学习路线、代码结构与训练入口。
-- [逻辑门与最简 ReLU 网络](learning/01_basic_nn/README.md)：手写逻辑、18 参数网络、Torch.rb CUDA 训练、手工梯度对照和函数图。
+- [逻辑门与最简 ReLU 网络](learning/01_basic_nn/README.md)：手写逻辑、9 参数 XOR 网络、Torch.rb CUDA 训练、手工梯度对照和函数图。
 
 配置遵循每行一个参数、优先人类可读性的约定。风格参考 easy_biz 的 RuboCop 习惯，项目继续使用 Ruby 库的目录结构。下载档案、训练数据、tokenizer 文件、权重和缓存请放入上述忽略目录；`examples/` 和测试代码可以正常提交。
 
@@ -301,6 +301,6 @@ bundle exec ruby learning/01_basic_nn/logic.rb
 bundle exec ruby learning/01_basic_nn/train.rb
 ```
 
-同时学习 AND / OR / NAND / XOR，打印训练进度、学到的参数和 unicode_plot 函数图；输出保存到被忽略的 `runs/learning/basic_nn/logic-gates/`。默认运行 1,623 步后，16 个逻辑输出阈值判断全部正确。详见 [基础 NN 学习说明](learning/01_basic_nn/README.md)。
+训练一个只计算 XOR 的神经网络，打印训练进度、学到的参数和 unicode_plot 函数图；输出保存到被忽略的 `runs/learning/basic_nn/logic-gates/`。默认 seed 1337 的 CUDA 训练运行 436 步后，四个 XOR 输入的阈值判断全部正确。详见 [基础 NN 学习说明](learning/01_basic_nn/README.md)。
 
-基础 NN 默认使用 Torch.rb / CUDA（不可用时回退 CPU）；[README 函数图](learning/01_basic_nn/README.md#observed-runs-and-plots)展示实际学到的 AND / OR / NAND / XOR 决策边界、ReLU 和四个布尔标注点；loss 曲线保留在终端训练报告中。
+基础 NN 默认使用 Torch.rb / CUDA（不可用时回退 CPU）；[README 函数图](learning/01_basic_nn/README.md#observed-runs-and-plots)分两组展示：固定 AND/OR/NAND/XOR 逻辑函数；模型的 ReLU、训练 loss、score 热力图和 3D 曲面、XOR 预测边界。终端训练报告也保留 loss 曲线。

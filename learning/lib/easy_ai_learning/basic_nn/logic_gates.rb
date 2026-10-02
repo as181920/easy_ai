@@ -63,7 +63,7 @@ module EasyAILearning
       end
 
       def targets
-        INPUTS.map { |left, right| NAMES.map { |name| call(name, left, right) } }
+        INPUTS.map { |left, right| [call("xor", left, right)] }
       end
 
       def validate_bits!(left, right)

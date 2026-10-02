@@ -18,7 +18,7 @@ end.parse!
 
 model = EasyAILearning::BasicNN::LogicNetwork.new(seed: options[:seed], device: options[:device])
 trainer = EasyAILearning::BasicNN::LogicTrainer.new(model: model, learning_rate: options[:learning_rate], max_steps: options[:steps])
-puts "Torch.rb device=#{model.device}: 2 -> 2 ReLU -> 4 linear; #{model.parameter_count} trainable parameters."
+puts "Torch.rb device=#{model.device}: 2 -> 2 ReLU -> 1 linear (XOR); #{model.parameter_count} trainable parameters."
 puts "Full-batch gradient descent over all four input combinations; all coefficients are trained."
 trainer.train { |step, loss| puts format("step=%d mse=%.8f", step, loss) if step == 1 || (step % 200).zero? }
 puts "steps=#{trainer.steps} converged=#{trainer.converged?} max_error=#{trainer.max_error.round(6)}"

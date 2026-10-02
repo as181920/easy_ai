@@ -6,9 +6,9 @@ Teaching code uses the independent `EasyAILearning` namespace. It is not automat
 learning/
 |-- 01_basic_nn/       implemented: branches, perceptrons, ReLU MLP, training, plots
 |   |-- logic.rb       fixed logic and mathematical existence proof
-|   |-- train.rb       learn all four gates from random coefficients on Torch/CUDA
+|   |-- train.rb       learn XOR from random coefficients on Torch/CUDA
 |   |-- predict.rb     load saved parameters without training
-|   |-- plot.rb        export saved learned functions to a README image
+|   |-- plot.rb        export grouped figures and both raw-score views
 |   `-- README.md
 |-- 02_rnn/            planned: recurrent state and backpropagation through time
 |-- 03_seq2seq/        planned: encoder/decoder and teacher forcing
@@ -36,13 +36,13 @@ bundle exec ruby learning/01_basic_nn/logic.rb
 bundle exec ruby learning/01_basic_nn/train.rb
 ```
 
-The first command compares explicit `if/else` gates with three fixed perceptrons and an exact ReLU construction. The second trains a dense `2 -> 2 -> 4` network with 18 parameters. Ruby defines the architecture and loop; Torch.rb performs tensor forward calculation, MSE, autograd and SGD on CUDA by default (`--device cpu` forces CPU). The scalar reference retains hand-written forward/backpropagation for checking every derivative. It prints progress, learned equations, the entire truth table, loss plots, ReLU and learned gate-function slices using `unicode_plot`.
+The first command compares explicit `if/else` gates with three fixed perceptrons and an exact ReLU construction. The second trains a dense `2 -> 2 -> 1` XOR network with 9 parameters. Ruby defines the architecture and loop; Torch.rb performs tensor forward calculation, MSE, autograd and SGD on CUDA by default (`--device cpu` forces CPU). The scalar reference retains hand-written forward/backpropagation for checking every derivative. It prints progress, learned equations, the entire truth table, loss plots, ReLU and learned XOR-function slices using `unicode_plot`.
 
-Default seed 1337: 1,623 updates, MSE approximately 0.00001516, maximum absolute error 0.009951, all 16 Boolean outputs correct after thresholding at 0.5. This is fitting the complete finite truth table, not a held-out generalization result. All parameters are learned; the exact solution is only a separate demonstration. See [the lesson](01_basic_nn/README.md) for derivation and parameter reuse.
+Default seed 1337: 436 CUDA updates, maximum absolute error 0.009843, all four Boolean XOR outputs correct after thresholding at 0.5. This is fitting the complete finite truth table, not a held-out generalization result. All parameters are learned; the exact solution is only a separate demonstration. See [the lesson](01_basic_nn/README.md) for derivation and parameter reuse.
 
-For a README-friendly PNG, run `bundle exec ruby learning/01_basic_nn/plot.rb` after training (requires gnuplot). See [the published function figure](01_basic_nn/README.md#observed-runs-and-plots). Terminal charts remain `unicode_plot`.
+For two README image groups (AND/OR/NAND/XOR references; ReLU/training loss/score heatmap/score surface/prediction), run `bundle exec ruby learning/01_basic_nn/plot.rb` after training (requires gnuplot). See [the published figures](01_basic_nn/README.md#observed-runs-and-plots). Terminal charts remain `unicode_plot`.
 
-`LogicNetwork.load(path, device: :auto)` restores saved inference parameters. `bundle exec ruby learning/01_basic_nn/predict.rb` loads and evaluates them without training.
+`LogicNetwork.load(path, device: :auto)` restores saved inference parameters. `model.score([1, 0])` returns the sole continuous XOR score; `model.predict([1, 0])` returns integer `1`. `bundle exec ruby learning/01_basic_nn/predict.rb` loads and evaluates them without training.
 
 Outputs go to ignored `runs/learning/basic_nn/logic-gates/{model.json,loss.json,plots.txt}`. Re-running overwrites these educational outputs; use `--output` for separate experiments. Other seeds or learning rates may fail; the script reports failure and exits unsuccessfully if its error target is not reached.
 

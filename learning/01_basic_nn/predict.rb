@@ -13,8 +13,8 @@ OptionParser.new do |parser|
 end.parse!
 model = EasyAILearning::BasicNN::LogicNetwork.load(options[:model], device: options[:device])
 puts "Loaded #{options[:model]} on #{model.device}; no training is performed."
-puts "x1 x2 | AND OR NAND XOR (scores) | thresholded bits"
+puts "x1 x2 | XOR score | XOR result"
 EasyAILearning::BasicNN::LogicGates::INPUTS.each do |input|
-  scores = model.scores(input)
-  puts "#{input.join('  ')}   | #{scores.map { |value| format('% .4f', value) }.join(' ')} | #{scores.map { |value| value >= 0.5 ? 1 : 0 }.join(' ')}"
+  score = model.score(input)
+  puts "#{input.join('  ')}   | #{score} | #{model.predict(input)}"
 end

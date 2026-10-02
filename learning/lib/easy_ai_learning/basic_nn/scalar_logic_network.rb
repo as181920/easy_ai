@@ -1,6 +1,6 @@
 module EasyAILearning
   module BasicNN
-    # Dense(2, 2) -> ReLU -> Dense(2, 4), with explicit scalar backpropagation.
+    # Dense(2, 2) -> ReLU -> Dense(2, 1), with explicit scalar backpropagation.
     class ScalarLogicNetwork
       attr_reader :parameters
 
@@ -9,8 +9,8 @@ module EasyAILearning
         @parameters = {
           hidden_weights: Array.new(2) { Array.new(2) { rng.rand(0.4..0.8) } },
           hidden_biases: [rng.rand(0.0..0.2), rng.rand(-0.6..-0.4)],
-          output_weights: Array.new(4) { Array.new(2) { rng.rand(-0.5..0.5) } },
-          output_biases: Array.new(4) { rng.rand(-0.1..0.1) }
+          output_weights: Array.new(1) { Array.new(2) { rng.rand(-0.5..0.5) } },
+          output_biases: Array.new(1) { rng.rand(-0.1..0.1) }
         }
       end
 
@@ -18,7 +18,7 @@ module EasyAILearning
       def self.exact
         model = new
         model.parameters.replace(hidden_weights: [[1.0, 1.0], [1.0, 1.0]], hidden_biases: [0.0, -1.0],
-          output_weights: [[0.0, 1.0], [1.0, -1.0], [0.0, -1.0], [1.0, -2.0]], output_biases: [0.0, 0.0, 1.0, 0.0])
+          output_weights: [[1.0, -2.0]], output_biases: [0.0])
         model
       end
 
@@ -39,14 +39,14 @@ module EasyAILearning
         validate_batch!(inputs, targets)
         inputs.each_with_index.sum do |input, row|
           forward(input).each_with_index.sum { |score, gate| (score - targets[row][gate])**2 }
-        end / (inputs.size * 4.0)
+        end / inputs.size.to_f
       end
 
       def gradients(inputs, targets)
         validate_batch!(inputs, targets)
         result = zero_gradients
         inputs.each_with_index do |input, row|
-          accumulate_gradients(input, targets[row], result, scale: 2.0 / (inputs.size * 4))
+          accumulate_gradients(input, targets[row], result, scale: 2.0 / inputs.size)
         end
         result
       end
@@ -84,7 +84,7 @@ module EasyAILearning
         hidden = preactivation.map { |value| relu(value) }
         output = affine(hidden, parameters[:output_weights], parameters[:output_biases])
         output.each_index do |gate|
-          # d(mean squared error)/d(output) = 2 * (output - target) / 16.
+          # d(mean squared error)/d(output) = 2 * (output - target) / 4.
           derivative = scale * (output[gate] - target[gate])
           result[:output_biases][gate] += derivative
           hidden.each_index do |neuron|
@@ -101,8 +101,8 @@ module EasyAILearning
       end
 
       def validate_batch!(inputs, targets)
-        unless !inputs.empty? && inputs.size == targets.size && targets.all? { |row| row.size == 4 && row.all? { |value| value.is_a?(Numeric) && value.finite? } }
-          raise ArgumentError, "Expected nonempty inputs with four finite targets per row"
+        unless !inputs.empty? && inputs.size == targets.size && targets.all? { |row| row.size == 1 && row.all? { |value| value.is_a?(Numeric) && value.finite? } }
+          raise ArgumentError, "Expected nonempty inputs with one finite XOR target per row"
         end
       end
     end
