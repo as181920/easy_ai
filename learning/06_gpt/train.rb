@@ -50,7 +50,7 @@ options = {
 }
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: ruby learning/transformer/train.rb [options]"
+  opts.banner = "Usage: ruby learning/06_gpt/train.rb [options]"
 
   opts.on("-d", "--data PATH", "Path to training text") { |v| options[:data_path] = v }
   opts.on("-t", "--tokenizer TYPE", "word, byte, or qwen") { |v| options[:tokenizer] = v }
@@ -108,21 +108,21 @@ end
 
 def train_with_device(device, dataset, tokenizer, model_opts, training_opts)
   training_cfg = training_opts.merge(device: device)
-  config = EasyAILearning::Config.new(model: model_opts, training: training_cfg)
+  config = EasyAILearning::GPT::Config.new(model: model_opts, training: training_cfg)
 
   Torch.manual_seed(config.training[:seed]) if config.training[:seed]
 
-  model = EasyAILearning::Models::GPT.new(config.model)
+  model = EasyAILearning::GPT::Model.new(config.model)
   model.to(device)
 
-  batcher = EasyAILearning::Data::Batcher.new(
+  batcher = EasyAILearning::GPT::Batcher.new(
     dataset: dataset,
     batch_size: config.training[:batch_size],
     device: device,
     seed: config.training[:seed]
   )
 
-  trainer = EasyAILearning::Trainers::Trainer.new(
+  trainer = EasyAILearning::GPT::Trainer.new(
     model: model,
     batcher: batcher,
     config: config.training
@@ -143,7 +143,7 @@ tokenizer = case options[:tokenizer]
             else EasyAILearning::Tokenizers::WordBpe.new(num_merges: options[:num_merges], min_freq: options[:min_freq])
             end
 
-dataset = EasyAILearning::Data::TextDataset.new(
+dataset = EasyAILearning::GPT::TextDataset.new(
   tokenizer: tokenizer,
   text: text,
   block_size: options[:model][:block_size]

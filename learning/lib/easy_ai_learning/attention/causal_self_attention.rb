@@ -1,6 +1,6 @@
 module EasyAILearning
-  module Modules
-    class Attention < Torch::NN::Module
+  module Attention
+    class CausalSelfAttention < Torch::NN::Module
       attr_reader :num_heads, :head_dim
 
       def initialize(embed_dim:, num_heads:, dropout: 0.1)

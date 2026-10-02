@@ -1,9 +1,9 @@
 module EasyAILearning
-  module Trainers
+  module GPT
     class Trainer
       attr_reader :model, :batcher, :config, :optimizer, :device, :loss_history, :logger
 
-      def initialize(model:, batcher:, config: EasyAILearning::Config.new.training, logger: EasyAILearning.logger)
+      def initialize(model:, batcher:, config: EasyAILearning::GPT::Config.new.training, logger: EasyAILearning.logger)
         @model = model
         @batcher = batcher
         @config = config

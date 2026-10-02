@@ -1,5 +1,5 @@
 module EasyAILearning
-  module Data
+  module GPT
     class TextDataset
       attr_reader :tokenizer, :block_size, :token_ids
 

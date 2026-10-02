@@ -91,7 +91,7 @@ module EasyAI
         Data::NaturalAdapter::SCENARIOS.map { |id, texts| { id: id, text: texts.fetch(index) } }
       end
 
-      def probabilities(state:, question:, options:, language:)
+      def probabilities(state:, question:, options:, language: nil)
         result = predictor.probabilities(state: state, question: question, options: options)
         texts = options.map { |option| option[:text] || option["text"] }.sort
         supported = metadata.fetch("languages").key?(language) && question == self.question(language) &&

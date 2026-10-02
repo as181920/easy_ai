@@ -1,5 +1,5 @@
 module EasyAILearning
-  module Data
+  module GPT
     class Batcher
       attr_reader :dataset, :batch_size, :device, :rng
 

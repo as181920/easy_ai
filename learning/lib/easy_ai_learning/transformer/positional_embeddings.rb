@@ -1,5 +1,5 @@
 module EasyAILearning
-  module Modules
+  module Transformer
     class PositionalEmbeddings < Torch::NN::Module
       def initialize(block_size:, embedding_dim:)
         super()

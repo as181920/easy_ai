@@ -1,5 +1,5 @@
 module EasyAILearning
-  module Data
+  module GPT
     module DataUtils
       module_function
 

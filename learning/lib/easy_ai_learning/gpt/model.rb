@@ -1,6 +1,6 @@
 module EasyAILearning
-  module Models
-    class GPT < Torch::NN::Module
+  module GPT
+    class Model < Torch::NN::Module
       attr_reader :config
 
       def initialize(config)
@@ -14,14 +14,14 @@ module EasyAILearning
         dropout = config[:dropout]
 
         @token_embedding = Torch::NN::Embedding.new(vocab_size, n_embd)
-        @position_embedding = EasyAILearning::Modules::PositionalEmbeddings.new(
+        @position_embedding = EasyAILearning::Transformer::PositionalEmbeddings.new(
           block_size: block_size,
           embedding_dim: n_embd
         )
 
         @dropout = Torch::NN::Dropout.new(p: dropout)
         transformer_blocks = Array.new(n_layer) do
-          EasyAILearning::Modules::TransformerBlock.new(embed_dim: n_embd, num_heads: n_head, dropout: dropout)
+          EasyAILearning::Transformer::Block.new(embed_dim: n_embd, num_heads: n_head, dropout: dropout)
         end
         @blocks = Torch::NN::ModuleList.new(transformer_blocks)
         @ln_f = Torch::NN::LayerNorm.new(n_embd)

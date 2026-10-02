@@ -16,6 +16,16 @@ Corrected runtime checks pass: CPU/CUDA max probability delta <2.5e-8, reversal 
 
 Final preview verification: **177 tests / 2134 assertions**, no failures/errors; learning **7 / 14**; RuboCop **152 files**, clean; whitespace clean. Logs `tmp/release-v01-preview-{tests,learning,lint}.log`; published-wrapper results `tmp/release-v01-preview-smoke.json`. Reviewed first/corrective loss figures tracked under `docs/images/decision-v01-{routing,corrective}-loss.png`; original learning figures preserved. Full tests and repository lint include the preview publisher and future-protocol provenance fields. Runtime CPU fallback and acceptance re-opening guards have regression tests. Next optimization should diagnose weak per-domain recall and generalization on validation, with a fresh prospectively reserved panel; do not automatically start a model-size/position/RL sweep.
 
+## Proposed next iteration — factual scoring
+
+See [v02-plan.md](v02-plan.md) for the chart audit, historical evidence, bounded CE-versus-pair-margin procedure, data independence and conditional next actions. Planning only: no fit, download or new goal started. Corrective training means first/last 100 updates are 0.344/0.241; validation reaches 0.692 at update 300 then plateaus. Do not mistake batch noise for absent gradients or domain classification for truth-scoring competence.
+
+## Post-delivery feedback — multilingual API and negation (2026-10-01)
+
+User wants one model handling multilingual input automatically and reports failures on negation. The model already shares weights/tokenizer across English/Chinese. Made `Release#probabilities` locale optional; it affects profile-specific review policy only, not neural scores. `route` still requires locale to render its fixed texts. Tests 6/25 and targeted lint clean. No weights changed or new fit launched.
+
+Published-checkpoint CPU contrast diagnostic: four pairs per language, eight individual examples each, 4/8 correct and **zero fully correct pairs** in both. All prefer affirmative answers even for negative states. Full cases, options and probabilities are recorded in [v01.md](v01.md); raw script/report `tmp/decision-v01-negation-check.{rb,json}`. These observed examples are regression material, not fresh evaluation. Next prioritize truth/negation supervision and actor binding on the shared scorer, with varied domains/languages and a prospectively reserved held-out panel, while measuring routing preservation. Routing accuracy is not general truth-scoring accuracy. Do not implement negation keywords at inference or silently promote other languages as validated.
+
 ## Current handover — natural-task pilot completed (2026-10-01)
 
 The authorized next iteration is complete: four seed-1337, fixed-1,000-update CUDA fits comparing old/broad data and sinusoidal/RoPE, followed by calibration and five evaluations including the unchanged own parent. No CPU fallback. See [natural.md](natural.md) for the exact protocol, tables, charts, interpretation, reproduction command and proposed next diagnostic. No checkpoint is promoted as reliable, and no new commit was requested. Existing staged fitting edits are preserved.

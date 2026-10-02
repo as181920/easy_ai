@@ -1,10 +1,10 @@
 module EasyAILearning
-  module Modules
-    class TransformerBlock < Torch::NN::Module
+  module Transformer
+    class Block < Torch::NN::Module
       def initialize(embed_dim:, num_heads:, dropout: 0.1)
         super()
         @ln1 = Torch::NN::LayerNorm.new(embed_dim)
-        @attn = Attention.new(embed_dim: embed_dim, num_heads: num_heads, dropout: dropout)
+        @attn = EasyAILearning::Attention::CausalSelfAttention.new(embed_dim: embed_dim, num_heads: num_heads, dropout: dropout)
         @ln2 = Torch::NN::LayerNorm.new(embed_dim)
         ff_hidden = embed_dim * 4
         @ff = FeedForward.new(embed_dim: embed_dim, hidden_dim: ff_hidden, dropout: dropout)

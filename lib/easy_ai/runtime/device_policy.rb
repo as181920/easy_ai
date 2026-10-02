@@ -8,6 +8,7 @@ module EasyAI
       attr_reader :requested, :budget_mib
 
       def initialize(requested: "auto", budget_mib: 4096, logger: EasyAI.logger)
+        requested = requested.to_s if requested.is_a?(Symbol)
         raise ArgumentError, "Unknown device #{requested}" unless %w[auto cpu cuda].include?(requested)
         @requested, @budget_mib, @logger = requested, budget_mib, logger
       end

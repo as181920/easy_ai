@@ -1,5 +1,5 @@
 module EasyAILearning
-  module Modules
+  module Transformer
     class FeedForward < Torch::NN::Module
       def initialize(embed_dim:, hidden_dim:, dropout: 0.1)
         super()

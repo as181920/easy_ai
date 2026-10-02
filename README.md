@@ -4,6 +4,9 @@
 
 Decision v0.1 is delivered as a **model-only scoring preview** for Chinese/English request domains: `runs/decision/v0.1-preview`. Load it with `EasyAI::Decision::Release.load("runs/decision/v0.1-preview", device: "auto")`. The corrected model scores **78.25% English / 81.0% Chinese** overall, and **90.32% / 91.64%** on confident decisions at **77.5% / 80.75%** coverage. The 80% target is advisory for continued optimization; the original failed strict acceptance remains recorded. See [results, charts, inference and training commands](docs/decision/v01.md). General yes/no reasoning remains unvalidated; no business integration is included.
 
+`device:` accepts `:auto`, `:cpu`, `:cuda` and the equivalent strings in both `Release.load` and `Predictor.load`.
+`Release#probabilities(state:, question:, options:, language: nil)` accepts multilingual text without a language argument. One tokenizer and one checkpoint are shared; `language:` only selects the evaluated routing confidence policy. `route` still requires a language for its predefined candidate descriptions.
+
 ```text
 state --------------------> shared bidirectional encoder ----> state memory
 question + each option ---> shared bidirectional encoder ----> cross-attention
@@ -67,7 +70,7 @@ easy_ai/
 |   |-- optim/              # 可保存状态的 Ruby AdamW
 |   |-- runtime/            # GPU 优先、显存预算、CPU 回退
 |   `-- tokenizers/         # 自写 byte BPE / Rust gem 后端
-|-- learning/               # 独立 EasyAILearning 命名空间，原 GPT 教学实验
+|-- learning/               # 独立 EasyAILearning，基础 NN → RNN → Seq2seq → Attention → Transformer → GPT
 |-- test/                   # 正式库测试；learning/test 单独运行
 |-- config/decision/        # small 正式起点 / smoke 流程验收
 |-- examples/decision/      # 公共 API 示例、JSON 请求
@@ -208,7 +211,8 @@ runs/decision/<run>/
 - [Gold-supervised coverage round](docs/decision/coverage.md): completed six-run comparison; longer training gains 3.05 accuracy points but worsens raw probability metrics, while wording expansion loses 1.97 points. Includes exposure, memory recovery, failure probes and reproduction; no keyword-based semantic rules or pretrained LLM.
 - [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
-- [学习目录](learning/README.md)：原代码迁移位置和建议阅读顺序。
+- [学习目录](learning/README.md)：模型学习路线、代码结构与训练入口。
+- [逻辑门与最简 ReLU 网络](learning/01_basic_nn/README.md)：手写逻辑、18 参数网络、Torch.rb CUDA 训练、手工梯度对照和函数图。
 
 配置遵循每行一个参数、优先人类可读性的约定。风格参考 easy_biz 的 RuboCop 习惯，项目继续使用 Ruby 库的目录结构。下载档案、训练数据、tokenizer 文件、权重和缓存请放入上述忽略目录；`examples/` 和测试代码可以正常提交。
 
@@ -285,7 +289,18 @@ MLM 的训练与验证 loss 都下降；候选训练后半段出现训练 loss �
 自训 byte BPE 的教学运行入口：
 
 ```bash
-bundle exec ruby learning/transformer/train.rb --data data/learning/song.txt --tokenizer byte --iters 200
+bundle exec ruby learning/06_gpt/train.rb --data data/learning/song.txt --tokenizer byte --iters 200
 ```
 
 该命令使用不同 tokenizer，曲线不应与历史示例逐点对照；原始说明保留在 [learning/LEGACY_README.md](learning/LEGACY_README.md)。
+
+最基础的神经网络训练示例（不需要语料和 GPU）：
+
+```bash
+bundle exec ruby learning/01_basic_nn/logic.rb
+bundle exec ruby learning/01_basic_nn/train.rb
+```
+
+同时学习 AND / OR / NAND / XOR，打印训练进度、学到的参数和 unicode_plot 函数图；输出保存到被忽略的 `runs/learning/basic_nn/logic-gates/`。默认运行 1,623 步后，16 个逻辑输出阈值判断全部正确。详见 [基础 NN 学习说明](learning/01_basic_nn/README.md)。
+
+基础 NN 默认使用 Torch.rb / CUDA（不可用时回退 CPU）；[README 函数图](learning/01_basic_nn/README.md#observed-runs-and-plots)展示实际学到的 AND / OR / NAND / XOR 决策边界、ReLU 和四个布尔标注点；loss 曲线保留在终端训练报告中。

@@ -1,40 +1,65 @@
-# 学习代码
+# Learning progression
 
-原有 GPT、word BPE、旧 byte BPE、Qwen tokenizer 实验保留在此，统一使用 `EasyAILearning`，不由正式库自动加载。正式维护的候选概率能力位于 `lib/easy_ai/decision/`；教学目录可实验性修改而不改变其 API。
-
-| 原位置 | 当前位置 |
-| --- | --- |
-| `lib/easy_ai/{models,modules,data,trainers,utils}/` | `learning/lib/easy_ai_learning/` 对应目录 |
-| `lib/easy_ai/config.rb` | `learning/lib/easy_ai_learning/config.rb` |
-| 原 tokenizer 实验与测试 | `learning/lib/easy_ai_learning/tokenizers/`、`learning/test/` |
-| `sentence_piece_tokenizer.rb` | `learning/tokenizers/sentence_piece.rb` |
-| 本地 `temp.rb` 实验 | `learning/tokenizers/scratch.rb` |
-| 原 GPT 训练入口 | `learning/transformer/train.rb`；`bin/train_basic.rb` 保留兼容转发 |
-| 原 README | `LEGACY_README.md`，历史说明，旧命名不再直接适用 |
-| 原 `data/*.txt` 学习数据 | `data/learning/`，继续由 Git 忽略 |
-
-```bash
-bundle exec rake test:learning
-bundle exec ruby -Ilib -Ilearning/lib -reasy_ai_learning -e 'puts EasyAILearning::Models::GPT'
-bundle exec ruby learning/transformer/train.rb --data data/learning/xiaojing.txt --tokenizer byte --device cpu
-```
-
-教学训练默认读取 `data/learning/`，可通过 `--data` 或 `EASY_AI_DATA` 指定其他文件或目录。该目录是本地学习数据，不随 Git 分发；新环境需自行准备语料。
-
-旧 GPT 示例仍可选择预训练 Qwen tokenizer，这是保留的历史教学实验；新的 Decision 数据、分词和权重训练流程不依赖它。
-
-建议按实际依赖阅读正式实现：
+Teaching code uses the independent `EasyAILearning` namespace. It is not automatically loaded by the production Decision model. Lessons progress from scalar calculations to sequence models, attention and GPT; a planned directory does not mean that lesson is implemented.
 
 ```text
-tokenizers/byte_bpe
-  -> decision/data/{example,collator,masking}
-  -> nn/{rotary_position,attention,feed_forward,encoder_block}
-  -> decision/{encoder,interaction_block,choice_model}
-  -> optim/adamw -> decision/{trainer,checkpoint}
-  -> decision/{calibrator,predictor,evaluator}
-  -> decision/growth/{add_block,widen_ffn,controller}
+learning/
+|-- 01_basic_nn/       implemented: branches, perceptrons, ReLU MLP, training, plots
+|   |-- logic.rb       fixed logic and mathematical existence proof
+|   |-- train.rb       learn all four gates from random coefficients on Torch/CUDA
+|   |-- predict.rb     load saved parameters without training
+|   |-- plot.rb        export saved learned functions to a README image
+|   `-- README.md
+|-- 02_rnn/            planned: recurrent state and backpropagation through time
+|-- 03_seq2seq/        planned: encoder/decoder and teacher forcing
+|-- 04_attention/     causal attention component exists; standalone lesson planned
+|-- 05_transformer/   block components exist; standalone lesson planned
+|-- 06_gpt/           existing autoregressive text-training example
+|   `-- train.rb
+|-- tokenizers/       standalone historical tokenizer experiments
+|-- lib/easy_ai_learning/
+|   |-- basic_nn/     explicit logic, Torch MLP/SGD, scalar gradient reference, reporting
+|   |-- attention/    causal_self_attention.rb
+|   |-- transformer/  block.rb, feed_forward.rb, positional_embeddings.rb
+|   |-- gpt/          model.rb, config.rb, trainer.rb, text/batch helpers
+|   |-- tokenizers/   shared educational tokenizer implementations
+|   `-- utils/        shared tensor helpers
+|-- test/             basic_nn/, gpt/, tokenizers/
+`-- LEGACY_README.md   historical notes, preserved unchanged
 ```
 
-对应测试验证 padding 隔离、可学习性、优化器数值、续训一致性、扩容保持原函数和回滚等性质。阅读时建议先运行 tiny 测试，再用 smoke 配置串起公开数据流程，最后运行 small 配置。无需为教学目的另抄一套相同生产算法；这里保留独立的历史实验，正式算法本身也应可读。
+## Start with the basic lesson
 
-排查“loss 下降但否定仍错误”时，可从 [关系学习实验](../docs/decision/relations.md)开始：`relation_corpus` 生成可验证的布尔标签，`pair_sampler` 配对采样，`relation_evaluation` 测量反事实变化；实验编排入口在 `benchmarks/decision/relations.rb`。
+```bash
+# No model download or corpus; training prefers CUDA and falls back to CPU.
+bundle exec ruby learning/01_basic_nn/logic.rb
+bundle exec ruby learning/01_basic_nn/train.rb
+```
+
+The first command compares explicit `if/else` gates with three fixed perceptrons and an exact ReLU construction. The second trains a dense `2 -> 2 -> 4` network with 18 parameters. Ruby defines the architecture and loop; Torch.rb performs tensor forward calculation, MSE, autograd and SGD on CUDA by default (`--device cpu` forces CPU). The scalar reference retains hand-written forward/backpropagation for checking every derivative. It prints progress, learned equations, the entire truth table, loss plots, ReLU and learned gate-function slices using `unicode_plot`.
+
+Default seed 1337: 1,623 updates, MSE approximately 0.00001516, maximum absolute error 0.009951, all 16 Boolean outputs correct after thresholding at 0.5. This is fitting the complete finite truth table, not a held-out generalization result. All parameters are learned; the exact solution is only a separate demonstration. See [the lesson](01_basic_nn/README.md) for derivation and parameter reuse.
+
+For a README-friendly PNG, run `bundle exec ruby learning/01_basic_nn/plot.rb` after training (requires gnuplot). See [the published function figure](01_basic_nn/README.md#observed-runs-and-plots). Terminal charts remain `unicode_plot`.
+
+`LogicNetwork.load(path, device: :auto)` restores saved inference parameters. `bundle exec ruby learning/01_basic_nn/predict.rb` loads and evaluates them without training.
+
+Outputs go to ignored `runs/learning/basic_nn/logic-gates/{model.json,loss.json,plots.txt}`. Re-running overwrites these educational outputs; use `--output` for separate experiments. Other seeds or learning rates may fail; the script reports failure and exits unsuccessfully if its error target is not reached.
+
+## Existing GPT example
+
+```bash
+bundle exec ruby learning/06_gpt/train.rb \
+  --data data/learning/song.txt --tokenizer byte --iters 200 --device cpu
+bundle exec rake test:learning
+```
+
+GPT is a decoder-only causal Transformer, so its executable belongs under `06_gpt`, not the generic Transformer stage. The reusable components now live under `EasyAILearning::Attention`, `EasyAILearning::Transformer` and `EasyAILearning::GPT`. The namespace change is intentional; old `Models::GPT`/`Modules` names are removed. `bin/train_basic.rb` forwards to the new GPT entry point.
+
+Local text remains under ignored `data/learning/`. GPT accepts `--data` or `EASY_AI_DATA`; fresh environments must prepare their own corpus. The historical optional Qwen tokenizer is preserved, but the basic lesson and production Decision training do not require it. Original gradient-descent illustrations remain in the repository README.
+
+## Next lessons
+
+Each new stage should provide a derivation, readable forward/backward calculations, a small executable training task, parameter accounting, progress and an interpretable plot. Reuse earlier components where appropriate; distinguish fixed mathematical constructions from trained parameters, training fit from validation, and scores from probabilities. Use `unicode_plot` first; add gnuplot only when an actual visualization requires it.
+
+Production algorithms remain separately readable in `lib/easy_ai/{nn,decision,optim,tokenizers}`. The learning directory can evolve without altering their API.

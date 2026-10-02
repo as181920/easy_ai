@@ -24,11 +24,13 @@ class ReleaseTest < Minitest::Test
   end
 
   def test_arbitrary_candidates_still_return_probabilities_but_do_not_claim_support
-    result = release.probabilities(state: "我要迟到了", question: "会迟到么？", options: [{ id: 0, text: "会" }, { id: 1, text: "不会" }], language: "zh-CN")
+    input = { state: "我要迟到了", question: "会迟到么？", options: [{ id: 0, text: "会" }, { id: 1, text: "不会" }] }
+    result = release.probabilities(**input)
 
     refute result.fetch("supported_profile")
     assert result.fetch("review_required")
     assert_equal %w[0 1], result.fetch("probabilities").keys
+    assert_equal result.fetch("probabilities"), release.probabilities(**input, language: "zh-CN").fetch("probabilities")
   end
 
   def test_route_uses_bilingual_question_and_all_domains
@@ -89,7 +91,7 @@ class ReleaseTest < Minitest::Test
       end
       EasyAI::Decision::Release.publish(run: source, output: destination, preview: preview)
       FileUtils.rm_rf(source)
-      loaded = EasyAI::Decision::Release.load(destination, device: "cpu")
+      loaded = EasyAI::Decision::Release.load(destination, device: preview ? :cpu : "cpu")
       result = loaded.probabilities(state: "test", question: "q", options: [{ id: 0, text: "yes" }, { id: 1, text: "no" }], language: "en-US")
 
       assert_equal preview ? "preview" : "stable", result.fetch("release_status")
