@@ -1,6 +1,6 @@
 # Learning progression
 
-Teaching code uses the independent `EasyAILearning` namespace. It is not automatically loaded by the production Decision model. Lessons progress from scalar calculations to sequence models, attention and GPT; a planned directory does not mean that lesson is implemented.
+Teaching code uses the independent `EasyAILearning` namespace. It is not automatically loaded by the production Decision model. Lessons progress from scalar calculations to sequence models, attention, GPT and reinforcement learning; a planned directory does not mean that lesson is implemented. RL is a training paradigm that can use earlier networks, rather than a larger architecture following GPT.
 
 ```text
 learning/
@@ -16,6 +16,8 @@ learning/
 |-- 05_transformer/   block components exist; standalone lesson planned
 |-- 06_gpt/           existing autoregressive text-training example
 |   `-- train.rb
+|-- 07_rl/            planned: bandits, MDPs, value learning and policy gradients
+|   `-- README.md
 |-- tokenizers/       standalone historical tokenizer experiments
 |-- lib/easy_ai_learning/
 |   |-- basic_nn/     explicit logic, Torch MLP/SGD, scalar gradient reference, reporting
@@ -59,6 +61,8 @@ GPT is a decoder-only causal Transformer, so its executable belongs under `06_gp
 Local text remains under ignored `data/learning/`. GPT accepts `--data` or `EASY_AI_DATA`; fresh environments must prepare their own corpus. The historical optional Qwen tokenizer is preserved, but the basic lesson and production Decision training do not require it. Original gradient-descent illustrations remain in the repository README.
 
 ## Next lessons
+
+[Reinforcement learning](07_rl/README.md) extends the roadmap beyond text prediction: start with a bandit, then a small multi-step environment, tabular Q-learning, a Torch neural value/policy model, and policy gradients. GPT is not a prerequisite; a basic MLP can learn a policy or value function. The first examples should have explicit rewards and measurable task success before attempting language-model post-training.
 
 Each new stage should provide a derivation, readable forward/backward calculations, a small executable training task, parameter accounting, progress and an interpretable plot. Reuse earlier components where appropriate; distinguish fixed mathematical constructions from trained parameters, training fit from validation, and scores from probabilities. Use `unicode_plot` first; add gnuplot only when an actual visualization requires it.
 

@@ -1,6 +1,23 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
-## Latest learning record: natural-task pilot (2026-10-01)
+## Latest learning record: factual supervision and pair margin (2026-10-02)
+
+The [completed v0.2 round](v02.md) compares identical own initialization/data/seed/exposure under CE and CE + signed pair margin: 64,000 visits, 9,329,604 tokens, 2,000 updates per arm. New factual supervision raises acceptance source/language macro from v0.1's 46.33% to **67.33% CE / 66.47% margin**. Chinese finite-world complete pairs reach 99.92%, but English actor binding stays at 0.31%, Chinese uncertainty collapses to 0%, and routing loses about ten points versus the delivered model. No checkpoint is promoted; no eligible validation improvement triggers a second seed.
+
+Useful lessons retained:
+
+- Small-set fit and loss descent are necessary diagnostics, not generalization evidence. The new 128-row fit passes twice; CE sampled-loss means drop 0.99707 to 0.31422, while severe held-out slices remain.
+- An auxiliary objective can improve early checks without improving the final capability. The fixed margin slightly underperforms CE here; retain the simpler reference rather than attributing synthetic-data gains to the new loss. This one seed does not establish a universal negative result for margins.
+- Choose a parent against all capabilities to retain. The broad parent's stronger factual probe masks much weaker routing before continuation; recovery versus that parent still fails retention versus v0.1.
+- Factor question/actor/order independently. English binding fails while longer irrelevant-fact templates pass; question-removal sensitivity remains high. These are reasons to test shortcuts, not proof of a particular mechanism or a justification for keyword inference rules.
+- Audit actual language/source/unknown exposure. Balanced language draws do not balance a rare subtype inside different-sized pools: Chinese unknown receives 1,143 visits versus English 2,271. Balance declared supervision and test the hypothesis instead of assuming corpus size alone explains the failure.
+- Unused answer text does not make a shared-question component independent. The historical audit removes whole connected DuReader components before prediction and preserves the original manifest as evidence. Never silently rewrite provenance after evaluating outcomes.
+- Separate finite-template facts, naturally annotated QA/NLI and old routing regression. Macro rates, complete pairs, per-language slices and whole-group intervals expose failures hidden by high row-weighted accuracy.
+- Compute raw/calibrated metrics from the same logits; calibration changes probability quality, not argmax. API CPU/CUDA parity and stable memory confirm engineering behavior, not semantic correctness. Latency measured inside a large reporting heap is not a standalone deployment benchmark.
+
+The next priorities are retention-aware own initialization and factorized binding/uncertainty supervision with a newly reserved panel. Architecture growth, external teachers and RL remain unmotivated first responses to these identified failures. v0.1 remains the delivered preview; experimental v0.2 load paths and all failed gates are preserved in the results document.
+
+## Earlier learning record: natural-task pilot (2026-10-01)
 
 The [completed pilot](natural.md) separates broader supervision from positional encoding using the same own parent and a single-seed 2x2 comparison. Main macro rises from parent 42.43% to broad 61.04%/60.84%, with +17.40/+17.31 points over positional controls. News reaches 75.8–79.3%; bilingual request domains 47–51%. This supports the concrete hypothesis that missing task coverage limits those learned classifiers. It does not establish unseen semantic competence: Emotion stays at 6–7%, some QA cells regress, and binding groups pass only 4.6–5.7%.
 

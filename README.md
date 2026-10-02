@@ -4,6 +4,8 @@
 
 Decision v0.1 is delivered as a **model-only scoring preview** for Chinese/English request domains: `runs/decision/v0.1-preview`. Load it with `EasyAI::Decision::Release.load("runs/decision/v0.1-preview", device: "auto")`. The corrected model scores **78.25% English / 81.0% Chinese** overall, and **90.32% / 91.64%** on confident decisions at **77.5% / 80.75%** coverage. The 80% target is advisory for continued optimization; the original failed strict acceptance remains recorded. See [results, charts, inference and training commands](docs/decision/v01.md). General yes/no reasoning remains unvalidated; no business integration is included.
 
+The completed [Decision v0.2 factual-scoring round](docs/decision/v02.md) uses 27,520 bilingual training rows, matched CE/margin budgets and 7,144 acceptance decisions. CE raises factual source/language-macro accuracy from **46.33% to 67.33%**; the margin reaches **66.47%**. CE complete-pair correctness is **64.53% English / 99.92% Chinese**, but English actor binding, Chinese missing-information handling and routing retention still fail. **v0.1 remains the delivered preview**; v0.2 weights are diagnostics. The document includes load paths, the completed training chart, exposure/provenance audits and next priorities.
+
 `device:` accepts `:auto`, `:cpu`, `:cuda` and the equivalent strings in both `Release.load` and `Predictor.load`.
 `Release#probabilities(state:, question:, options:, language: nil)` accepts multilingual text without a language argument. One tokenizer and one checkpoint are shared; `language:` only selects the evaluated routing confidence policy. `route` still requires a language for its predefined candidate descriptions.
 
@@ -70,7 +72,7 @@ easy_ai/
 |   |-- optim/              # 可保存状态的 Ruby AdamW
 |   |-- runtime/            # GPU 优先、显存预算、CPU 回退
 |   `-- tokenizers/         # 自写 byte BPE / Rust gem 后端
-|-- learning/               # 独立 EasyAILearning，基础 NN → RNN → Seq2seq → Attention → Transformer → GPT
+|-- learning/               # EasyAILearning: Basic NN → RNN → Seq2seq → Attention → Transformer → GPT → RL
 |-- test/                   # 正式库测试；learning/test 单独运行
 |-- config/decision/        # small 正式起点 / smoke 流程验收
 |-- examples/decision/      # 公共 API 示例、JSON 请求

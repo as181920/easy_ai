@@ -1,6 +1,6 @@
 # Next bounded iteration: factual decision scoring
 
-Status: proposed on 2026-10-01, not started. v0.1 preview remains available and unchanged. The user clarified 80% is an advisory direction, not a hard release blocker. This proposal concerns one shared model, own trained weights, Ruby/Torch.rb, GPU-first execution within the 4,096 MiB process budget, no business integration.
+Status: **completed bounded iteration**, authorized and evaluated on 2026-10-02. Both 2,000-update arms, clean independent evaluation, calibration, runtime checks and the handover are complete. CE improves controlled factual scoring, but English binding, Chinese uncertainty and routing retention still fail; the margin does not justify promotion. See [v02.md](v02.md) for measured results and reproducible artifacts. v0.1 remains the delivered preview. The user clarified 80% is advisory. This round uses one shared model, own trained weights, Ruby/Torch.rb, GPU-first execution within 4,096 MiB, and model-only scope.
 
 ## What the corrective chart establishes
 

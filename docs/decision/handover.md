@@ -1,6 +1,22 @@
 # Decision 开发交接：人物绑定与下一轮优化
 
-## Active delivery goal — Decision v0.1 (2026-10-01)
+## Completed goal — Decision v0.2 factual scoring (2026-10-02)
+
+The user authorized [v02-plan.md](v02-plan.md); the bounded iteration is complete. See [v02.md](v02.md) for results, ASCII hierarchy, chart, use/reproduction and lessons. Ruby/Torch.rb, own weights, one shared bilingual model, unchanged 6.63M sinusoidal architecture, GPU-first 4,096 MiB process budget, model-only scope. **v0.1 remains the delivered preview; no v0.2 checkpoint is promoted.**
+
+Artifacts: `runs/decision/factual-v02-r2/`; runner `benchmarks/decision/factual.rb`. The 128-row fitting check passes at updates 100/200. Both CE and margin finish 2,000 CUDA updates, **identical 64,000 row visits and 9,329,604 valid tokens**; GPU boundary memory 650–696 MiB, no fallback. No checkpoint passes the per-language routing guard, so seed-2027 confirmation is skipped. Calibration and **one-time** clean acceptance finish; `acceptance-opened.json` prevents reopening for tuning.
+
+Acceptance factual macro: v0.1 **46.33%**, own broad parent **47.09%**, CE **67.33%**, margin **66.47%**. CE pairs: **64.53% English / 99.92% Chinese**; its English actor-binding pairs are only **0.31%**, Chinese unknown accuracy **0%**. Routing falls to **68.38% / 70.40%**, versus v0.1's **78.43% / 81.09%** on the already observed regression panel. Both final checkpoints pass CPU/CUDA probability parity and candidate-order smoke checks, but these engineering successes do not repair the behavioral failures. The margin has no supported advantage and is not the recommended default.
+
+Preserve the original panels/protocol. The original state-only historical filter misses connected DuReader answers: four validation rows belong to seen components. A pre-prediction whole-component audit excludes 12 calibration and 26 acceptance rows; `provenance.json` pins `calibration-clean.jsonl` (820) and `acceptance.jsonl` (7,144), plus group exclusions/hashes. Frozen validation is development material, not a fresh acceptance claim. Future preparation excludes complete historical components from the outset. Also preserve the rejected oversized preparation and original generator fitting run (`factual-v02-rejected-budget/`, `factual-v02/`); no acceptance was opened there.
+
+Read `report.json`, `controlled_slices`, source/language cells, group-bootstrap intervals, `diagnostics-trained.json`, exposure and raw/calibrated metrics before drawing conclusions. Diagnostic CE load path: `runs/decision/factual-v02-r2/ce-1337/choice`; Predictor loads temperature 1, while `calibration.json` separately records the evaluated temperature. Delivered API remains `Release.load("runs/decision/v0.1-preview", device: :auto)`. No new business API is needed.
+
+Next task priorities: make initializer choice retention-aware (start with the own delivered v0.1 parent); factor queried actor and fact order independently, including question flips on an unchanged state; balance recorded unknown/known supervision per language and test reviewed candidate-wording coverage. Chinese unknown receives 1,143 visits versus English 2,271 in the current mixed bucket—an exposure imbalance, not a proven cause. Keep CE as the reference, and reserve a new acceptance panel before further optimization. Current acceptance is now regression-only; do not repeatedly tune on it or grow the architecture before these specific failures are addressed. A further optimization is a new bounded task, not unfinished work in this goal.
+
+Verification: **192 production tests / 2,250 assertions**, zero failures/errors/skips; factual tests 8/92 and benchmark tests 7/23. Full lint checks 175 files clean, final report changes separately clean, whitespace check passes. The reviewed chart is `docs/images/decision-v02-factual-comparison.png`. Current changes are not committed by this goal. Replaying `all` repeats fixed controlled allocations as regression; a different output path alone does not reserve new controlled acceptance.
+
+## Completed delivery goal — Decision v0.1 (2026-10-01)
 
 The user authorized implementing v0.1 with a reasonable measured result and clarified model-only scope; no easy_biz/business integration. Bilingual request-domain scoring is the explicitly stated initial supported-profile assumption, retaining arbitrary-candidate probability scoring. See [v01.md](v01.md). This goal takes precedence over earlier open-ended experiments. **v0.1 scoring-preview delivery is complete. User approved this scope and clarified 80% is advisory. The portable preview is published and verified, preserving the historical failed strict acceptance.** No new commit requested; preserve existing staged work.
 
@@ -18,7 +34,7 @@ Final preview verification: **177 tests / 2134 assertions**, no failures/errors;
 
 ## Proposed next iteration — factual scoring
 
-See [v02-plan.md](v02-plan.md) for the chart audit, historical evidence, bounded CE-versus-pair-margin procedure, data independence and conditional next actions. Planning only: no fit, download or new goal started. Corrective training means first/last 100 updates are 0.344/0.241; validation reaches 0.692 at update 300 then plateaus. Do not mistake batch noise for absent gradients or domain classification for truth-scoring competence.
+See [v02-plan.md](v02-plan.md) for the chart audit, historical evidence, bounded CE-versus-pair-margin procedure, data independence and conditional next actions. This plan is now authorized and active; follow the v0.2 status above. Corrective training means first/last 100 updates are 0.344/0.241; validation reaches 0.692 at update 300 then plateaus. Do not mistake batch noise for absent gradients or domain classification for truth-scoring competence.
 
 ## Post-delivery feedback — multilingual API and negation (2026-10-01)
 

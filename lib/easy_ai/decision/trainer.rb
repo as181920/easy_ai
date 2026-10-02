@@ -164,22 +164,7 @@ module EasyAI
         scale *= 0.25 if state.fetch("growth_warmup_until", 0) > step
         optimizer.learning_rate = @config[:training]["learning_rate"] * scale
         rng = Random.new(@config[:training]["seed"] + step * 1009)
-        languages = @language_indexes.keys.sort
-        all_indices = Array.new(@microbatch * @accumulation) do
-          if @config[:training]["balance_sources"]
-            source = @source_indexes.keys.sort.sample(random: rng)
-            language = @source_indexes.fetch(source).keys.sort.sample(random: rng)
-            next @source_indexes.fetch(source).fetch(language).sample(random: rng)
-          end
-          language = languages.sample(random: rng)
-          indexes = if @task == :choice && @config[:training]["balance_labels"]
-            @label_indexes.fetch(language).values.sample(random: rng)
-                    else
-            @language_indexes.fetch(language)
-                    end
-          indexes.sample(random: rng)
-        end
-        all_indices = @pair_sampler.sample(@microbatch * @accumulation, rng: rng) if @pair_sampler
+        all_indices = sample_indices(@microbatch * @accumulation, rng: rng)
         total_loss = 0.0
         @step_losses = Hash.new(0.0)
         input_tokens = 0
@@ -203,7 +188,7 @@ module EasyAI
           loss = nil
           GC.start
         end
-        optimizer.clip_grad_norm!(@config[:training]["grad_clip"])
+        @step_losses["gradient_norm_preclip"] = optimizer.clip_grad_norm!(@config[:training]["grad_clip"])
         optimizer.step
         @policy.check_budget!(device)
         if state["coverage"]
@@ -211,6 +196,26 @@ module EasyAI
           state["coverage"]["input_tokens"] += input_tokens
         end
         total_loss
+      end
+
+      def sample_indices(size, rng:)
+        languages = @language_indexes.keys.sort
+        all_indices = Array.new(size) do
+          if @config[:training]["balance_sources"]
+            source = @source_indexes.keys.sort.sample(random: rng)
+            language = @source_indexes.fetch(source).keys.sort.sample(random: rng)
+            next @source_indexes.fetch(source).fetch(language).sample(random: rng)
+          end
+          language = languages.sample(random: rng)
+          indexes = if @task == :choice && @config[:training]["balance_labels"]
+            @label_indexes.fetch(language).values.sample(random: rng)
+                    else
+            @language_indexes.fetch(language)
+                    end
+          indexes.sample(random: rng)
+        end
+        all_indices = @pair_sampler.sample(size, rng: rng) if @pair_sampler
+        all_indices
       end
 
       def input_token_count
