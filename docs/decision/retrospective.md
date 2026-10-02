@@ -1,6 +1,22 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
-## Latest learning record: factual supervision and pair margin (2026-10-02)
+## Latest learning record: factored supervision and misleading aggregate gains (2026-10-03)
+
+The [completed v0.3 round](v03.md) uses the same delivered own v0.1 parent for a v0.2-recipe control and corrected-data candidate. Both finish 2,000 CUDA updates / 64,000 visits. On the common fresh panel, candidate factual macro rises from 41.63% parent to **52.23%**, and natural QA/NLI rises from 48.50% / 48.00% to **64.50% / 56.75%**. Yet factual row accuracy falls to 31.99%, known judgments to 15.43% / 16.88%, and mixed-truth binding to 0.72% / 0%. No checkpoint qualifies, no confirmation runs, and v0.1 remains delivered.
+
+Useful lessons retained:
+
+- A correct gold oracle does not ensure a sound dataset. The first generator's irrelevant fact was always opposite to its first actor. Reject it before candidate/final evaluation, preserve the partial run, draw distractor polarity independently, and test all joint combinations. A 100% fitting result would not have exposed that correlation.
+- Average group correctness can reward an actor-blind shortcut. Same-truth cases permit 50% overall binding with 0% mixed binding. Keep both slices, test a deliberately actor-blind reference, and disclose the mid-control guard clarification instead of claiming every rule was unchanged from initial preparation.
+- Source macro can rise while more decisions become wrong. Equal weighting of the known and unknown sources rewards the candidate's unknown shift; known cases are more numerous and binding nearly vanishes. Report macro, row accuracy, full groups and task baselines together. Better aggregate accuracy is insufficient for useful factual scoring.
+- Verified exposure is stronger evidence than intended proportions. Explicit unknown visits become 6,340 EN / 6,460 ZH versus control 2,271 / 1,143. The correction succeeds operationally but does not solve semantics under this recipe. It neither proves exposure irrelevant nor identifies representation/capacity as the sole cause.
+- Fitting and real updates are debugging checks. The corrected 228-row fit reaches 100%, and pilot CE decreases, while independent expressions/domains still fail. Test effective CE accumulation and deterministic resume, preserve parameter-update evidence, and keep held-out curves visible. Do not respond automatically with larger weights or another loss.
+- Common-parent controls matter: control and candidate match initialization, effective examples and replay allocation, but consume 9.33M / 8.97M input tokens. Their intervention is a package, not an isolated estimate of a single supervision change. Actual v0.2 weights were not measured on the new panel; old-panel percentages cannot substitute for that comparison.
+- Runtime correctness and semantic usefulness are distinct checks. CPU/CUDA probabilities agree and repeated inference memory stays flat, yet factual judgments fail. Calibration lowers NLL/ECE without changing argmax, and candidate probability quality remains worse than the control's.
+
+Stop this bounded unsuccessful iteration. Preserve fresh predictions as future regression, require a newly reserved protocol before further optimization, and consider foundational representations only in a separately authorized plan. Path B remains removed. Do not hide failed results or describe this diagnostic model as a new release.
+
+## Earlier learning record: factual supervision and pair margin (2026-10-02)
 
 The [completed v0.2 round](v02.md) compares identical own initialization/data/seed/exposure under CE and CE + signed pair margin: 64,000 visits, 9,329,604 tokens, 2,000 updates per arm. New factual supervision raises acceptance source/language macro from v0.1's 46.33% to **67.33% CE / 66.47% margin**. Chinese finite-world complete pairs reach 99.92%, but English actor binding stays at 0.31%, Chinese uncertainty collapses to 0%, and routing loses about ten points versus the delivered model. No checkpoint is promoted; no eligible validation improvement triggers a second seed.
 

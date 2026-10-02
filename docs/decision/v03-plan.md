@@ -1,6 +1,6 @@
 # Decision v0.3 plan — robust factual scoring with own weights
 
-Status: **Path A accepted; planning only, 2026-10-02. Implementation and training have not started.** The user authorized documenting the next goal, explicitly deferring execution. This document is the implementation handover, not evidence of a new model or an active training run. v0.1 remains the delivered preview; v0.2 remains diagnostic material.
+Status: **Completed, no promotion, 2026-10-03.** The user first requested planning only, then explicitly authorized completing this plan as a new goal. Implementation, audits, corrected fitting, both 2,000-update CUDA pilots, calibration, one-time fresh evaluation, runtime verification and handover are complete; no eligible checkpoint triggered confirmation. Read [v03.md](v03.md) for measured results and disclosed corrections. v0.1 remains delivered; v0.2/v0.3 weights remain diagnostic. The plan below records the intended procedure, not an accuracy claim or authorization for another sweep.
 
 ## Intended outcome and scope
 
