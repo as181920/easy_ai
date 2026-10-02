@@ -1,5 +1,11 @@
 # Decision 开发交接：人物绑定与下一轮优化
 
+## Accepted next plan — Decision v0.3 (not started)
+
+The user accepted Path A and requested documentation only, explicitly deferring implementation. Read [v03-plan.md](v03-plan.md) for the next goal: own v0.1 parent, ordinary CE, independently factored actor/query/order/polarity supervision, reviewed natural/candidate expressions, explicit per-language unknown exposure and routing retention. Plan a matched-parent current-recipe control versus corrected-data candidate, followed by conditional second-seed confirmation, calibration and one-time fresh acceptance. Bounds and final selection criteria must be frozen before training; 80% remains advisory. No v0.3 code, data preparation, training, active execution goal or release has started. Start execution only after a later user instruction.
+
+The v0.2 acceptance is now regression-only. A new directory or seed does not create unseen families. The plan records earlier failed wording expansion/grouped curricula and the limits of this bundled intervention. The user removed Path B (Qwen semantic preprocessing) from follow-up planning; do not resume it from historical distillation records. A public pretrained encoder remains a separately authorized possible foundation comparison; model growth and RL are not this round's scope. v0.1 remains the delivered model.
+
 ## Completed goal — Decision v0.2 factual scoring (2026-10-02)
 
 The user authorized [v02-plan.md](v02-plan.md); the bounded iteration is complete. See [v02.md](v02.md) for results, ASCII hierarchy, chart, use/reproduction and lessons. Ruby/Torch.rb, own weights, one shared bilingual model, unchanged 6.63M sinusoidal architecture, GPU-first 4,096 MiB process budget, model-only scope. **v0.1 remains the delivered preview; no v0.2 checkpoint is promoted.**
@@ -14,7 +20,7 @@ Read `report.json`, `controlled_slices`, source/language cells, group-bootstrap 
 
 Next task priorities: make initializer choice retention-aware (start with the own delivered v0.1 parent); factor queried actor and fact order independently, including question flips on an unchanged state; balance recorded unknown/known supervision per language and test reviewed candidate-wording coverage. Chinese unknown receives 1,143 visits versus English 2,271 in the current mixed bucket—an exposure imbalance, not a proven cause. Keep CE as the reference, and reserve a new acceptance panel before further optimization. Current acceptance is now regression-only; do not repeatedly tune on it or grow the architecture before these specific failures are addressed. A further optimization is a new bounded task, not unfinished work in this goal.
 
-Verification: **192 production tests / 2,250 assertions**, zero failures/errors/skips; factual tests 8/92 and benchmark tests 7/23. Full lint checks 175 files clean, final report changes separately clean, whitespace check passes. The reviewed chart is `docs/images/decision-v02-factual-comparison.png`. Current changes are not committed by this goal. Replaying `all` repeats fixed controlled allocations as regression; a different output path alone does not reserve new controlled acceptance.
+Verification: **192 production tests / 2,250 assertions**, zero failures/errors/skips; factual tests 8/92 and benchmark tests 7/23. Full lint checks 175 files clean, final report changes separately clean, whitespace check passes. The reviewed chart is `docs/images/decision-v02-factual-comparison.png`. Completed v0.2 work and the RL learning roadmap were subsequently committed as `22293ca`. Replaying `all` repeats fixed controlled allocations as regression; a different output path alone does not reserve new controlled acceptance.
 
 ## Completed delivery goal — Decision v0.1 (2026-10-01)
 
@@ -34,7 +40,7 @@ Final preview verification: **177 tests / 2134 assertions**, no failures/errors;
 
 ## Proposed next iteration — factual scoring
 
-See [v02-plan.md](v02-plan.md) for the chart audit, historical evidence, bounded CE-versus-pair-margin procedure, data independence and conditional next actions. This plan is now authorized and active; follow the v0.2 status above. Corrective training means first/last 100 updates are 0.344/0.241; validation reaches 0.692 at update 300 then plateaus. Do not mistake batch noise for absent gradients or domain classification for truth-scoring competence.
+See [v02-plan.md](v02-plan.md) for the historical chart audit, bounded CE-versus-pair-margin procedure and data independence. That iteration is completed, not active; follow the v0.2 results above and the accepted, not-started v0.3 plan for future work. Corrective training means first/last 100 updates are 0.344/0.241; validation reaches 0.692 at update 300 then plateaus. Do not mistake batch noise for absent gradients or domain classification for truth-scoring competence.
 
 ## Post-delivery feedback — multilingual API and negation (2026-10-01)
 

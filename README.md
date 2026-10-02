@@ -6,6 +6,8 @@ Decision v0.1 is delivered as a **model-only scoring preview** for Chinese/Engli
 
 The completed [Decision v0.2 factual-scoring round](docs/decision/v02.md) uses 27,520 bilingual training rows, matched CE/margin budgets and 7,144 acceptance decisions. CE raises factual source/language-macro accuracy from **46.33% to 67.33%**; the margin reaches **66.47%**. CE complete-pair correctness is **64.53% English / 99.92% Chinese**, but English actor binding, Chinese missing-information handling and routing retention still fail. **v0.1 remains the delivered preview**; v0.2 weights are diagnostics. The document includes load paths, the completed training chart, exposure/provenance audits and next priorities.
 
+The accepted [Decision v0.3 plan](docs/decision/v03-plan.md) follows Path A: own v0.1 initialization, ordinary CE, corrected actor/query/order supervision, reviewed candidate expressions, explicit unknown exposure and routing retention. It defines a bounded control/candidate comparison, fresh evaluation and conditional second-seed confirmation. **Planning only: implementation and training have not started.**
+
 `device:` accepts `:auto`, `:cpu`, `:cuda` and the equivalent strings in both `Release.load` and `Predictor.load`.
 `Release#probabilities(state:, question:, options:, language: nil)` accepts multilingual text without a language argument. One tokenizer and one checkpoint are shared; `language:` only selects the evaluated routing confidence policy. `route` still requires a language for its predefined candidate descriptions.
 
