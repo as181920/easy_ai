@@ -1,6 +1,8 @@
 # Next experiment: fitting, natural-task coverage and transfer
 
-Status: protocol proposed on 2026-10-01; **not yet trained**. The completed evidence round is documented in [evidence.md](evidence.md). All previous tests are now observed diagnostics, not fresh acceptance sets. Continue with our own randomly initialized/trained weights, Ruby/Torch.rb and GPU-first execution. Do not introduce pretrained weights, teacher inference, RL or linguistic keyword rules in this round.
+**Current direction:** the user has made usable Decision v0.1 the active goal. Follow [the delivery procedure](v01.md), not the experimental proposals below. The focused fit and one bounded correction are complete; corrected selected accuracy meets 90% in both languages, but English overall accuracy 78.25% misses the frozen 80% gate. The user approved a scoring preview and clarified 80% is advisory. The deliverable is `runs/decision/v0.1-preview`, preserving the original failed strict acceptance; subsequent optimization should target weak-domain recall and generalization rather than chase a single threshold. No business integration is in scope. The experiment plan below remains historical research context.
+
+Status: Stage 1 fitting and the bounded natural-task pilot completed on 2026-10-01; see [fitting](fitting.md) and [natural-task results/next decision](natural.md). Broader supervision improves trained-task accuracy (~61% main macro), but unseen Emotion and binding remain poor and some QA/NLI cells regress. RoPE has no demonstrated broad advantage. The larger three-seed/4,000-update proposal below remains unexecuted; this pilot did not pass unseen-transfer and per-task preservation checks. Next isolate unseen-option priors, then consider a train-only MLM + CE versus CE ablation with per-task preservation and a newly reserved held-out family. Every panel in this completed pilot is now observed. Retain own weights, Ruby/Torch.rb, fixed size, GPU-first execution and the current sinusoidal default; no teacher weights, RL or inference word rules.
 
 ## What the results establish
 
@@ -35,9 +37,13 @@ model-size increase: deferred until fitting and data controls are resolved
 
 Use the existing 128-row sanity set; it is training data, not a generalization benchmark. Keep the full candidate set, shuffle candidate order, and measure both training accuracy and correctness of complete fact-flip/binding groups. Log answer CE, gradient norms by embedding/encoder/interaction/scorer, and state sensitivity when state rows are shuffled. Check that different states really produce different input tensors and nonconstant logits.
 
-Start from the current parent with answer CE only and the existing fixed schedule. Extend the diagnostic budget to 2,000 updates, evaluating the entire tiny set every 100 updates. Use dropout zero for this memorization diagnostic. Record failures rather than adjusting labels. At least 99% training accuracy and 95% training fact-flip correctness are diagnostic targets only. If they fail, inspect persistent cases and compare a randomly initialized model with the same configuration/budget; this distinguishes a poor starting point from a failure shared by both starts. Do not treat either outcome as a fresh-test result.
+Run a controlled 2x2 comparison at seed 1337: our current parent and random initialization, each with sinusoidal positions and RoPE. The earlier relationship experiment makes RoPE a justified comparison, not a guaranteed fix. Starting parameter tensors match exactly within each positional pair. Keep full candidate sets, deterministic candidate permutations and identical example schedules. Disable dropout and evidence loss in every condition; reset optimizer state. All four fits finish 2,000 updates, with training-set evaluation every 100 updates. Inspect the final weights, not a cherry-picked intermediate peak.
+
+At least 99% training accuracy and 95% training fact-flip correctness are diagnostic targets only. Record gradient activity and persistent failures. Parent transfer to RoPE may introduce a representation mismatch; the random-start pair separates that question. One seed establishes neither robustness nor generalization. The [implementation/protocol](fitting.md) records exact configuration and artifacts.
 
 If both starts still fail, inspect the learning-rate schedule and the matching scorer with one controlled change at a time. This is where an interaction/scorer revision becomes justified; adding layers before these checks would obscure the cause. A diagnostic target is a stop-and-investigate rule, not a promised achievable result.
+
+Stage 1 outcome: both parent conditions fit all 128 rows; RoPE reaches the observed gate at update 1,000 versus 1,800. Random starts finish at 75%/87.5% (sinusoidal/RoPE), with English random-start binding unresolved. This establishes fit feasibility using our own prior-trained parent, not generalization or equal-lifetime-compute superiority. RoPE is a candidate for the next controlled round, not a globally promoted default. Keep the sinusoidal reference and replicate positional effects across seeds before a broader architectural claim.
 
 ## Stage 2: expand actual task coverage
 
@@ -73,7 +79,7 @@ These thresholds are proposed engineering decisions, not estimates of the probab
 
 ## Handover sequence
 
-1. Instrument and run Stage 1; record the first persistent failure and tested remedy.
+1. Stage 1 is complete; preserve its invalid harness attempt, valid failures and measured positional comparison.
 2. Freeze Stage 2 dataset manifests and common validation/calibration/evaluation partitions.
 3. Profile Stage 3 memory before choosing the fixed training context/microbatch.
 4. Execute paired runs sequentially on CUDA, with logs/charts and checkpoint hashes.

@@ -1,6 +1,23 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
-Latest completed follow-up (2026-09-29): the [gold-supervised coverage round](coverage.md) measures actual exposure before attributing failures to insufficient data or capacity. Longer training improves mean challenge accuracy by 3.05 points but worsens raw probability metrics; wording expansion loses 1.97 points and fails its gate. Keyword-based semantic categorization was rejected and removed; the counters use declared metadata only. The teacher route remains deferred. Section 9 records the new lessons.
+## Latest learning record: natural-task pilot (2026-10-01)
+
+The [completed pilot](natural.md) separates broader supervision from positional encoding using the same own parent and a single-seed 2x2 comparison. Main macro rises from parent 42.43% to broad 61.04%/60.84%, with +17.40/+17.31 points over positional controls. News reaches 75.8–79.3%; bilingual request domains 47–51%. This supports the concrete hypothesis that missing task coverage limits those learned classifiers. It does not establish unseen semantic competence: Emotion stays at 6–7%, some QA cells regress, and binding groups pass only 4.6–5.7%.
+
+Useful lessons retained:
+
+- A small-set positional fitting advantage does not establish natural-task superiority: broad sinusoidal/RoPE results are effectively similar here. Retain the reference rather than promote an architecture from one seed.
+- Always evaluate a truly withheld task family and per-source cells. Aggregate gains can conceal regressions. Emotion's `surprise` dominates 75–82% of predictions despite 2.75% gold frequency; investigate candidate-score priors without coding semantic word rules or claiming the cause is already proven.
+- Equal allocated budgets differ from selected-weight exposure: control selects step 200, broad step 1,000. Corpus size differs from observed data: only 6,325 of 101,343 news rows are visited. Report actual visits and tokens before attributing gains to scale.
+- Grouping full candidate sets avoids expensive padding but must aggregate instrumentation as well as loss. A token/component undercount did not change the optimized CE; corrected gradients/loss/bookkeeping are tested and old counters are preserved with a reproducible recount.
+- Generic short answers can cross question-conditioned partitions. A stronger material-only holdout rejected the first preparation; filter transparently, keep the rejected attempt, and record the changed split scope.
+- Pin prepared panels before fitting, preserve original manifests, and supplement provenance honestly. Raw QA/NLI hashes omitted by the pilot were subsequently checked against the older parent inventory; rebuilding 501 fresh public rows matches exactly. This is a supplement, not a retroactively rewritten pretraining manifest.
+- CUDA process memory should stabilize after warming; observed boundaries plateau at 570–726 MiB. Dense profiling selects a safe microbatch and does not constitute an allocator-peak measurement. Charts keep raw losses, explicitly label moving averages and preserve the original learning illustrations.
+
+More CE updates are plausible for trained tasks because broad validation still decreases at the budget boundary. Generic semantics remains a separate hypothesis. The proposed next foundation ablation is train-only MLM warm-up plus CE versus CE continuation from identical own weights, with a new independent held-out family and per-task preservation checks. No new result is claimed for that proposal.
+
+
+Earlier completed follow-up (2026-09-29): the [gold-supervised coverage round](coverage.md) measures actual exposure before attributing failures to insufficient data or capacity. Longer training improves mean challenge accuracy by 3.05 points but worsens raw probability metrics; wording expansion loses 1.97 points and fails its gate. Keyword-based semantic categorization was rejected and removed; the counters use declared metadata only. The teacher route remains deferred. Section 9 records the new lessons.
 
 Follow-up: the first [reusable distillation implementation](../distillation/README.md) now supports teacher content, pseudo-label export and candidate-level losses. Historical results below remain unchanged; implementing the pipeline is separate from demonstrating improved student semantics.
 
@@ -216,3 +233,23 @@ Final main and generalization results are recorded in the linked experiment docu
 The shared evaluator now rejects malformed probability vectors and derives correctness from the distribution rather than trusting a saved flag. Replaying all nine saved prediction files leaves the reported results unchanged. Treat validity checks as part of the evaluator contract, including failed inputs in the denominator. Pin downloads and verify cached files too; a revision-unpinned dataset service can change bytes even when its URL stays the same.
 
 The answer/evidence curves now accompany the README. Training answer loss falls while validation NLL rises; every main arm selects step 100. This warns against treating a decreasing training curve or a stronger auxiliary metric as successful transfer. The [next protocol](next-experiment.md) separates small-set fitting, natural-task supervision and context coverage, so each proposed remedy has a measurable failure mode.
+
+
+### Fitting and positional comparison — 2026-10-01
+
+The [four-condition fitting round](fitting.md) separates starting representation from positional encoding. At the same additional 2,000-update budget, our own parent fits all 128 rows under sinusoidal positions and RoPE; RoPE reaches the observed gate at 1,000 updates versus 1,800. Random starts finish at 75% and 87.5%, respectively. RoPE's random-start gain is confined to fully fitting Chinese here; English remains at 75%. This is one seed on a training set, not natural-language generalization. The parent also has more lifetime training compute.
+
+The failed random/sinusoidal fit has 32 errors, all mixed-truth states and evenly split across languages. Random/RoPE retains 16 English mixed-truth errors. Keep these failures: they identify a narrower unresolved binding/optimization problem than “the model understands nothing.” Both fully fitted parents drop near chance when states are shuffled, while confidence remains high. State dependence and training fit do not certify calibrated reasoning.
+
+Instrumentation caught an invalid first harness attempt: an unconditional same-device Torch.rb `Module#to` replaced Parameters after optimizer creation. Scores stayed identical while gradients accumulated on the live model. Preserving parameter references and testing a real subsequent update fixed it; the attempt is retained and excluded from comparison. Earlier evidence training's internal validation did not use this evaluator during updates. A noisy batch loss alone would have hidden the problem.
+
+Carry forward the own-parent/RoPE candidate into independent task/relationship evaluation with a sinusoidal control. Do not grow the model merely to remedy the old 300-update fitting result, and do not mistake success on 128 rows for broad semantics. Cold-start learning-rate/sampling questions remain open.
+
+
+### Focused v0.1 delivery and bounded correction — 2026-10-01
+
+See [v0.1 results and reviewed loss charts](v01.md). The first request-domain fit improved substantially over its own broad initializer, but decreasing training loss did not ensure held-out improvement. Validation NLL selected update 1,200; later updates overfit. Its calibration policy targeting 90% selected accuracy did not maintain that point target on independent tests. Calibration performance is an estimate, not a guarantee.
+
+The bounded correction combined natural within-language sampling, a smaller learning rate and stronger calibration guards. Fresh independent selected accuracy reached 90.32% English / 91.64% Chinese at 77.5% / 80.75% coverage, while full accuracy remained 78.25% / 81.0%. Multiple factors changed, so this does not isolate any one factor's contribution. Acceptance panels differ, prohibiting a paired claim about raw accuracy changes. The fresh corrective panel came from unused official TRAIN groups reserved before fitting, not from reopening the first test. Both panels are now observed regression material.
+
+The user approved a usable scoring preview and clarified the 80% direction is advisory. Keep all historical metrics, including failures, and distinguish delivered capability from broader aspirations. This is 18-domain bilingual scoring, not established general reasoning. Weak class recall and unseen option semantics remain concrete next targets. The artifact carries preview status, exact checkpoint identity and CPU/CUDA/runtime verification, while the strict publisher retains its original checks. No model weights or evaluation labels changed to obtain preview status.

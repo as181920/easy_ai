@@ -5,7 +5,10 @@ require_relative "../../lib/easy_ai"
 class SemanticCoverageEvaluation
   def initialize(model:, tokenizer:, device: "cpu", batch_size: 16)
     @model, @device, @batch_size = model, device, batch_size
-    @model.to(device).eval
+    # Torch.rb replaces Parameters on every Module#to, even on the same device.
+    # Preserve optimizer references when evaluating an already placed training model.
+    @model.to(device) unless @model.parameters.all? { |parameter| same_device?(parameter.device.to_s, device.to_s) }
+    @model.eval
     @collator = EasyAI::Decision::Data::Collator.new(tokenizer: tokenizer, config: model.config)
   end
 
@@ -51,6 +54,10 @@ class SemanticCoverageEvaluation
   end
 
   private
+
+  def same_device?(actual, requested)
+    actual == requested || (requested == "cuda" && actual.start_with?("cuda:"))
+  end
 
   def batch_logits(rows)
     Torch.no_grad do

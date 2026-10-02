@@ -194,7 +194,7 @@ module EasyAI
           end
           loss = loss_for(examples, seed: seed, teacher: true)
           (@batch_losses || {}).each { |key, value| @step_losses[key] += value / @accumulation }
-          input_tokens += @collator.input_token_counts.sum if state["coverage"]
+          input_tokens += input_token_count if state["coverage"]
           number = loss.item
           raise FloatDomainError, "Non-finite training loss" unless number.finite?
           @policy.check_budget!(device) if micro.zero?
@@ -211,6 +211,10 @@ module EasyAI
           state["coverage"]["input_tokens"] += input_tokens
         end
         total_loss
+      end
+
+      def input_token_count
+        @collator.input_token_counts.sum
       end
 
       def loss_for(examples, seed:, teacher: false)

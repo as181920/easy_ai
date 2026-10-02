@@ -2,6 +2,8 @@
 
 用 Ruby 学习并实现神经网络。维护中的第一项能力是 **EasyAI::Decision**：给定状态、问题和多个候选，直接输出候选概率。算法、训练循环、分词和优化器可在仓库中阅读；张量计算与自动微分交给 Torch.rb / LibTorch，可使用 CUDA 或 CPU。
 
+Decision v0.1 is delivered as a **model-only scoring preview** for Chinese/English request domains: `runs/decision/v0.1-preview`. Load it with `EasyAI::Decision::Release.load("runs/decision/v0.1-preview", device: "auto")`. The corrected model scores **78.25% English / 81.0% Chinese** overall, and **90.32% / 91.64%** on confident decisions at **77.5% / 80.75%** coverage. The 80% target is advisory for continued optimization; the original failed strict acceptance remains recorded. See [results, charts, inference and training commands](docs/decision/v01.md). General yes/no reasoning remains unvalidated; no business integration is included.
+
 ```text
 state --------------------> shared bidirectional encoder ----> state memory
 question + each option ---> shared bidirectional encoder ----> cross-attention
@@ -114,6 +116,16 @@ Latest controlled experiment (2026-09-29): extending gold-supervised training fr
 ![Evidence-supervision comparison](docs/images/decision-evidence-comparison.png)
 
 ![Answer and evidence losses across three seeds](docs/images/decision-evidence-loss.png)
+
+The completed [fitting diagnostic](docs/decision/fitting.md) compares sinusoidal positions and RoPE on 128 bilingual training examples. Our own parent reaches 100% with both (RoPE reaches the gate at update 1,000 vs 1,800); random starts finish at 75% / 87.5%. These are single-seed training-fit results, not generalization. No predictor is promoted.
+
+![Positional encoding and initialization fitting comparison](docs/images/decision-fitting-comparison.png)
+
+The completed [natural-task pilot](docs/decision/natural.md) adds full-candidate AG News and bilingual MASSIVE supervision. Across the same fresh panel, main source-macro accuracy rises from **42.43%** for our own starting parent to **61.04% / 60.84%** (sinusoidal/RoPE). The gains concentrate in the trained news/domain tasks; withheld Emotion is only **6–7%** and binding groups pass **4.6–5.7%**. This is useful task learning, not general semantics or a demonstrated RoPE advantage. No predictor is promoted. The document records the one-command reproduction, experimental load paths, memory/exposure audits, failure distributions and next diagnostic.
+
+![Natural-task pilot comparison](docs/images/decision-natural-comparison.png)
+
+![Natural-task training and validation curves](docs/images/decision-natural-loss.png)
 
 The [evidence-supervision experiment](docs/decision/evidence.md) compares answer CE with answer + supporting-sentence CE using our own scratch-trained parents. It reserves 6,144 controlled Chinese/English test examples from 32 independent families plus a fresh 809-row public test. Lateness probes are informal checks, not acceptance criteria. The document includes the model ASCII diagram, a one-command reproduction, and published Jev/open-model comparisons; the 95% target is a narrow-task reliability gate, not a definition of general semantic understanding.
 

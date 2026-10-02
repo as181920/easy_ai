@@ -5,6 +5,7 @@ gem "torch-rb"
 
 gem "activesupport"
 gem "faraday", "~> 2.0"
+gem "csv", "~> 3.3"
 gem "debug"
 gem "unicode_plot"
 gem "zeitwerk"
