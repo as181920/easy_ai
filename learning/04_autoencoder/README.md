@@ -1,21 +1,45 @@
-# 04 · Auto-encoding：从压缩到去噪
+# 04 · Auto-encoding：压缩、稀疏与去噪
 
-状态：课程大纲，尚无训练实现。先修：01–03；基础全连接版本不需要 CNN。后续：[CNN](../05_cnn/README.md)、[生成模型](../13_generative/README.md)。
+已实现可运行的最小教学实验。先修：01–03。 下一章：[05_cnn](../05_cnn/README.md)。
 
-从分类 `x → y` 转为重构 `x → encoder → z → decoder → x_hat`。Encoder 学表示，Decoder 重建输入，瓶颈 z 控制容量；它与 Seq2seq 都有编码/解码结构，但任务目标和信息流不同。
+复用 01 的 MLP 做 Encoder/Decoder，复用 02 的训练器与 03 的诊断。输入为 `x=[cos t,sin t,0.5cos t,0.5sin t]`，瓶颈二维，训练/验证由独立 t 样本生成。
 
-| 顺序 | 最小实验 | 核心问题 |
-| --- | --- | --- |
-| 1. 线性 AE | 压缩带已知低维结构的合成向量，对照 PCA | 线性子空间、中心化、MSE；不能声称任意设置都与 PCA 参数一致 |
-| 2. 非线性 bottleneck AE | 小 MLP 重构曲线/向量，逐渐改变 z 维数 | 容量、信息损失、泛化；没有瓶颈可能只学复制 |
-| 3. Sparse AE | 给 latent 激活加稀疏约束 | 激活稀疏与权重稀疏不同；扫描强度避免表示全零 |
-| 4. Denoising AE | 输入加噪或随机遮挡，target 保留干净输入 | corruption 是任务构造，与隐藏层 dropout 区分 |
-| 5. 卷积 AE（学完 05） | 小图像压缩/去噪 | 复用卷积，比较形状与重构细节 |
+`x → encoder → z → decoder → x̂`。线性版本是 `4→2→4`；非线性版本为 `4→12(tanh)→2→12(tanh)→4`。重构均方误差按所有样本与维度平均；sparse 版本另加 `λ mean(|z|)`，约束 latent 激活而非权重。Linear AE 有 22 参数，非线性 AE 有 174 参数。
 
-MSE 适合连续重构；二元数据可使用相应 Bernoulli 重构目标，不能把任意像素值机械当作二元标签。比较 PCA、复制/均值基线；记录独立样本重构误差、latent 跨样本方差、重构前后图。只有训练重构漂亮不能证明有用表示，异常检测的重构误差也需另行验证。
+实验递进：线性 AE/PCA 对照 → 非线性瓶颈 → latent L1 稀疏 → 30% 输入随机遮挡的 Denoising AE。输入遮挡使用 `x_corrupt=x*mask`，target 始终干净 x；本章 loss 计算所有位置，不是只计算遮挡位置。
 
-输入 mask 必须明确遮挡率、填充值、是否传入可见性标记、loss 算全部位置还是仅遮挡位置；不同选择定义不同任务。去噪 AE 不一定只对遮挡位置算 loss。依据：[Denoising Autoencoder](https://www.jmlr.org/papers/v11/vincent10a.html)。
+```ruby
+z = model.encode(x)
+reconstruction = model.decoder.call(z)
+loss = mse(reconstruction, clean_x) + sparsity * z.abs.mean
+```
 
-普通 AE 不保证随机抽取 z 能得到合理样本；VAE 的先验、KL 和重参数化放在 [13](../13_generative/README.md)，学会概率后再进入。BERT 的 masked-token prediction 和 MAE 的图像遮挡重构在 13 作为自监督扩展，不能把所有 Encoder/Decoder 都称为同一种 Autoencoder。
+验证去噪使用固定 mask，训练每步生成新 mask。输出重构明细、loss 曲线和 latent 统计；稀疏惩罚可能损害重构，训练重构好也不证明表示有用。当前数据有精确二维线性结构，所以 PCA 可接近零误差；非线性网络不必在短训练内更好。
 
-计划产出：压缩率/重构误差曲线、latent 图、干净/遮挡/重构对照，以及瓶颈、稀疏约束和 dropout 的独立消融。
+普通 AE 不能保证随机 latent 样本合理；13 的 VAE 引入先验/KL。卷积 AE 在 05 复用本章目标，MAE 在 13 将遮挡移到 patch。依据：[Denoising AE](https://www.jmlr.org/papers/v11/vincent10a.html)。
+
+## 数据、训练与独立推理
+
+从仓库根目录运行；安装依赖用 `bundle install`。涉及训练与模型推理时默认 `auto`：优先 CUDA，不可用时回退 CPU；也可显式 `--device cpu`。使用小规模合成数据，无模型下载。限制线程能避免 tiny tensor 的 CPU 线程开销：
+
+```bash
+export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+bundle exec ruby learning/04_autoencoder/data.rb
+bundle exec ruby learning/04_autoencoder/train.rb --steps 60
+bundle exec ruby learning/04_autoencoder/predict.rb
+bundle exec rake test:learning
+```
+
+`--seed` 改随机种子，`--output` 分开实验目录，训练还可用 `--device cpu/cuda/auto`。默认输出 `runs/learning/04_autoencoder/default/`，重跑会覆盖同名产物。`data.rb` 导出数据配方的样本用于查看；训练入口自行调用生成器，不依赖该 JSON 文件，训练中的特殊移位/遮挡在实验源码与实际 `data.json` 中记录。
+
+推理 `--model PATH` 指向保存的模型。 `--input PATH` 可指定 `{"input": ...}` JSON；默认提供一个符合本章形状的示例。Seq2seq/EncoderDecoder 输出自由生成，GPT 输出 top-1 生成，其他模型输出 score/reconstruction；RL actor-critic 输出 policy logits 与 value。
+
+## 结果与正确性
+
+[实际运行记录](results.json) 保存 seed、步数、环境与指标；下图取自同一运行，不是验收阈值。
+
+![本章实验结果](images/bottleneck-loss.svg)
+
+[实验代码](../lib/easy_ai_learning/autoencoder/experiment.rb) 串起各步骤；共享数据在 [course/data.rb](../lib/easy_ai_learning/course/data.rb)。核心验证见 [测试](../test/course/vision_test.rb)，梯度对照另见 [derivatives_test.rb](../test/course/derivatives_test.rb)。测试只检查确定性公式、shape、mask、梯度、状态与参数更新；不训练到某个准确率或权重分布。
+
+产物包括实际数据、JSON 推理状态、history、诊断与 SVG；本地完整参数/历史留在忽略的 runs 下，仓库只收录小型结果摘要与图。00/07 的非神经实验和 15 的交互训练输出格式按任务分别记录，不强行统一为分类 loss。

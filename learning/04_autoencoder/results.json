@@ -1,0 +1,93 @@
+{
+  "chapter": "04_autoencoder",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:27:46Z",
+  "results": {
+    "linear": {
+      "validation_mse": 0.0005646512727253139,
+      "latent": {
+        "count": 128,
+        "nonfinite": 0,
+        "mean": -0.10941104899393395,
+        "std": 0.8582149387060071,
+        "rms": 0.8651610593757144,
+        "min": -1.307381510734558,
+        "max": 1.483993649482727,
+        "max_abs": 1.483993649482727,
+        "q05": -1.2853228390216827,
+        "median": -0.1904083415865898,
+        "q95": 1.4034921646118164,
+        "near_zero_fraction": 0.0,
+        "relative_near_zero_fraction": 0.0,
+        "zero_fraction": 0.0
+      }
+    },
+    "bottleneck": {
+      "validation_mse": 0.002290842356160283,
+      "latent": {
+        "count": 128,
+        "nonfinite": 0,
+        "mean": -0.0019075065501965582,
+        "std": 0.7177539753710677,
+        "rms": 0.7177565100660602,
+        "min": -1.064479947090149,
+        "max": 1.1440346240997314,
+        "max_abs": 1.1440346240997314,
+        "q05": -1.0420095682144166,
+        "median": -0.08594532310962677,
+        "q95": 1.0841261506080626,
+        "near_zero_fraction": 0.0,
+        "relative_near_zero_fraction": 0.0,
+        "zero_fraction": 0.0
+      }
+    },
+    "sparse": {
+      "validation_mse": 0.0012167488457635045,
+      "latent": {
+        "count": 128,
+        "nonfinite": 0,
+        "mean": 0.039250602436368354,
+        "std": 0.37875292165719837,
+        "rms": 0.3807812829637004,
+        "min": -0.49484241008758545,
+        "max": 0.6382982730865479,
+        "max_abs": 0.6382982730865479,
+        "q05": -0.43574157953262327,
+        "median": -0.0759204849600792,
+        "q95": 0.6189823120832443,
+        "near_zero_fraction": 0.0,
+        "relative_near_zero_fraction": 0.0,
+        "zero_fraction": 0.0
+      }
+    },
+    "denoising": {
+      "validation_mse": 0.05424593761563301,
+      "latent": {
+        "count": 128,
+        "nonfinite": 0,
+        "mean": 0.019447291793767363,
+        "std": 0.8949649965209554,
+        "rms": 0.8951762631771832,
+        "min": -1.2078723907470703,
+        "max": 1.414966106414795,
+        "max_abs": 1.414966106414795,
+        "q05": -1.1802265226840973,
+        "median": -0.1482478827238083,
+        "q95": 1.3408782482147217,
+        "near_zero_fraction": 0.0,
+        "relative_near_zero_fraction": 0.0,
+        "zero_fraction": 0.0
+      }
+    },
+    "pca_validation_mse": 5.201988619090795e-33
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/04_autoencoder/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

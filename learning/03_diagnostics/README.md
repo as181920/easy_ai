@@ -1,47 +1,53 @@
-# 03 · 权重分布与训练健康诊断
+# 03 · 权重、激活、梯度与训练诊断
 
-状态：课程大纲，尚无通用统计脚本。现有 XOR 可导出 `model.json` 和 loss；其 9 个参数适合逐个理解，样本量太小，不适合推断总体分布。先修：02。本章的诊断方法贯穿后续所有模型。
+已实现可运行的最小教学实验。先修：02_training。 下一章：[04_autoencoder](../04_autoencoder/README.md)。
 
-## 权重越分散越好吗？
+**没有通用的合理权重直方图；集中在零附近本身不是失败。** 初始化、稀疏任务、weight decay、归一化结构都可能产生集中分布。目标是稳定计算、有效学习与独立验证表现，不是把权重强行“拉散”。
 
-**没有通用的“合理权重直方图”，集中也不一定不好。** 初始化经常就是以零附近为中心的小幅随机分布；训练后的权重无需保持高斯、均匀或某个标准差。稀疏模型、weight decay、低秩更新都可能使大量参数接近零。Bias 初始为零、LayerNorm 的 bias 为零/scale 为一，也可能完全合理。
+本章复用 02 的同一数据与 MLP，分别运行基线、过强衰减、过小学习率。比较初始/最终逐层权重、梯度、实际更新、固定验证 batch 激活，以及隐藏矩阵的奇异值和有效秩。
 
-需要警惕的是隐藏单元全部同值而无法破除对称性、整层不更新、激活全部死亡、输出表示坍缩、数值发散，或少数异常值伴随不稳定训练。它们必须结合 forward、gradient 和验证指标确认，不能仅凭直方图下结论。
-
-不同层的 fan-in、激活、归一化与残差结构不同；将 Embedding、卷积核、bias、LayerNorm scale 全部混成一张图会掩盖问题。对于 ReLU 网络，某层乘正数 c、下一层除以 c 可保持同一函数（在匹配的 bias 缩放等条件下），却改变权重分布，因此绝对大小不能单独衡量质量。
-
-## 逐层观测什么
-
-| 对象 | 记录与可视化 | 能回答的问题 |
+| 观测 | 方法 | 解释限制 |
 | --- | --- | --- |
-| 权重 / bias / norm scale，分开看 | shape、数量、均值、标准差、RMS、分位数、最大绝对值、非有限值；直方图/热力图 | 尺度是否突变？异常值在哪层？ |
-| 小权重比例 | `fraction(abs(w) < τ)`，记录 τ 及相对层 RMS 的版本 | 是否在变稀疏？阈值是否只是尺度效应？ |
-| 激活，固定代表性 batch | 均值/RMS、分位数、ReLU 零比例、sigmoid/tanh 饱和、跨样本方差 | dead units、饱和、表示坍缩？ |
-| 梯度，backward 后 step 前 | 每层 L2/RMS、缺失梯度、零梯度、非有限值；裁剪前后分别记 | 断图、消失、爆炸、长期被裁剪？ |
-| 实际参数更新 | `r = ||θ_after-θ_before||₂ / (||θ_before||₂ + ε)` | 太少/太剧烈？被冻结还是没学到？ |
-| 泛化与输出 | train/validation loss、任务指标、错误样本、预测分布 | 学会任务还是记忆、常量预测或泄漏？ |
-| 矩阵结构（进阶） | 奇异值谱、有效秩、通道/单元相关性 | 表示是否冗余？低秩是否符合任务？ |
+| 权重 | 均值/std/RMS、分位数、极值、近零比例、逐张量直方图 | bias、norm scale、Embedding 不混为一个分布 |
+| 激活 | 同样统计 + ReLU 零比例 | 很多零不等于所有单元在所有样本上死亡 |
+| 梯度 | 非有限值、每层范数、missing 与 zero 区分 | 冻结或未参与目标也可能无梯度 |
+| 实际更新 | `||θ_after-θ_before||/(||θ_before||+ε)` | 近零参数还须看绝对更新；AdamW 不等于 ηg |
+| 矩阵结构 | 奇异值，`effective_rank=exp(-Σp log p)`，p 为归一化奇异值 | 低秩可能符合任务，无统一验收阈值 |
+| 验证/输出 | 分类指标、失败样本、常量预测、输出置信度 | 训练 loss/权重图不能替代泛化 |
 
-RMS 定义为 `sqrt(mean(w²))`，与标准差不同。近零参数的更新比率会失真，需同时看绝对更新；缺失梯度与值为零的梯度要分开。AdamW 的实际更新含自适应缩放和衰减，不能用 `η*gradient` 代替。有效秩低也可能是目标任务本来简单。
+不同 ReLU 层配套乘/除正系数可保持函数而改变权重尺度。Xavier 的初始方差约 `2/(fan_in+fan_out)`，He 对 ReLU 约 `2/fan_in`，不是训练后必须达到的方差。依据：[Xavier](https://proceedings.mlr.press/v9/glorot10a.html)、[He](https://openaccess.thecvf.com/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)。
 
-在初始化、早期、中期、结束记录相同层和固定诊断 batch，保留训练/评估模式；dropout 和 BatchNorm 的模式影响激活统计。展示完整范围与异常值，再提供放大的中心区，不能靠截断图“改善”分布。避免把共享/tied 参数重复计入。
+```ruby
+before = EasyAILearning::Diagnostics::Stats.snapshot(model)
+# 一次或多次已正确计算的参数更新
+weights = EasyAILearning::Diagnostics::Stats.model(model)
+updates = EasyAILearning::Diagnostics::Stats.updates(model, before)
+```
 
-## 初始化的尺度参考，不是训练后验收目标
+修复路径：不更新先查注册/冻结/计算图和标签；发散先查输入尺度、数值操作、步长，再用初始化、归一化、残差和必要的裁剪；训练好验证差再比较数据增强、decay/dropout、early stopping 和容量。一次改变一个变量，并复查验证集。当前实验直接展示过强 decay 与小步长；其他故障的确定性检测见测试。
 
-Xavier 常用 `Var(W) ≈ 2/(fan_in+fan_out)`，He 对 ReLU 常用 `Var(W) ≈ 2/fan_in`。它们关注初始信号/梯度传播，依赖激活、独立性等假设；卷积 fan-in 还包括核面积。这些公式不是训练后必须恢复到的权重方差。依据：[Xavier](https://proceedings.mlr.press/v9/glorot10a.html)、[He 初始化](https://openaccess.thecvf.com/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)。
+## 数据、训练与独立推理
 
-## 怎样达成合理结果
+从仓库根目录运行；安装依赖用 `bundle install`。涉及训练与模型推理时默认 `auto`：优先 CUDA，不可用时回退 CPU；也可显式 `--device cpu`。使用小规模合成数据，无模型下载。限制线程能避免 tiny tensor 的 CPU 线程开销：
 
-| 观测到的问题 | 先核实 | 可做的受控干预 |
-| --- | --- | --- |
-| loss 不降，整层梯度缺失/长期为零 | 参数注册、计算图、冻结、标签与 loss、清零位置 | 修复训练循环；用小 batch 拟合和梯度检查确认 |
-| 权重很小且输出几乎常量、train/validation 均差 | 衰减是否过强、学习率过小、激活/表示是否坍缩 | 减小 decay/dropout；调整学习率、宽度与初始化 |
-| 权重集中但验证表现好，更新和激活稳定 | 按层分布、稀疏任务、归一化尺度 | 保留；不为了图好看强行拉开权重 |
-| 梯度/激活爆炸，loss 为 NaN/Inf | 输入尺度、学习率、log/softmax 稳定性、精度 | 修复数值操作；降低学习率、正确初始化、归一化/残差；必要时裁剪 |
-| 很多 ReLU 单元对代表性样本始终为零 | 输入/bias、学习率、batch 覆盖 | 调整初始化/步长，比较 LeakyReLU；先确认任务表现受损 |
-| 训练好、验证差 | 划分/泄漏、容量、样本量与噪声 | 增强数据、decay/dropout/early stopping、缩小模型；逐项验证 |
-| 深度增加后训练误差更高 | 梯度传播、激活尺度和训练预算 | 比较普通网络/ResNet，初始化和归一化消融 |
+```bash
+export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+bundle exec ruby learning/03_diagnostics/data.rb
+bundle exec ruby learning/03_diagnostics/train.rb --steps 60
+bundle exec ruby learning/03_diagnostics/predict.rb
+bundle exec rake test:learning
+```
 
-计划实验：在同一 MLP 中分别设置过大初始化、过大/过小学习率、过强 decay 和错误冻结；记录证据，再一次修一个变量。进阶复用于 CNN/ResNet/RNN/GPT，使用多种子和独立验证集确认修复。
+`--seed` 改随机种子，`--output` 分开实验目录，训练还可用 `--device cpu/cuda/auto`。默认输出 `runs/learning/03_diagnostics/default/`，重跑会覆盖同名产物。`data.rb` 导出数据配方的样本用于查看；训练入口自行调用生成器，不依赖该 JSON 文件，训练中的特殊移位/遮挡在实验源码与实际 `data.json` 中记录。
 
-完成标准：能写出「现象 → 证据 → 假设 → 干预 → 验证」，以数值稳定、有效学习和泛化为目标，而不是追求某种权重形状。权重稀疏、attention 概率集中、输出概率过度自信是不同问题；后两者需各自的可见性、任务指标和校准分析。
+推理 `--model PATH` 指向保存的模型。 `--input PATH` 可指定 `{"input": ...}` JSON；默认提供一个符合本章形状的示例。Seq2seq/EncoderDecoder 输出自由生成，GPT 输出 top-1 生成，其他模型输出 score/reconstruction；RL actor-critic 输出 policy logits 与 value。
+
+## 结果与正确性
+
+[实际运行记录](results.json) 保存 seed、步数、环境与指标；下图取自同一运行，不是验收阈值。
+
+![本章实验结果](images/baseline-weights.svg)
+
+[实验代码](../lib/easy_ai_learning/diagnostics/experiment.rb) 串起各步骤；共享数据在 [course/data.rb](../lib/easy_ai_learning/course/data.rb)。核心验证见 [测试](../test/course/foundations_test.rb)，梯度对照另见 [derivatives_test.rb](../test/course/derivatives_test.rb)。测试只检查确定性公式、shape、mask、梯度、状态与参数更新；不训练到某个准确率或权重分布。
+
+产物包括实际数据、JSON 推理状态、history、诊断与 SVG；本地完整参数/历史留在忽略的 runs 下，仓库只收录小型结果摘要与图。00/07 的非神经实验和 15 的交互训练输出格式按任务分别记录，不强行统一为分类 loss。

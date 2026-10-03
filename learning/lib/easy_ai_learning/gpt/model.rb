@@ -29,7 +29,7 @@ module EasyAILearning
       end
 
       def forward(idx)
-        batch_size, seq_len = idx.shape
+        _, seq_len = idx.shape
         raise ArgumentError, "Sequence length exceeds block size" if seq_len > config[:block_size]
 
         token_embeddings = @token_embedding.call(idx)
@@ -42,6 +42,10 @@ module EasyAILearning
       end
 
       def generate(input_ids, max_new_tokens:, temperature: 1.0, top_k: nil)
+        raise ArgumentError, "Invalid generation settings" unless max_new_tokens >= 0 && temperature.finite? && temperature > 0 &&
+          (!top_k || top_k.between?(1, config[:vocab_size])) && input_ids.shape[1] > 0
+        previous = training
+        eval
         generated = input_ids.clone
         Torch.no_grad do
           max_new_tokens.times do
@@ -58,6 +62,8 @@ module EasyAILearning
           end
         end
         generated
+      ensure
+        train(previous) unless previous.nil?
       end
 
       private
@@ -65,7 +71,7 @@ module EasyAILearning
         def top_k_filter(logits, k)
           values, _ = Torch.topk(logits, k)
           min_values = values.narrow(1, values.shape[1] - 1, 1)
-          logits.masked_fill(logits < min_values, -Float::INFINITY)
+          logits.masked_fill(logits.lt(min_values), -Float::INFINITY)
         end
     end
   end

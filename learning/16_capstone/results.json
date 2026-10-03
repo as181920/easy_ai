@@ -1,0 +1,111 @@
+{
+  "chapter": "16_capstone",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:47Z",
+  "results": {
+    "panel": [
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "mlp",
+        "seed": 1337,
+        "reload_max_difference": 0.0,
+        "parameters": 806
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "cnn",
+        "seed": 1337,
+        "reload_max_difference": 0.0,
+        "parameters": 354
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "resnet",
+        "seed": 1337,
+        "reload_max_difference": 0.0,
+        "parameters": 658
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "mlp",
+        "seed": 1347,
+        "reload_max_difference": 0.0,
+        "parameters": 806
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "cnn",
+        "seed": 1347,
+        "reload_max_difference": 0.0,
+        "parameters": 354
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "resnet",
+        "seed": 1347,
+        "reload_max_difference": 0.0,
+        "parameters": 658
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "mlp",
+        "seed": 1357,
+        "reload_max_difference": 0.0,
+        "parameters": 806
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "cnn",
+        "seed": 1357,
+        "reload_max_difference": 0.0,
+        "parameters": 354
+      },
+      {
+        "validation_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "model": "resnet",
+        "seed": 1357,
+        "reload_max_difference": 0.0,
+        "parameters": 658
+      }
+    ],
+    "summary": {
+      "mlp": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "cnn": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "resnet": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      }
+    },
+    "scope": "Preselected architectures, three initialization seeds, independently generated small image splits. This is a toy benchmark, not external-data evidence."
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/16_capstone/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

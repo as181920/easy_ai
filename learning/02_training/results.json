@@ -1,0 +1,60 @@
+{
+  "chapter": "02_training",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:27:39Z",
+  "results": {
+    "sgd": {
+      "accuracy": 0.8541666865348816,
+      "train_loss": 0.5423985719680786,
+      "validation_loss": 0.5325888395309448
+    },
+    "momentum": {
+      "accuracy": 0.9479166865348816,
+      "train_loss": 0.1251053810119629,
+      "validation_loss": 0.15909263491630554
+    },
+    "adam": {
+      "accuracy": 0.9583333730697632,
+      "train_loss": 0.12117026746273041,
+      "validation_loss": 0.15399578213691711
+    },
+    "adamw": {
+      "accuracy": 0.9583333730697632,
+      "train_loss": 0.12117026746273041,
+      "validation_loss": 0.15399578213691711
+    },
+    "decay": {
+      "accuracy": 0.9583333730697632,
+      "train_loss": 0.1325540691614151,
+      "validation_loss": 0.16048508882522583
+    },
+    "dropout": {
+      "accuracy": 0.96875,
+      "train_loss": 0.2800094187259674,
+      "validation_loss": 0.2020028829574585
+    },
+    "early_stopping": {
+      "steps": 60,
+      "best_validation_loss": 0.13964858651161194
+    },
+    "accumulated_gradient": 9.333333969116211,
+    "loss_scaling": {
+      "value_after_sgd": 0.800000011920929,
+      "scale": 128.0,
+      "explicit_half_roundtrip": [
+        0.0999755859375
+      ],
+      "note": "Explicit loss scaling and half rounding; no automatic mixed-precision context is provided by this lesson."
+    },
+    "adamw_first_update": 1.860000002
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/02_training/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

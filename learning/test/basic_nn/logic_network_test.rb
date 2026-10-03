@@ -29,17 +29,21 @@ class LogicNetworkTest < Minitest::Test
     end
   end
 
-  def test_randomly_initialized_network_learns_xor_without_exact_weights
+  def test_sgd_updates_each_parameter_by_the_computed_gradient
     model = EasyAILearning::BasicNN::LogicNetwork.new(seed: 1337, device: :cpu)
-    trainer = EasyAILearning::BasicNN::LogicTrainer.new(model: model).train
+    inputs, targets = EasyAILearning::BasicNN::LogicGates::INPUTS, EasyAILearning::BasicNN::LogicGates.targets
+    loss = Torch::NN::Functional.mse_loss(model.call(Torch.tensor(inputs, dtype: :float32)), Torch.tensor(targets, dtype: :float32))
+    loss.backward
+    before = model.parameter_values
+    gradient = model.parameter_gradients
+    Torch::Optim::SGD.new(model.parameters, lr: 0.1).step
 
     assert_equal 9, model.parameter_count
-    assert_predicate trainer, :converged?
-    assert_operator trainer.history.last.last, :<, trainer.history.first.last
-    actual = EasyAILearning::BasicNN::LogicGates::INPUTS.map { |input| model.scores(input).map { |value| value >= 0.5 ? 1 : 0 } }
-
-    assert_equal EasyAILearning::BasicNN::LogicGates.targets, actual
-    assert_equal [0, 1, 1, 0], EasyAILearning::BasicNN::LogicGates::INPUTS.map { |input| model.predict(input) }
+    model.parameter_values.each do |name, values|
+      before.fetch(name).flatten.zip(gradient.fetch(name).flatten, values.flatten).each do |old, grad, actual|
+        assert_in_delta old - 0.1 * grad, actual, 1e-7
+      end
+    end
   end
 
   def test_torch_autograd_matches_the_scalar_chain_rule

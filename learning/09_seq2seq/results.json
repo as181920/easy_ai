@@ -1,0 +1,21 @@
+{
+  "chapter": "09_seq2seq",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:07Z",
+  "results": {
+    "seq2seq": {
+      "teacher_forced_accuracy": 0.668749988079071,
+      "free_token_accuracy": 0.675000011920929,
+      "exact_sequence_accuracy": 0.109375
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/09_seq2seq/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

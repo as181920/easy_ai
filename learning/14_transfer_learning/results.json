@@ -1,0 +1,138 @@
+{
+  "chapter": "14_transfer_learning",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:35Z",
+  "results": {
+    "scratch": {
+      "accuracy": 0.875,
+      "trainable_parameters": 62,
+      "updates": {
+        "hidden.weight": {
+          "absolute": 1.7159388065338135,
+          "relative": 0.8883378068033789
+        },
+        "hidden.bias": {
+          "absolute": 0.791101336479187,
+          "relative": 0.5511099532715599
+        },
+        "output.weight": {
+          "absolute": 1.7773226499557495,
+          "relative": 2.100828994843468
+        },
+        "output.bias": {
+          "absolute": 0.06025092303752899,
+          "relative": 0.15291979667087266
+        }
+      }
+    },
+    "frozen": {
+      "accuracy": 0.8958333730697632,
+      "trainable_parameters": 26,
+      "updates": {
+        "hidden.weight": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "hidden.bias": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "output.weight": {
+          "absolute": 1.4583607912063599,
+          "relative": 0.33475872482313906
+        },
+        "output.bias": {
+          "absolute": 0.3576679229736328,
+          "relative": 0.4371313756114904
+        }
+      }
+    },
+    "partial": {
+      "accuracy": 0.9270833730697632,
+      "trainable_parameters": 38,
+      "updates": {
+        "hidden.weight": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "hidden.bias": {
+          "absolute": 0.8182708621025085,
+          "relative": 0.3264080717235864
+        },
+        "output.weight": {
+          "absolute": 1.0614203214645386,
+          "relative": 0.24364321603909406
+        },
+        "output.bias": {
+          "absolute": 0.4075039327144623,
+          "relative": 0.4980395032173378
+        }
+      }
+    },
+    "full": {
+      "accuracy": 0.9479166865348816,
+      "trainable_parameters": 62,
+      "updates": {
+        "hidden.weight": {
+          "absolute": 0.8007643818855286,
+          "relative": 0.1460854937744025
+        },
+        "hidden.bias": {
+          "absolute": 0.6668142676353455,
+          "relative": 0.2659920686132926
+        },
+        "output.weight": {
+          "absolute": 0.9009811878204346,
+          "relative": 0.20681529244550806
+        },
+        "output.bias": {
+          "absolute": 0.30394285917282104,
+          "relative": 0.37147015877993456
+        }
+      }
+    },
+    "lora": {
+      "accuracy": 0.8958333730697632,
+      "trainable_parameters": 28,
+      "updates": {
+        "hidden.weight": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "hidden.bias": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "output.base.weight": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "output.base.bias": {
+          "absolute": 0.0,
+          "relative": 0.0
+        },
+        "output.a.weight": {
+          "absolute": 1.6446714401245117,
+          "relative": 2.064810624972667
+        },
+        "output.b.weight": {
+          "absolute": 0.9076626300811768,
+          "relative": 907662630081.1768
+        }
+      }
+    },
+    "distilled": {
+      "accuracy": 0.59375,
+      "parameters": 22
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/14_transfer_learning/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

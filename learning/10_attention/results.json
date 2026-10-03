@@ -1,0 +1,33 @@
+{
+  "chapter": "10_attention",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:12Z",
+  "results": {
+    "fixed-state": {
+      "teacher_accuracy": 0.668749988079071,
+      "free_accuracy": 0.675000011920929
+    },
+    "cross-attention": {
+      "teacher_accuracy": 0.956250011920929,
+      "free_accuracy": 0.9468750357627869
+    },
+    "causal_past_difference": 0.0,
+    "additive_context": [
+      [
+        0.37938180565834045,
+        0.30706924200057983,
+        0.3135489821434021,
+        0.0
+      ]
+    ]
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/10_attention/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

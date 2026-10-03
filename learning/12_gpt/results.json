@@ -1,0 +1,39 @@
+{
+  "chapter": "12_gpt",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:24Z",
+  "results": {
+    "gpt": {
+      "test_loss": 0.04267587512731552,
+      "test_perplexity": 1.0435995834438863,
+      "test_token_accuracy": 1.0,
+      "parameters": 1048
+    },
+    "generation": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        5
+      ]
+    ]
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/12_gpt/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "chapter": "06_resnet",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:27:55Z",
+  "results": {
+    "plain": {
+      "accuracy": 1.0,
+      "parameters": 962
+    },
+    "residual": {
+      "accuracy": 1.0,
+      "parameters": 962
+    },
+    "without_norm": {
+      "accuracy": 1.0,
+      "parameters": 938
+    },
+    "bottleneck_shape": [
+      2,
+      8,
+      8,
+      8
+    ],
+    "preactivation_shape": [
+      2,
+      4,
+      8,
+      8
+    ],
+    "projection_shape": [
+      2,
+      8,
+      4,
+      4
+    ]
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/06_resnet/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

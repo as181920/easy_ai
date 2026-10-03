@@ -1,0 +1,73 @@
+{
+  "chapter": "13_generative",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:31Z",
+  "results": {
+    "vae": {
+      "reconstruction_mse": 0.0028967277612537146,
+      "kl": 2.330854892730713
+    },
+    "gan": {
+      "discriminator_loss": 1.3781352043151855,
+      "generator_loss": 0.692631185054779,
+      "sample_stats": {
+        "count": 128,
+        "nonfinite": 0,
+        "mean": 0.050414718920364976,
+        "std": 0.3139396953712518,
+        "rms": 0.3179619100043491,
+        "min": -0.8554962873458862,
+        "max": 1.0669296979904175,
+        "max_abs": 1.0669296979904175,
+        "q05": -0.4398904666304588,
+        "median": 0.021383723244071007,
+        "q95": 0.642384088039398,
+        "near_zero_fraction": 0.0,
+        "relative_near_zero_fraction": 0.0234375
+      }
+    },
+    "diffusion": {
+      "sample_stats": {
+        "count": 128,
+        "nonfinite": 0,
+        "mean": -0.05559317303232092,
+        "std": 0.6695031307307966,
+        "rms": 0.6718072959905539,
+        "min": -1.8193552494049072,
+        "max": 2.3645753860473633,
+        "max_abs": 2.3645753860473633,
+        "q05": -1.2203063786029815,
+        "median": -0.07229088246822357,
+        "q95": 1.0978149712085719,
+        "near_zero_fraction": 0.0,
+        "relative_near_zero_fraction": 0.0234375,
+        "zero_fraction": 0.0
+      }
+    },
+    "masked_language": {
+      "loss": 0.045663297176361084
+    },
+    "mae": {
+      "masked_patch_mse": 0.0760902613401413,
+      "visible": [
+        2,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14
+      ]
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/13_generative/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

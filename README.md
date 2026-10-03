@@ -219,7 +219,8 @@ runs/decision/<run>/
 - [Gold-supervised coverage round](docs/decision/coverage.md): completed six-run comparison; longer training gains 3.05 accuracy points but worsens raw probability metrics, while wording expansion loses 1.97 points. Includes exposure, memory recovery, failure probes and reproduction; no keyword-based semantic rules or pretrained LLM.
 - [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
-- [学习课程](learning/README.md)：由浅入深的模型架构、训练方法、权重诊断、经典视觉/序列模型与综合实验。
+- [学习课程](learning/README.md)：00–16 可运行的数据/训练/推理实验、训练方法、诊断和核心测试。
+- [全课程精简打印版](docs/learning-course-print.md)：核心概念、公式与必要代码，适合打印。
 - [逻辑门与最简 ReLU 网络](learning/01_basic_nn/README.md)：手写逻辑、9 参数 XOR 网络、Torch.rb CUDA 训练、手工梯度对照和函数图。
 
 配置遵循每行一个参数、优先人类可读性的约定。风格参考 easy_biz 的 RuboCop 习惯，项目继续使用 Ruby 库的目录结构。下载档案、训练数据、tokenizer 文件、权重和缓存请放入上述忽略目录；`examples/` 和测试代码可以正常提交。

@@ -1,0 +1,85 @@
+{
+  "chapter": "07_tokenizers",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:27:57Z",
+  "results": {
+    "character": {
+      "vocabulary": 18,
+      "tokens": 24,
+      "roundtrip": false,
+      "decoded": "hello 世界\nnew word�� 你好��",
+      "embedding_parameters_for_width_8": 144
+    },
+    "byte": {
+      "vocabulary": 256,
+      "tokens": 35,
+      "roundtrip": true,
+      "decoded": "hello 世界\nnew words! 你好\t🙂",
+      "embedding_parameters_for_width_8": 2048
+    },
+    "bpe": {
+      "vocabulary": 280,
+      "tokens": 24,
+      "roundtrip": true,
+      "decoded": "hello 世界\nnew words! 你好\t🙂",
+      "embedding_parameters_for_width_8": 2240
+    },
+    "embedding": {
+      "gradients": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "shape": [
+        3,
+        3
+      ]
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/07_tokenizers/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

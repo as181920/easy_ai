@@ -1,0 +1,35 @@
+{
+  "chapter": "11_transformer",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:20Z",
+  "results": {
+    "baseline": {
+      "token_accuracy": 0.99609375
+    },
+    "no_position": {
+      "token_accuracy": 0.52734375
+    },
+    "no_residual": {
+      "token_accuracy": 1.0
+    },
+    "no_norm": {
+      "token_accuracy": 1.0
+    },
+    "post_norm": {
+      "token_accuracy": 1.0
+    },
+    "encoder_decoder": {
+      "teacher_accuracy": 1.0,
+      "free_accuracy": 1.0
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/11_transformer/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

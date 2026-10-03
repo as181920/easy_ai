@@ -1,0 +1,54 @@
+{
+  "chapter": "00_foundations",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:27:32Z",
+  "results": {
+    "linear": {
+      "train_mse": 0.00026571427033149196,
+      "validation_mse": 0.00024356466807888585,
+      "manual_derivative": 6.0,
+      "numerical_derivative": 6.000000000039306
+    },
+    "classification": {
+      "logistic_accuracy": 0.4270833333333333,
+      "tree": 0.5,
+      "forest": 0.8125,
+      "boosting": 1.0
+    },
+    "pca": {
+      "eigenvalues": [
+        0.6589109674490276,
+        0.5835837625220366
+      ],
+      "reconstruction_mse": 6.38423563394558e-33
+    },
+    "kmeans": {
+      "centers": [
+        [
+          0.9733128113578801,
+          0.014176604965289108
+        ],
+        [
+          -1.002640073955211,
+          0.017290371257522873
+        ]
+      ]
+    },
+    "probability": {
+      "softmax": [
+        0.2689414213699951,
+        0.7310585786300049
+      ],
+      "cross_entropy": 0.3132616875182066
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/00_foundations/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

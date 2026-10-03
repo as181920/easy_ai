@@ -1,0 +1,179 @@
+{
+  "chapter": "03_diagnostics",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:27:42Z",
+  "results": {
+    "baseline": {
+      "validation_accuracy": 0.9583333730697632,
+      "activation": {
+        "count": 1152,
+        "nonfinite": 0,
+        "mean": 0.5334199439837701,
+        "std": 0.7676417635958889,
+        "rms": 0.9347784303546242,
+        "min": 0.0,
+        "max": 3.3676071166992188,
+        "max_abs": 3.3676071166992188,
+        "q05": 0.0,
+        "median": 0.0,
+        "q95": 2.129881751537323,
+        "near_zero_fraction": 0.5538194444444444,
+        "relative_near_zero_fraction": 0.5546875,
+        "zero_fraction": 0.5529513888888888
+      },
+      "updates": {
+        "hidden.weight": {
+          "absolute": 3.9871702194213867,
+          "relative": 2.0732077686314003
+        },
+        "hidden.bias": {
+          "absolute": 1.509045958518982,
+          "relative": 1.0663214859291177
+        },
+        "output.weight": {
+          "absolute": 4.1302266120910645,
+          "relative": 4.904507985018001
+        },
+        "output.bias": {
+          "absolute": 0.6625598073005676,
+          "relative": 2.8202231904118946
+        }
+      },
+      "hidden_spectrum": {
+        "singular_values": [
+          4.21665620803833,
+          3.5023443698883057
+        ],
+        "effective_rank": 1.9914425511365934
+      }
+    },
+    "excessive_decay": {
+      "validation_accuracy": 0.5,
+      "activation": {
+        "count": 1152,
+        "nonfinite": 0,
+        "mean": 0.046727932163321384,
+        "std": 0.06766529485236597,
+        "rms": 0.0822319388785014,
+        "min": 0.0,
+        "max": 0.3681337535381317,
+        "max_abs": 0.3681337535381317,
+        "q05": 0.0,
+        "median": 0.0,
+        "q95": 0.1905200302600861,
+        "near_zero_fraction": 0.5104166666666666,
+        "relative_near_zero_fraction": 0.5095486111111112,
+        "zero_fraction": 0.5034722222222222
+      },
+      "updates": {
+        "hidden.weight": {
+          "absolute": 1.683074951171875,
+          "relative": 0.8751480052097746
+        },
+        "hidden.bias": {
+          "absolute": 1.34291410446167,
+          "relative": 0.9489294578874985
+        },
+        "output.weight": {
+          "absolute": 0.9939491748809814,
+          "relative": 1.1802818883193873
+        },
+        "output.bias": {
+          "absolute": 0.20098502933979034,
+          "relative": 0.8555041136272169
+        }
+      },
+      "hidden_spectrum": {
+        "singular_values": [
+          0.42107340693473816,
+          0.35510027408599854
+        ],
+        "effective_rank": 1.9927796971762073
+      }
+    },
+    "small_lr": {
+      "validation_accuracy": 0.53125,
+      "activation": {
+        "count": 1152,
+        "nonfinite": 0,
+        "mean": 0.21145105134281847,
+        "std": 0.2885362183244291,
+        "rms": 0.35772153471512713,
+        "min": 0.0,
+        "max": 1.4676493406295776,
+        "max_abs": 1.4676493406295776,
+        "q05": 0.0,
+        "median": 0.0,
+        "q95": 0.7991819471120835,
+        "near_zero_fraction": 0.5234375,
+        "relative_near_zero_fraction": 0.5243055555555556,
+        "zero_fraction": 0.5234375
+      },
+      "updates": {
+        "hidden.weight": {
+          "absolute": 0.00027178379241377115,
+          "relative": 0.0001413193414907938
+        },
+        "hidden.bias": {
+          "absolute": 0.00019115486065857112,
+          "relative": 0.00013507377552640456
+        },
+        "output.weight": {
+          "absolute": 0.00026839421479962766,
+          "relative": 0.0003187092848038594
+        },
+        "output.bias": {
+          "absolute": 8.471516775898635e-05,
+          "relative": 0.00036059488979104976
+        }
+      },
+      "hidden_spectrum": {
+        "singular_values": [
+          1.5301278829574585,
+          1.1650681495666504
+        ],
+        "effective_rank": 1.9816816498330005
+      }
+    },
+    "concentrated_but_valid": {
+      "count": 102,
+      "nonfinite": 0,
+      "mean": 0.0,
+      "std": 0.0014002800840280099,
+      "rms": 0.0014002800840280099,
+      "min": -0.01,
+      "max": 0.01,
+      "max_abs": 0.01,
+      "q05": 0.0,
+      "median": 0.0,
+      "q95": 0.0,
+      "near_zero_fraction": 0.9803921568627451,
+      "relative_near_zero_fraction": 0.9803921568627451
+    },
+    "nonfinite_detection": {
+      "count": 3,
+      "nonfinite": 2,
+      "mean": 0.0,
+      "std": 0.0,
+      "rms": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "q05": 0.0,
+      "median": 0.0,
+      "q95": 0.0,
+      "near_zero_fraction": 1.0,
+      "relative_near_zero_fraction": 0.0
+    },
+    "diagnosis": "Compare layers, activations, gradients and held-out performance; no histogram acceptance threshold."
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/03_diagnostics/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}

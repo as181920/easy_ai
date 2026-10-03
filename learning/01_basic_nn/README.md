@@ -161,4 +161,12 @@ The default seed remains 1337; rerunning without `--seed` is reproducible rather
 
 The earlier teaching model jointly learned AND/OR/NAND/XOR with 18 parameters. This lesson now trains only XOR with 9 parameters and one output, making its prediction API and loss directly match the task. The previous local four-output seed-20261002 run is archived under `runs/learning/basic_nn/logic-gates-20261002-four-outputs/`; earlier plots and coefficients can be reviewed from Git history.
 
-The CUDA-trained default seed-1337 XOR model converged in **436 updates**, with maximum absolute error **0.009843296371400356** and all **4/4** Boolean predictions correct. This fits the complete finite truth table, not a held-out generalization benchmark. Tests check every manual derivative against finite differences, Torch autograd against the manual chain rule, learning from random initialization, and save/load prediction parity.
+The CUDA-trained default seed-1337 XOR model converged in **436 updates**, with maximum absolute error **0.009843296371400356** and all **4/4** Boolean predictions correct. This fits the complete finite truth table, not a held-out generalization benchmark. Tests check every manual derivative against finite differences, Torch autograd against the manual chain rule, an exact one-step SGD update, and save/load prediction parity. Training convergence is recorded as an experiment, never required by a unit test.
+
+## Course data and test policy
+
+`bundle exec ruby learning/01_basic_nn/data.rb` exports the four-point truth table. The separate train/validation/test keys in that reference are identical by definition; this is not a held-out benchmark. The existing `train.rb`, `predict.rb` and `plot.rb` remain the complete lesson entry points. The all-course runner keeps XOR’s 10,000-update maximum instead of using the 60-step budget of the other examples.
+
+Core tests now check manual/automatic derivatives, exact gates, an independently computed one-step SGD update, and save/load. They do not require a seed to converge. The observed training run remains in the plots and report, with its own success/failure exit status.
+
+The compact CUDA reference is saved in [results.json](results.json); trained weights stay under the ignored `runs/` directory.

@@ -1,0 +1,275 @@
+{
+  "chapter": "15_rl",
+  "seed": 1337,
+  "steps": 60,
+  "device": "cuda",
+  "ruby": "3.4.5",
+  "torch_rb": "0.23.0",
+  "recorded_at": "2026-10-03T11:28:41Z",
+  "results": {
+    "bandit": {
+      "values": [
+        0.20512820512820518,
+        0.35000000000000003,
+        0.7845303867403316
+      ],
+      "counts": [
+        39,
+        20,
+        181
+      ]
+    },
+    "exact_values": [
+      0.8003249999999998,
+      0.8634999999999999,
+      0.9299999999999999,
+      1.0,
+      0.0
+    ],
+    "q_learning": {
+      "mean_return": 0.97,
+      "success_rate": 1.0,
+      "episodes": [
+        {
+          "start": 0,
+          "return": 0.94,
+          "success": true,
+          "path": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 1,
+          "return": 0.96,
+          "success": true,
+          "path": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 2,
+          "return": 0.98,
+          "success": true,
+          "path": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 3,
+          "return": 1.0,
+          "success": true,
+          "path": [
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    "dqn": {
+      "mean_return": 0.97,
+      "success_rate": 1.0,
+      "episodes": [
+        {
+          "start": 0,
+          "return": 0.94,
+          "success": true,
+          "path": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 1,
+          "return": 0.96,
+          "success": true,
+          "path": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 2,
+          "return": 0.98,
+          "success": true,
+          "path": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 3,
+          "return": 1.0,
+          "success": true,
+          "path": [
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    "reinforce": {
+      "mean_return": 0.97,
+      "success_rate": 1.0,
+      "episodes": [
+        {
+          "start": 0,
+          "return": 0.94,
+          "success": true,
+          "path": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 1,
+          "return": 0.96,
+          "success": true,
+          "path": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 2,
+          "return": 0.98,
+          "success": true,
+          "path": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 3,
+          "return": 1.0,
+          "success": true,
+          "path": [
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    "actor_critic": {
+      "mean_return": 0.97,
+      "success_rate": 1.0,
+      "episodes": [
+        {
+          "start": 0,
+          "return": 0.94,
+          "success": true,
+          "path": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 1,
+          "return": 0.96,
+          "success": true,
+          "path": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 2,
+          "return": 0.98,
+          "success": true,
+          "path": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 3,
+          "return": 1.0,
+          "success": true,
+          "path": [
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    "ppo": {
+      "mean_return": 0.97,
+      "success_rate": 1.0,
+      "episodes": [
+        {
+          "start": 0,
+          "return": 0.94,
+          "success": true,
+          "path": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 1,
+          "return": 0.96,
+          "success": true,
+          "path": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 2,
+          "return": 0.98,
+          "success": true,
+          "path": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "start": 3,
+          "return": 1.0,
+          "success": true,
+          "path": [
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  "note": "Observed educational run; no convergence or generalization guarantee.",
+  "reproduction": {
+    "command": "bundle exec ruby learning/15_rl/train.rb --seed 1337 --steps 60 --device auto",
+    "runtime_note": "CUDA run outside tool sandbox. Local cuDNN compatibility library selected at process level; see learning/README.md."
+  }
+}
