@@ -1,5 +1,9 @@
 # Decision 开发交接：人物绑定与下一轮优化
 
+## Next scope — Decision v0.5 (planned, 2026-10-03)
+
+Read [v05-plan.md](v05-plan.md) for the requested next-round scope. Implementation has not started and no new goal or training run is active from this documentation change. v0.4 is committed as `866e59b`. Compare separate versus existing joint encoding on the frozen reviewed counterfactual core, with explicit positional/mask/weight-transfer checks and actor/event metrics. Both recipes start from our own v0.1 parent with fresh optimizers; v0.4 fitting weights remain diagnostic. A repeatable fitting success gates the bounded supervised generalization/unknown stages; failed fitting stops the round. The total ceiling is 7,000 updates across conditional phases, not an instruction to spend them all. Audit unused v0.4 acceptance exposure before reserving it; previous development results remain observed development. External weights, Path B, RL, growth and business integration remain outside scope. Older next-step suggestions below are historical; v0.1 remains delivered.
+
 ## Completed goal — Decision v0.3 (2026-10-03)
 
 The user authorized [v03-plan.md](v03-plan.md), Path A only. The bounded goal is complete; read [v03.md](v03.md) before continuing. Both ordinary-CE arms start from the exact delivered own v0.1 weights/tokenizer, keep the 6.63M architecture and finish 2,000 CUDA updates / 64,000 visits. The candidate changes factored actor/query/order/polarity supervision, reviewed expressions and explicit unknown exposure. Neither has an eligible development checkpoint; confirmation is skipped. Calibration, fresh acceptance, old regression, runtime and charts are complete. **No v0.3 model is promoted; v0.1 remains delivered.** The 80% direction remains advisory, but basic known/binding failures cannot be hidden by aggregate gains.

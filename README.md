@@ -10,6 +10,8 @@ The completed [Decision v0.3 round](docs/decision/v03.md) follows Path A with ou
 
 The [completed v0.4 implementation](docs/decision/v04.md) adds reviewed supervision, complete counterfactual families, a staged CE trainer and class/group checks. Its isolated 128-row fit stops at 87.5%: different-event cases pass, but mixed actor cases remain at 50% even on training data. All 1,000 updates use CUDA; runtime/memory checks pass. Under the stop rule, pilots and acceptance remain unrun and v0.1 stays delivered. This training score is not a generalization result. [Plan and procedure](docs/decision/v04-plan.md).
 
+The [v0.5 development plan](docs/decision/v05-plan.md) compares separate and joint relational encoding on the same reviewed core, verifies positions and weight transfer, and gates supervised generalization, unknown training and calibration on repeatable actor-binding learning. It is planned; implementation and training have not started.
+
 `device:` accepts `:auto`, `:cpu`, `:cuda` and the equivalent strings in both `Release.load` and `Predictor.load`.
 `Release#probabilities(state:, question:, options:, language: nil)` accepts multilingual text without a language argument. One tokenizer and one checkpoint are shared; `language:` only selects the evaluated routing confidence policy. `route` still requires a language for its predefined candidate descriptions.
 
