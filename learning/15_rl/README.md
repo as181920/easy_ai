@@ -1,5 +1,7 @@
 # Reinforcement learning
 
+Course prerequisites: [basic NN](../01_basic_nn/README.md), [training](../02_training/README.md) and [diagnostics](../03_diagnostics/README.md). GPT is optional. See the [full curriculum](../README.md); a final RL project can follow [16 · Capstone](../16_capstone/README.md).
+
 Status: **planned learning stage**. This directory defines the progression; no executable RL trainer is implemented yet. Teaching implementations will use Ruby and Torch.rb under `EasyAILearning::RL`, separate from production Decision training.
 
 ## What changes after supervised learning?

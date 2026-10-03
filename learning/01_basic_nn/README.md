@@ -1,5 +1,7 @@
 # Basic neural networks: XOR
 
+Course position: [00 · Foundations](../00_foundations/README.md) → this lesson → [02 · Training](../02_training/README.md) → [03 · Diagnostics](../03_diagnostics/README.md). The implemented XOR/SGD experiment is the starting point; optimizer/dropout comparisons use a larger held-out task in the planned training lesson.
+
 The trained model does one task: XOR. AND, OR and NAND remain fixed `if/else` and perceptron demonstrations in `logic.rb`; they are not neural outputs or training objectives.
 
 ## Architecture and parameters

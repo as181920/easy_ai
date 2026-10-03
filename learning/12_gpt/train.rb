@@ -50,7 +50,7 @@ options = {
 }
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: ruby learning/06_gpt/train.rb [options]"
+  opts.banner = "Usage: ruby learning/12_gpt/train.rb [options]"
 
   opts.on("-d", "--data PATH", "Path to training text") { |v| options[:data_path] = v }
   opts.on("-t", "--tokenizer TYPE", "word, byte, or qwen") { |v| options[:tokenizer] = v }
