@@ -1,6 +1,23 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
-## Latest learning record: factored supervision and misleading aggregate gains (2026-10-03)
+## Latest learning record: a clean counterfactual fit exposes the unresolved relation (2026-10-03)
+
+The [completed v0.4 implementation](v04.md) performs a 200-example supervision screen and a separate 100-example fresh short-record review. Disputed annotations are excluded rather than treated as verified assistant relabels. All 50 sampled controlled labels agree; a complete stored-fact audit of 13,312 v03 rows finds zero label mismatches and 1,024 stale truth-pattern metadata values. These are different findings: coverage/reporting defects should not be described as proven training-label errors.
+
+The new 128-row training-only fit reuses lexical identities across all four two-fact truth assignments. Own weights and 1,000 CUDA updates reach 87.5%, yet mixed actor decisions are only 50%; different-event and same-truth cases are 100%. NLL approaches `0.25 * ln(2)`, consistent with one quarter of examples remaining near chance. Earlier 100% fits allowed easier lexical/world associations; passing those did not establish the harder binding skill. Do not compare these different fitting percentages as a common benchmark trend.
+
+Useful lessons retained:
+
+- Scope disagreements in public QA/NLI are not automatically annotation bugs. Conditional answers, pragmatic inferences, missing evidence and explicit contradiction need distinct contracts. A single assistant review is not independent human agreement.
+- Reuse names/events across counterfactual worlds, including flips of either fact. Same-event mixed states have identical tokenizer-ID multisets but opposing judgments. This isolates relational use more sharply than renaming actors.
+- A low average CE can conceal an entire failure slice even on training examples. Constant-record/claim ablations lower accuracy to chance, showing input dependence without proving correct binding.
+- Keep actor and event complete groups separate. Perfect event judgments plus zero actor binding can yield a flattering 50% combined group score; a deliberately broken reference now tests that publication cannot pass that shortcut.
+- Validate real candidate shapes: routing has 18 options. A two-choice replay assumption was caught by integration preflight, corrected before training, and added to fixtures. Microbatch accumulation and optimizer/coverage resume are checked across stage changes.
+- Nonzero gradients, changed weights and flat GPU inference memory rule out several engineering explanations, but do not uniquely identify the architectural cause. Next test relational encoding/positional signal under the same audited fitting core, rather than assume more text or unknown calibration will solve a failed training relation.
+
+The fitting stop fires before mixed pilots. No acceptance predictions are opened, no confirmation/calibration rescue is tried, and v0.1 remains delivered. This preserves a useful independent panel for a separately frozen next representation comparison; it is not evidence that a general semantic model has improved.
+
+## Earlier learning record: factored supervision and misleading aggregate gains (2026-10-03)
 
 The [completed v0.3 round](v03.md) uses the same delivered own v0.1 parent for a v0.2-recipe control and corrected-data candidate. Both finish 2,000 CUDA updates / 64,000 visits. On the common fresh panel, candidate factual macro rises from 41.63% parent to **52.23%**, and natural QA/NLI rises from 48.50% / 48.00% to **64.50% / 56.75%**. Yet factual row accuracy falls to 31.99%, known judgments to 15.43% / 16.88%, and mixed-truth binding to 0.72% / 0%. No checkpoint qualifies, no confirmation runs, and v0.1 remains delivered.
 
