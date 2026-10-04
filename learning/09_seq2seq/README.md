@@ -1,10 +1,10 @@
-# 09 · Seq2seq 与 teacher forcing
+# 09 · Seq2seq and teacher forcing
 
-已实现可运行的最小教学实验。先修：08_rnn。 下一章：[10_attention](../10_attention/README.md)。
+A minimal teaching experiment is implemented and runnable. Prerequisite: 08_rnn. Next chapter: [10_attention](../10_attention/README.md).
 
-复用 08 的 RNN cell：encoder 读完 source，decoder 从 encoder final state 开始。Embedding 共享；任务从 next-token 升到四符号序列反转。
+Reuse the RNN cell from 08. The encoder reads the source, and the decoder starts from the encoder's final state. Embedding is shared; the task progresses from next-token prediction to reversing a four-symbol sequence.
 
-输入 `[a,b,c,d]`；target `[d,c,b,a,EOS]`；训练 decoder input `[BOS,d,c,b,a]`。PAD=0、BOS=1、EOS=2、普通符号=3–6。当前数据固定长度，无需把 padding 当真 token。
+Input: `[a,b,c,d]`; target: `[d,c,b,a,EOS]`; training decoder input: `[BOS,d,c,b,a]`. PAD=0, BOS=1, EOS=2, and ordinary symbols=3–6. The current data has fixed length, so padding need not be treated as a real token.
 
 ```ruby
 state = encode(source)
@@ -14,15 +14,15 @@ decoder_tokens.each_step do |previous_token|
 end
 ```
 
-Teacher forcing 只给真实前一个 token，不能把同位置 target 输入模型。推理使用上一步自己的 argmax；EOS 后输出 EOS，避免已结束样本继续生成随机词。默认输出最长五步；CLI 推理读保存模型，无训练动作。
+Teacher forcing supplies only the true previous token, never the target at the same position. Inference uses the model's own previous argmax. After EOS, it continues outputting EOS so finished samples do not generate random tokens. The default output is at most five steps. CLI inference reads the saved model without training it.
 
-报告 teacher-forced token accuracy、free-running token accuracy 和整序列正确率。前者可能掩盖连锁错误，所以必须自由生成。可变长任务需要 attention 可见性 mask 和 loss mask 分别处理；本章不声称固定长度实现已经支持任意 padding 训练。
+Report teacher-forced token accuracy, free-running token accuracy, and exact-sequence accuracy. The first can hide cascading errors, so free-running generation is essential. Variable-length tasks require separate attention-visibility and loss masks; this fixed-length implementation does not claim to support arbitrary padded training.
 
-核心 Model 后续增加 `attention: true`，但默认 false 不建立 Attention 组件，保持 09 的先修路径。10 用同一 encoder/decoder 对照，而不是重写另一个难以比较的模型。
+The core Model later adds `attention: true`, but defaults to false without constructing Attention components, preserving the prerequisite path for 09. Chapter 10 compares the same encoder/decoder rather than rewriting a model that would be harder to compare.
 
-## 数据、训练与独立推理
+## Data, training, and independent inference
 
-从仓库根目录运行；安装依赖用 `bundle install`。涉及训练与模型推理时默认 `auto`：优先 CUDA，不可用时回退 CPU；也可显式 `--device cpu`。使用小规模合成数据，无模型下载。限制线程能避免 tiny tensor 的 CPU 线程开销：
+Run commands from the repository root and install dependencies with `bundle install`. Training and model inference default to `auto`: prefer CUDA and fall back to CPU when unavailable. You can also select `--device cpu` explicitly. These experiments use small synthetic datasets and require no model downloads. Limiting threads reduces CPU overhead for tiny tensors:
 
 ```bash
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -32,16 +32,16 @@ bundle exec ruby learning/09_seq2seq/predict.rb
 bundle exec rake test:learning
 ```
 
-`--seed` 改随机种子，`--output` 分开实验目录，训练还可用 `--device cpu/cuda/auto`。默认输出 `runs/learning/09_seq2seq/default/`，重跑会覆盖同名产物。`data.rb` 导出数据配方的样本用于查看；训练入口自行调用生成器，不依赖该 JSON 文件，训练中的特殊移位/遮挡在实验源码与实际 `data.json` 中记录。
+Use `--seed` to change the random seed and `--output` to separate experiment directories. Training also accepts `--device cpu/cuda/auto`. The default output is `runs/learning/09_seq2seq/default/`; rerunning overwrites artifacts with the same names. `data.rb` exports samples from the data recipe for inspection. The training entry point calls the generators directly and does not depend on that JSON file. Experiment-specific shifts and masks are documented in the experiment source and the actual `data.json`.
 
-推理 `--model PATH` 指向保存的模型。 `--input PATH` 可指定 `{"input": ...}` JSON；默认提供一个符合本章形状的示例。Seq2seq/EncoderDecoder 输出自由生成，GPT 输出 top-1 生成，其他模型输出 score/reconstruction；RL actor-critic 输出 policy logits 与 value。
+For inference, `--model PATH` selects a saved model. `--input PATH` accepts a JSON file containing `{"input": ...}`; the default is a small example with the required shape. Seq2seq/EncoderDecoder perform free-running generation, GPT uses top-1 generation, and other models return scores or reconstructions. RL actor-critic models return policy logits and a value estimate.
 
-## 结果与正确性
+## Results and correctness
 
-[实际运行记录](results.json) 保存 seed、步数、环境与指标；下图取自同一运行，不是验收阈值。
+The [recorded run](results.json) includes the seed, step count, environment, and metrics. The figure below comes from that run; it is not a test acceptance threshold.
 
-![本章实验结果](images/seq2seq-loss.svg)
+![Chapter experiment results](images/seq2seq-loss.svg)
 
-[实验代码](../lib/easy_ai_learning/seq2seq/experiment.rb) 串起各步骤；共享数据在 [course/data.rb](../lib/easy_ai_learning/course/data.rb)。核心验证见 [测试](../test/course/sequence_test.rb)，梯度对照另见 [derivatives_test.rb](../test/course/derivatives_test.rb)。测试只检查确定性公式、shape、mask、梯度、状态与参数更新；不训练到某个准确率或权重分布。
+[Experiment code](../lib/easy_ai_learning/seq2seq/experiment.rb) connects the steps; shared data generators are in [course/data.rb](../lib/easy_ai_learning/course/data.rb). Core checks are in the [tests](../test/course/sequence_test.rb), with additional gradient comparisons in [derivatives_test.rb](../test/course/derivatives_test.rb). Tests check deterministic formulas, shapes, masks, gradients, state, and parameter updates. They do not train toward a required accuracy or weight distribution.
 
-产物包括实际数据、JSON 推理状态、history、诊断与 SVG；本地完整参数/历史留在忽略的 runs 下，仓库只收录小型结果摘要与图。00/07 的非神经实验和 15 的交互训练输出格式按任务分别记录，不强行统一为分类 loss。
+Artifacts include the actual data, JSON inference state, history, diagnostics, and SVG figures. Full local parameters and histories remain under the ignored `runs/` directory; the repository contains only compact result summaries and figures. The non-neural experiments in 00/07 and the interactive training in 15 use task-specific records rather than forcing every result into a classification-loss format.

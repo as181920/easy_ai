@@ -1,26 +1,26 @@
-# 16 · 综合实验：数据到独立推理
+# 16 · Capstone: from data to independent inference
 
-已实现可运行的最小教学实验。先修：00–03、05–06。
+A minimal teaching experiment is implemented and runnable. Prerequisites: 00–03, 05–06.
 
-本章实际完成视觉分支的完整闭环，复用 02 的训练/状态、03 的诊断、05 的 CNN 和 06 的 ResNet。MLP、CNN、两块 ResNet 在相同 64/64/64 train/validation/test 图像数据上，用 1337/1347/1357 三种初始化 seed 比较。
+This chapter completes the vision workflow by reusing training/state handling from 02, diagnostics from 03, CNN from 05, and ResNet from 06. Compare MLP, CNN, and a two-block ResNet on the same 64/64/64 train/validation/test images using initialization seeds 1337/1347/1357.
 
-固定结构和超参数，不根据 test 结果挑模型。每次运行记录验证准确率、最终 test 准确率、参数量、曲线和逐层诊断；保存后新建同结构模型加载并比较推理，报告 reload 最大差。再汇总 test mean/std/min/max。三 seed 的参数变化是真实运行，训练准确率不设硬阈值。
+Keep architectures and hyperparameters fixed rather than choosing models by test results. Each run records validation accuracy, final test accuracy, parameter count, curves, and per-layer diagnostics. After saving, create a fresh model of the same architecture, load it, compare inference, and report the maximum reload difference. Summarize test mean/std/min/max across runs. The three seeds produce actual parameter changes; training accuracy has no hard acceptance threshold.
 
 ```ruby
 model.load_state_dict(saved_state)
-# 同数据、eval/no_grad 下比较加载前后 logits
+# Compare logits before/after loading on the same data in eval/no_grad mode
 reload_difference = (original_logits - restored_logits).abs.max.item
 ```
 
-生成器是容易分离的横竖线数据；全部达到 100% 仅说明这套任务已过简单，不是实际视觉鲁棒性或排名证据。下一步可以增加噪声、长度/位置变化或更难数据，再用验证集设计实验，最后一次独立测试。
+The generator produces easily separable horizontal/vertical lines. All models reaching 100% only shows that this task is too easy; it is not evidence of real visual robustness or model rankings. Next, add noise, vary lengths/positions, or use harder data. Design experiments on validation data, then perform a final independent test.
 
-课程其他分支也能按同一交付标准扩展项目：RNN/GPT 序列预测、PCA/AE/VAE 表示与生成、Bandit/Q-learning/MLP 策略。它们已有前章小实验；本章的默认可运行 capstone 是视觉 panel，不宣称还运行了所有分支的多种子项目。
+Other curriculum branches can use the same delivery standard: RNN/GPT sequence prediction, PCA/AE/VAE representation and generation, or Bandit/Q-learning/MLP policies. Their earlier chapters already provide small experiments. This chapter's default runnable capstone is the vision comparison; it does not claim to run multi-seed projects for every branch.
 
-完成标准：数据来源与划分、基线、shape/参数量、种子/预算、任务指标、失败证据、消融、独立推理加载；核心逻辑正确性仍由确定性测试保证，实验结果用于学习。
+Completion criteria: data sources and splits, baselines, shapes/parameter counts, seeds/budgets, task metrics, failure evidence, ablations, and independent inference loading. Deterministic tests still establish core logic correctness; experiment results support learning.
 
-## 数据、训练与独立推理
+## Data, training, and independent inference
 
-从仓库根目录运行；安装依赖用 `bundle install`。涉及训练与模型推理时默认 `auto`：优先 CUDA，不可用时回退 CPU；也可显式 `--device cpu`。使用小规模合成数据，无模型下载。限制线程能避免 tiny tensor 的 CPU 线程开销：
+Run commands from the repository root and install dependencies with `bundle install`. Training and model inference default to `auto`: prefer CUDA and fall back to CPU when unavailable. You can also select `--device cpu` explicitly. These experiments use small synthetic datasets and require no model downloads. Limiting threads reduces CPU overhead for tiny tensors:
 
 ```bash
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -30,16 +30,16 @@ bundle exec ruby learning/16_capstone/predict.rb
 bundle exec rake test:learning
 ```
 
-`--seed` 改随机种子，`--output` 分开实验目录，训练还可用 `--device cpu/cuda/auto`。默认输出 `runs/learning/16_capstone/default/`，重跑会覆盖同名产物。`data.rb` 导出数据配方的样本用于查看；训练入口自行调用生成器，不依赖该 JSON 文件，训练中的特殊移位/遮挡在实验源码与实际 `data.json` 中记录。
+Use `--seed` to change the random seed and `--output` to separate experiment directories. Training also accepts `--device cpu/cuda/auto`. The default output is `runs/learning/16_capstone/default/`; rerunning overwrites artifacts with the same names. `data.rb` exports samples from the data recipe for inspection. The training entry point calls the generators directly and does not depend on that JSON file. Experiment-specific shifts and masks are documented in the experiment source and the actual `data.json`.
 
-推理 `--model PATH` 指向保存的模型。 `--input PATH` 可指定 `{"input": ...}` JSON；默认提供一个符合本章形状的示例。Seq2seq/EncoderDecoder 输出自由生成，GPT 输出 top-1 生成，其他模型输出 score/reconstruction；RL actor-critic 输出 policy logits 与 value。
+For inference, `--model PATH` selects a saved model. `--input PATH` accepts a JSON file containing `{"input": ...}`; the default is a small example with the required shape. Seq2seq/EncoderDecoder perform free-running generation, GPT uses top-1 generation, and other models return scores or reconstructions. RL actor-critic models return policy logits and a value estimate.
 
-## 结果与正确性
+## Results and correctness
 
-[实际运行记录](results.json) 保存 seed、步数、环境与指标；下图取自同一运行，不是验收阈值。
+The [recorded run](results.json) includes the seed, step count, environment, and metrics. The figure below comes from that run; it is not a test acceptance threshold.
 
-![本章实验结果](images/cnn-1337-loss.svg)
+![Chapter experiment results](images/cnn-1337-loss.svg)
 
-[实验代码](../lib/easy_ai_learning/capstone/experiment.rb) 串起各步骤；共享数据在 [course/data.rb](../lib/easy_ai_learning/course/data.rb)。核心验证见 [测试](../test/course/training_test.rb)，梯度对照另见 [derivatives_test.rb](../test/course/derivatives_test.rb)。测试只检查确定性公式、shape、mask、梯度、状态与参数更新；不训练到某个准确率或权重分布。
+[Experiment code](../lib/easy_ai_learning/capstone/experiment.rb) connects the steps; shared data generators are in [course/data.rb](../lib/easy_ai_learning/course/data.rb). Core checks are in the [tests](../test/course/training_test.rb), with additional gradient comparisons in [derivatives_test.rb](../test/course/derivatives_test.rb). Tests check deterministic formulas, shapes, masks, gradients, state, and parameter updates. They do not train toward a required accuracy or weight distribution.
 
-产物包括实际数据、JSON 推理状态、history、诊断与 SVG；本地完整参数/历史留在忽略的 runs 下，仓库只收录小型结果摘要与图。00/07 的非神经实验和 15 的交互训练输出格式按任务分别记录，不强行统一为分类 loss。
+Artifacts include the actual data, JSON inference state, history, diagnostics, and SVG figures. Full local parameters and histories remain under the ignored `runs/` directory; the repository contains only compact result summaries and figures. The non-neural experiments in 00/07 and the interactive training in 15 use task-specific records rather than forcing every result into a classification-loss format.

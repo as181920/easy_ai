@@ -1,27 +1,27 @@
-# 11 · Transformer：残差、位置、归一化
+# 11 · Transformer: residuals, positions, and normalization
 
-已实现可运行的最小教学实验。先修：10_attention；残差复习 06。 下一章：[12_gpt](../12_gpt/README.md)。
+A minimal teaching experiment is implemented and runnable. Prerequisite: 10_attention; review 06 for residuals. Next chapter: [12_gpt](../12_gpt/README.md).
 
-复用 10 的 MultiHead、06 的残差概念、02 的训练器，将 embedding/position、attention、FFN、LayerNorm 组成网络。
+Reuse MultiHead from 10, the residual concept from 06, and the trainer from 02. Combine embedding/position, attention, FFN, and LayerNorm into a network.
 
-EncoderBlock 支持双向 pre-/post-LN；causal Block 是 pre-LN；EncoderDecoder 组合双向 encoder、因果 decoder 和 cross-attention。FFN 是每位置共享的 `D→2D/4D→D` 与 GELU。
+EncoderBlock supports bidirectional pre-/post-LN; the causal Block uses pre-LN. EncoderDecoder combines a bidirectional encoder, a causal decoder, and cross-attention. The FFN is a position-wise shared `D→2D/4D→D` projection with GELU.
 
 ```ruby
 x = x + attention.call(layer_norm1.call(x))
 x = x + feed_forward.call(layer_norm2.call(x))
 ```
 
-LayerNorm 对每个样本/位置的特征维统计；BatchNorm 通常跨 batch/空间统计并维护 running buffers。当前 LayerNorm 的 train/eval 不切换 running statistics，dropout 则切换。不要把归一化误解为要求权重有固定分布。
+LayerNorm computes statistics over features at each sample/position. BatchNorm usually aggregates across batch/spatial dimensions and maintains running buffers. The current LayerNorm does not switch running statistics between train/eval modes, whereas dropout does switch behavior. Normalization does not require weights to have a fixed distribution.
 
-四符号反转实验：Encoder 直接预测反序位置，比较 learned position、无 position、无残差、无归一化与 post-LN；完整 EncoderDecoder 另按 teacher forcing 训练并自由生成。无 position 的双向 encoder 是排列等变的，无法凭空知道索引顺序；测试以置换关系验证这一点。
+Four-symbol reversal experiment: the Encoder directly predicts reversed positions, comparing learned positions, no positions, no residuals, no normalization, and post-LN. The full EncoderDecoder is trained separately with teacher forcing and evaluated with free-running generation. A bidirectional encoder without positions is permutation-equivariant and cannot infer index order without positional information; tests verify the permutation relationship.
 
-Sinusoidal 提供位置公式数据，learned positions 用于默认网络；RoPE/ViT/相对位置作为后续阅读，不把本轮实验冒称完整实现这些变体。小任务/浅层中无残差或无归一化也可能很好，消融结果不能推出大模型不需要它们。
+Sinusoidal supplies positional-formula data, while learned positions are used in the default networks. RoPE/ViT/relative positions are further reading, not fully implemented variants in this experiment. On a shallow network and small task, removing residuals or normalization may still work well. These ablations do not imply that larger models do not need them.
 
-来源：[Transformer](https://arxiv.org/abs/1706.03762)、[LayerNorm](https://arxiv.org/abs/1607.06450)。
+Sources: [Transformer](https://arxiv.org/abs/1706.03762), [LayerNorm](https://arxiv.org/abs/1607.06450).
 
-## 数据、训练与独立推理
+## Data, training, and independent inference
 
-从仓库根目录运行；安装依赖用 `bundle install`。涉及训练与模型推理时默认 `auto`：优先 CUDA，不可用时回退 CPU；也可显式 `--device cpu`。使用小规模合成数据，无模型下载。限制线程能避免 tiny tensor 的 CPU 线程开销：
+Run commands from the repository root and install dependencies with `bundle install`. Training and model inference default to `auto`: prefer CUDA and fall back to CPU when unavailable. You can also select `--device cpu` explicitly. These experiments use small synthetic datasets and require no model downloads. Limiting threads reduces CPU overhead for tiny tensors:
 
 ```bash
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -31,16 +31,16 @@ bundle exec ruby learning/11_transformer/predict.rb
 bundle exec rake test:learning
 ```
 
-`--seed` 改随机种子，`--output` 分开实验目录，训练还可用 `--device cpu/cuda/auto`。默认输出 `runs/learning/11_transformer/default/`，重跑会覆盖同名产物。`data.rb` 导出数据配方的样本用于查看；训练入口自行调用生成器，不依赖该 JSON 文件，训练中的特殊移位/遮挡在实验源码与实际 `data.json` 中记录。
+Use `--seed` to change the random seed and `--output` to separate experiment directories. Training also accepts `--device cpu/cuda/auto`. The default output is `runs/learning/11_transformer/default/`; rerunning overwrites artifacts with the same names. `data.rb` exports samples from the data recipe for inspection. The training entry point calls the generators directly and does not depend on that JSON file. Experiment-specific shifts and masks are documented in the experiment source and the actual `data.json`.
 
-推理 `--model PATH` 指向保存的模型。 `--input PATH` 可指定 `{"input": ...}` JSON；默认提供一个符合本章形状的示例。Seq2seq/EncoderDecoder 输出自由生成，GPT 输出 top-1 生成，其他模型输出 score/reconstruction；RL actor-critic 输出 policy logits 与 value。
+For inference, `--model PATH` selects a saved model. `--input PATH` accepts a JSON file containing `{"input": ...}`; the default is a small example with the required shape. Seq2seq/EncoderDecoder perform free-running generation, GPT uses top-1 generation, and other models return scores or reconstructions. RL actor-critic models return policy logits and a value estimate.
 
-## 结果与正确性
+## Results and correctness
 
-[实际运行记录](results.json) 保存 seed、步数、环境与指标；下图取自同一运行，不是验收阈值。
+The [recorded run](results.json) includes the seed, step count, environment, and metrics. The figure below comes from that run; it is not a test acceptance threshold.
 
-![本章实验结果](images/encoder-decoder-loss.svg)
+![Chapter experiment results](images/encoder-decoder-loss.svg)
 
-[实验代码](../lib/easy_ai_learning/transformer/experiment.rb) 串起各步骤；共享数据在 [course/data.rb](../lib/easy_ai_learning/course/data.rb)。核心验证见 [测试](../test/course/attention_test.rb)，梯度对照另见 [derivatives_test.rb](../test/course/derivatives_test.rb)。测试只检查确定性公式、shape、mask、梯度、状态与参数更新；不训练到某个准确率或权重分布。
+[Experiment code](../lib/easy_ai_learning/transformer/experiment.rb) connects the steps; shared data generators are in [course/data.rb](../lib/easy_ai_learning/course/data.rb). Core checks are in the [tests](../test/course/attention_test.rb), with additional gradient comparisons in [derivatives_test.rb](../test/course/derivatives_test.rb). Tests check deterministic formulas, shapes, masks, gradients, state, and parameter updates. They do not train toward a required accuracy or weight distribution.
 
-产物包括实际数据、JSON 推理状态、history、诊断与 SVG；本地完整参数/历史留在忽略的 runs 下，仓库只收录小型结果摘要与图。00/07 的非神经实验和 15 的交互训练输出格式按任务分别记录，不强行统一为分类 loss。
+Artifacts include the actual data, JSON inference state, history, diagnostics, and SVG figures. Full local parameters and histories remain under the ignored `runs/` directory; the repository contains only compact result summaries and figures. The non-neural experiments in 00/07 and the interactive training in 15 use task-specific records rather than forcing every result into a classification-loss format.

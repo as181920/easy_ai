@@ -1,26 +1,26 @@
-# 14 · 迁移、冻结、LoRA 与蒸馏
+# 14 · Transfer learning, freezing, LoRA, and distillation
 
-已实现可运行的最小教学实验。先修：02–03 与所选模型。 下一章：[15_rl](../15_rl/README.md)。
+A minimal teaching experiment is implemented and runnable. Prerequisites: 02–03 and the chosen model. Next chapter: [15_rl](../15_rl/README.md).
 
-复用 02 的 MLP、优化器和保存格式，不下载外部模型。先在 96 个象限分类样本预训练，再用 32 个坐标平移样本做目标任务，独立验证 96 个。标签由原始坐标决定，平移的是观测输入，形成简单 domain shift。
+Reuse the MLP, optimizer, and save format from 02 without downloading external models. Pretrain on 96 quadrant-classification samples, then adapt using 32 coordinate-shifted target-task samples and 96 independent validation samples. Labels depend on the original coordinates; observed inputs are shifted, creating a simple domain shift.
 
-对照：从头训练 → 冻结 hidden、只训 head → 冻结 hidden weight、解冻 bias/head → 全量微调 → 冻结 base 的低秩 head 更新。另用 width 4 的小 student 从预训练 teacher 的软目标蒸馏。Teacher 在源坐标上训练，所以它对目标域可能错误，蒸馏不是保证提升。
+Comparisons: train from scratch → freeze hidden layers and train only the head → freeze hidden weights but unfreeze biases/head → full fine-tuning → low-rank head updates with a frozen base. A width-4 student also learns from the pretrained teacher's soft targets. Since the teacher was trained on source coordinates, it can be wrong in the target domain; distillation does not guarantee improvement.
 
 ```text
 LoRA: y=Wx+b+(α/r) B(Ax)
-A 随机初始化，B=0；初始与 base 精确相同
+Initialize A randomly and B=0; initial output exactly matches the base
 merge: W_merged=W+(α/r)BA
 ```
 
-LowRankLinear 与前面的 Linear 一样通过 call 使用；本章只将低秩适配加到分类 head，不声称实现了所有 Transformer 投影的 LoRA 框架。保存 base+A+B 可独立加载；测试比较 merged weight 与原 forward。
+Use LowRankLinear through call, just like the earlier Linear. This chapter applies low-rank adaptation only to the classification head, not a framework covering every Transformer projection. Saved base+A+B state loads independently; tests compare merged weights with the original forward pass.
 
-Distillation 使用 detached `softmax(teacher/T)`，student log-softmax，乘 T²，再与真实标签 CE 混合。这里计算 soft cross-entropy；它与 KL 差 teacher entropy 常数，gradient 等价，但数值不等同。
+Distillation uses detached `softmax(teacher/T)`, student log-softmax, and a T² multiplier, then mixes the result with true-label CE. The implementation computes soft cross-entropy. It differs from KL by the constant teacher entropy, so gradients are equivalent but numeric values are not.
 
-每个结果记录 trainable 参数量、每层实际更新与验证准确率；冻结层必须精确不变。CNN 迁移时还有 BatchNorm running statistics，冻结梯度并不等于冻结 buffer；本章用 MLP 避免隐藏该区别，后续扩展需显式处理。
+Each result records trainable parameter counts, actual per-layer updates, and validation accuracy. Frozen layers must remain exactly unchanged. CNN transfer also involves BatchNorm running statistics: freezing gradients does not freeze buffers. This chapter uses an MLP to keep that distinction visible; extensions must handle buffers explicitly.
 
-## 数据、训练与独立推理
+## Data, training, and independent inference
 
-从仓库根目录运行；安装依赖用 `bundle install`。涉及训练与模型推理时默认 `auto`：优先 CUDA，不可用时回退 CPU；也可显式 `--device cpu`。使用小规模合成数据，无模型下载。限制线程能避免 tiny tensor 的 CPU 线程开销：
+Run commands from the repository root and install dependencies with `bundle install`. Training and model inference default to `auto`: prefer CUDA and fall back to CPU when unavailable. You can also select `--device cpu` explicitly. These experiments use small synthetic datasets and require no model downloads. Limiting threads reduces CPU overhead for tiny tensors:
 
 ```bash
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -30,16 +30,16 @@ bundle exec ruby learning/14_transfer_learning/predict.rb
 bundle exec rake test:learning
 ```
 
-`--seed` 改随机种子，`--output` 分开实验目录，训练还可用 `--device cpu/cuda/auto`。默认输出 `runs/learning/14_transfer_learning/default/`，重跑会覆盖同名产物。`data.rb` 导出数据配方的样本用于查看；训练入口自行调用生成器，不依赖该 JSON 文件，训练中的特殊移位/遮挡在实验源码与实际 `data.json` 中记录。
+Use `--seed` to change the random seed and `--output` to separate experiment directories. Training also accepts `--device cpu/cuda/auto`. The default output is `runs/learning/14_transfer_learning/default/`; rerunning overwrites artifacts with the same names. `data.rb` exports samples from the data recipe for inspection. The training entry point calls the generators directly and does not depend on that JSON file. Experiment-specific shifts and masks are documented in the experiment source and the actual `data.json`.
 
-推理 `--model PATH` 指向保存的模型。 `--input PATH` 可指定 `{"input": ...}` JSON；默认提供一个符合本章形状的示例。Seq2seq/EncoderDecoder 输出自由生成，GPT 输出 top-1 生成，其他模型输出 score/reconstruction；RL actor-critic 输出 policy logits 与 value。
+For inference, `--model PATH` selects a saved model. `--input PATH` accepts a JSON file containing `{"input": ...}`; the default is a small example with the required shape. Seq2seq/EncoderDecoder perform free-running generation, GPT uses top-1 generation, and other models return scores or reconstructions. RL actor-critic models return policy logits and a value estimate.
 
-## 结果与正确性
+## Results and correctness
 
-[实际运行记录](results.json) 保存 seed、步数、环境与指标；下图取自同一运行，不是验收阈值。
+The [recorded run](results.json) includes the seed, step count, environment, and metrics. The figure below comes from that run; it is not a test acceptance threshold.
 
-![本章实验结果](images/full-loss.svg)
+![Chapter experiment results](images/full-loss.svg)
 
-[实验代码](../lib/easy_ai_learning/transfer/experiment.rb) 串起各步骤；共享数据在 [course/data.rb](../lib/easy_ai_learning/course/data.rb)。核心验证见 [测试](../test/course/transfer_test.rb)，梯度对照另见 [derivatives_test.rb](../test/course/derivatives_test.rb)。测试只检查确定性公式、shape、mask、梯度、状态与参数更新；不训练到某个准确率或权重分布。
+[Experiment code](../lib/easy_ai_learning/transfer/experiment.rb) connects the steps; shared data generators are in [course/data.rb](../lib/easy_ai_learning/course/data.rb). Core checks are in the [tests](../test/course/transfer_test.rb), with additional gradient comparisons in [derivatives_test.rb](../test/course/derivatives_test.rb). Tests check deterministic formulas, shapes, masks, gradients, state, and parameter updates. They do not train toward a required accuracy or weight distribution.
 
-产物包括实际数据、JSON 推理状态、history、诊断与 SVG；本地完整参数/历史留在忽略的 runs 下，仓库只收录小型结果摘要与图。00/07 的非神经实验和 15 的交互训练输出格式按任务分别记录，不强行统一为分类 loss。
+Artifacts include the actual data, JSON inference state, history, diagnostics, and SVG figures. Full local parameters and histories remain under the ignored `runs/` directory; the repository contains only compact result summaries and figures. The non-neural experiments in 00/07 and the interactive training in 15 use task-specific records rather than forcing every result into a classification-loss format.
