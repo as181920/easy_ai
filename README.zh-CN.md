@@ -4,7 +4,69 @@
 
 **在线学习课程：[Easy AI Learning](https://easy-ai-learning.code-li.com/)** — 从基础神经网络到经典模型架构、训练方法与实践，按课程顺序逐步学习。
 
-用 Ruby 学习并实现神经网络。维护中的第一项能力是 **EasyAI::Decision**：给定状态、问题和多个候选，直接输出候选概率。算法、训练循环、分词和优化器可在仓库中阅读；张量计算与自动微分交给 Torch.rb / LibTorch，可使用 CUDA 或 CPU。
+用 Ruby 学习并实现神经网络，通过循序渐进的课程和可运行的模型实验掌握原理。算法、训练循环、分词器和优化器可在仓库中阅读；张量计算与自动微分交给 Torch.rb / LibTorch，可使用 CUDA 或 CPU。
+
+## Learning 学习课程
+
+从[课程总览](learning/README.md)开始，也可以直接进入[在线学习站](https://easy-ai-learning.code-li.com/)，使用搜索、章节导航和源码链接。00–16 章从可手算的小例子逐步推进到完整的 Ruby/Torch.rb 实验，后续课程复用前期实现，形成连续学习路径。
+
+| 阶段 | 章节与主题 |
+| --- | --- |
+| 基础与训练 | [00：数学与数据](learning/00_foundations/README.md)、[01：基础神经网络](learning/01_basic_nn/README.md)、[02：SGD、AdamW 与正则化](learning/02_training/README.md)、[03：权重、梯度与诊断](learning/03_diagnostics/README.md) |
+| 表征与视觉 | [04：自编码器](learning/04_autoencoder/README.md)、[05：CNN](learning/05_cnn/README.md)、[06：ResNet](learning/06_resnet/README.md) |
+| 序列学习 | [07：分词器](learning/07_tokenizers/README.md)、[08：RNN/LSTM/GRU](learning/08_rnn/README.md)、[09：Seq2Seq](learning/09_seq2seq/README.md) |
+| 注意力与语言 | [10：注意力与掩码](learning/10_attention/README.md)、[11：Transformer](learning/11_transformer/README.md)、[12：GPT](learning/12_gpt/README.md) |
+| 生成、迁移与交互 | [13：VAE/GAN/Diffusion](learning/13_generative/README.md)、[14：迁移学习与 LoRA](learning/14_transfer_learning/README.md)、[15：强化学习](learning/15_rl/README.md) |
+| 完整实验 | [16：综合实践](learning/16_capstone/README.md) |
+
+先完成 00–03，再选择视觉或语言分支，之后学习生成、迁移或强化学习。每章包含文档、数据准备、训练、推理和实测结果。核心测试验证公式、梯度、掩码和参数更新，不依赖训练是否收敛。
+
+- [本地阅读指南](docs/learning-site.md)：运行 Ruby 文档站，使用跨章节导航与搜索。
+- [全课程精简打印版](docs/learning-course-print.md)：核心概念、公式与必要代码。
+- [课程实现](learning/lib/easy_ai_learning/)：各章复用的教学组件。
+
+### 环境准备
+
+Ruby 3.4，Bundler，以及可用的 LibTorch 环境：
+
+```bash
+bundle install
+bundle exec rake test:learning
+bundle exec rake lint
+```
+
+本机已验证 Torch.rb 0.23.0 和 Quadro RTX 3000 6 GiB；安装 LibTorch 时需匹配 Torch.rb 的兼容版本及 CPU/CUDA 构建，参见 [Torch.rb 安装说明](https://github.com/ankane/torch-rb#installation)。仅安装 gem 不代表 CUDA 已可用。
+
+### 基础神经网络示例
+
+最基础的神经网络训练示例（不需要语料和 GPU）：
+
+```bash
+bundle exec ruby learning/01_basic_nn/logic.rb
+bundle exec ruby learning/01_basic_nn/train.rb
+```
+
+训练一个只计算 XOR 的神经网络，打印训练进度、学到的参数和 unicode_plot 函数图；输出保存到被忽略的 `runs/learning/basic_nn/logic-gates/`。默认 seed 1337 的 CUDA 训练运行 436 步后，四个 XOR 输入的阈值判断全部正确。详见 [基础 NN 学习说明](learning/01_basic_nn/README.md)。
+
+基础 NN 默认使用 Torch.rb / CUDA（不可用时回退 CPU）；[README 函数图](learning/01_basic_nn/README.md#observed-runs-and-plots)分两组展示：固定 AND/OR/NAND/XOR 逻辑函数；模型的 ReLU、训练 loss、score 热力图和 3D 曲面、XOR 预测边界。终端训练报告也保留 loss 曲线。
+
+### 运行全课程
+
+```bash
+bundle exec ruby learning/run_all.rb
+bundle exec rake test:learning
+```
+
+运行器按章节顺序准备数据并执行实验。神经网络训练优先使用 CUDA，不可用时回退 CPU；`--device cpu` 可显式选择 CPU。产物保存到被忽略的 `runs/learning/` 目录。逐章命令与实验设置见[课程总览](learning/README.md#an-executable-learning-path)。
+
+## 已实现模型：Decision
+
+**EasyAI::Decision** 给定状态、问题和多个候选，直接输出候选概率。下面介绍其架构、训练流程和实测结果。
+
+```bash
+bundle exec ruby bin/easy-ai --help
+bundle exec rake test
+```
 
 Decision v0.1 以**仅含模型的评分预览版**交付，面向中文和英文请求领域：`runs/decision/v0.1-preview`。使用 `EasyAI::Decision::Release.load("runs/decision/v0.1-preview", device: "auto")` 加载。修正后的模型总体准确率为**英文 78.25% / 中文 81.0%**；高置信度判断的准确率为 **90.32% / 91.64%**，覆盖率为 **77.5% / 80.75%**。80% 目标仅作为后续优化参考；原先严格验收失败的记录仍然保留。参见[结果、图表、推理与训练命令](docs/decision/v01.md)。通用是非推理尚未验证，当前不包含业务集成。
 
@@ -94,19 +156,7 @@ easy_ai/
 `-- runs/                   # 权重、优化器、日志、校准结果（gitignored）
 ```
 
-Ruby 3.4，Bundler，以及可用的 LibTorch 环境：
-
-```bash
-bundle install
-bundle exec ruby bin/easy-ai --help
-bundle exec rake test
-bundle exec rake test:learning
-bundle exec rake lint
-```
-
-本机已验证 Torch.rb 0.23.0 和 Quadro RTX 3000 6 GiB；安装 LibTorch 时需匹配 Torch.rb 的兼容版本及 CPU/CUDA 构建，参见 [Torch.rb 安装说明](https://github.com/ankane/torch-rb#installation)。仅安装 gem 不代表 CUDA 已可用。
-
-## 一条命令完成 Decision 训练
+### 一条命令完成 Decision 训练
 
 当前按学习路线推进**从零训练**：新语义实验已准备 107094 条中英监督数据，模型 6,627,841 参数，不导入外部基础权重或教师输出。一条命令包含自训 MLM、候选监督、输入扰动诊断、校准和效果图：
 
@@ -223,13 +273,10 @@ runs/decision/<run>/
 - [人工标注监督覆盖实验](docs/decision/coverage.md)：完成六次运行对照；延长训练提升 3.05 个准确率百分点，但原始概率指标变差，措辞扩充则下降 1.97 个百分点。包含数据接触、内存回收、失败探针与复现；未使用关键词语义规则或预训练大语言模型。
 - [开发交接记录](docs/decision/handover.md)：当前权重、用户复测证据、下一轮任务与验收标准；接手入口。
 - [内存与显存](docs/decision/memory.md)：长文本验证的资源管理修复与连续测量。
-- [学习课程](learning/README.md)：00–16 可运行的数据/训练/推理实验、训练方法、诊断和核心测试。
-- [全课程精简打印版](docs/learning-course-print.md)：核心概念、公式与必要代码，适合打印。
-- [逻辑门与最简 ReLU 网络](learning/01_basic_nn/README.md)：手写逻辑、9 参数 XOR 网络、Torch.rb CUDA 训练、手工梯度对照和函数图。
 
 配置遵循每行一个参数、优先人类可读性的约定。风格参考 easy_biz 的 RuboCop 习惯，项目继续使用 Ruby 库的目录结构。下载档案、训练数据、tokenizer 文件、权重和缓存请放入上述忽略目录；`examples/` 和测试代码可以正常提交。
 
-## Decision 本机训练效果
+### Decision 本机训练效果
 
 改进配置的实际结果（2026-09-28，八候选、五语言，test 各 200 条；与旧实验使用同一组验证、校准和测试数据）：
 
@@ -273,16 +320,3 @@ MLM 的训练与验证 loss 都下降；候选训练后半段出现训练 loss �
 本次温度拟合降低 calibration NLL，但 Brier 和 ECE 没有同时改善。报告保留原始曲线与指标，不筛选“好看”的点。
 本机完整报告位于 `runs/decision/pipeline-showcase/report/index.html`；其他机器可执行一键命令生成自己的报告。
 原始权重、语料和日志不随 Git 分发，README 的展示图单独保留在 `docs/images/`。
-
-## 基础神经网络示例
-
-最基础的神经网络训练示例（不需要语料和 GPU）：
-
-```bash
-bundle exec ruby learning/01_basic_nn/logic.rb
-bundle exec ruby learning/01_basic_nn/train.rb
-```
-
-训练一个只计算 XOR 的神经网络，打印训练进度、学到的参数和 unicode_plot 函数图；输出保存到被忽略的 `runs/learning/basic_nn/logic-gates/`。默认 seed 1337 的 CUDA 训练运行 436 步后，四个 XOR 输入的阈值判断全部正确。详见 [基础 NN 学习说明](learning/01_basic_nn/README.md)。
-
-基础 NN 默认使用 Torch.rb / CUDA（不可用时回退 CPU）；[README 函数图](learning/01_basic_nn/README.md#observed-runs-and-plots)分两组展示：固定 AND/OR/NAND/XOR 逻辑函数；模型的 ReLU、训练 loss、score 热力图和 3D 曲面、XOR 预测边界。终端训练报告也保留 loss 曲线。

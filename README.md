@@ -4,7 +4,69 @@
 
 **Online course: [Easy AI Learning](https://easy-ai-learning.code-li.com/)** — Follow the course sequence from neural network foundations to classic architectures, training methods and practical experiments.
 
-Learn and implement neural networks in Ruby. The first maintained capability is **EasyAI::Decision**: given a state, a question and multiple candidates, it returns candidate probabilities. The algorithms, training loops, tokenization and optimizers are readable in this repository; Torch.rb / LibTorch handles tensor computation and automatic differentiation on CUDA or CPU.
+Learn and implement neural networks in Ruby through a progressive curriculum and runnable model experiments. The algorithms, training loops, tokenizers and optimizers are readable in this repository; Torch.rb / LibTorch handles tensor computation and automatic differentiation on CUDA or CPU.
+
+## Learning curriculum
+
+Start with [the curriculum overview](learning/README.md), or read the [online course](https://easy-ai-learning.code-li.com/) with search, chapter navigation and links to source code. Chapters 00–16 progress from hand-calculable examples to complete Ruby/Torch.rb experiments. Later chapters reuse earlier implementations.
+
+| Stage | Chapters and topics |
+| --- | --- |
+| Foundations and training | [00: Mathematics and data](learning/00_foundations/README.md), [01: Basic neural networks](learning/01_basic_nn/README.md), [02: SGD, AdamW and regularization](learning/02_training/README.md), [03: Weights, gradients and diagnostics](learning/03_diagnostics/README.md) |
+| Representation and vision | [04: Autoencoders](learning/04_autoencoder/README.md), [05: CNNs](learning/05_cnn/README.md), [06: ResNet](learning/06_resnet/README.md) |
+| Sequences | [07: Tokenizers](learning/07_tokenizers/README.md), [08: RNN/LSTM/GRU](learning/08_rnn/README.md), [09: Seq2Seq](learning/09_seq2seq/README.md) |
+| Attention and language | [10: Attention and masks](learning/10_attention/README.md), [11: Transformers](learning/11_transformer/README.md), [12: GPT](learning/12_gpt/README.md) |
+| Generation, transfer and interaction | [13: VAE/GAN/Diffusion](learning/13_generative/README.md), [14: Transfer learning and LoRA](learning/14_transfer_learning/README.md), [15: Reinforcement learning](learning/15_rl/README.md) |
+| Complete experiment | [16: Capstone](learning/16_capstone/README.md) |
+
+Complete 00–03 first, then choose the vision or language branch before studying generation, transfer or reinforcement learning. Each chapter includes documentation, data preparation, training, inference and recorded results. Core tests verify formulas, gradients, masks and parameter updates independently of training convergence.
+
+- [Local reading guide](docs/learning-site.md): run the Ruby-based documentation site with cross-chapter navigation and search.
+- [Compact printable course](docs/learning-course-print.md): core concepts, formulas and essential code (in Chinese).
+- [Learning implementations](learning/lib/easy_ai_learning/): shared teaching components reused across chapters.
+
+### Setup
+
+Requirements: Ruby 3.4, Bundler and a working LibTorch installation.
+
+```bash
+bundle install
+bundle exec rake test:learning
+bundle exec rake lint
+```
+
+Local validation used Torch.rb 0.23.0 and a Quadro RTX 3000 with 6 GiB VRAM. Install a compatible LibTorch version and CPU/CUDA build for Torch.rb; see the [Torch.rb installation instructions](https://github.com/ankane/torch-rb#installation). Installing the gem alone does not make CUDA available.
+
+### Basic neural network example
+
+The most basic neural network training example requires neither a corpus nor a GPU:
+
+```bash
+bundle exec ruby learning/01_basic_nn/logic.rb
+bundle exec ruby learning/01_basic_nn/train.rb
+```
+
+Train a neural network that computes XOR, printing progress, learned parameters and unicode_plot function plots. Output is saved in the ignored `runs/learning/basic_nn/logic-gates/` directory. With the default seed 1337, a CUDA run correctly classifies all four XOR inputs after 436 updates. See the [basic neural network guide](learning/01_basic_nn/README.md).
+
+The basic neural network uses Torch.rb / CUDA by default, falling back to CPU when unavailable. The [README function plots](learning/01_basic_nn/README.md#observed-runs-and-plots) show two groups: fixed AND/OR/NAND/XOR logic functions; and the model's ReLU, training loss, score heatmap and 3D surface, and XOR prediction boundary. The terminal training report also retains a loss curve.
+
+### Run the full course
+
+```bash
+bundle exec ruby learning/run_all.rb
+bundle exec rake test:learning
+```
+
+The runner prepares data and executes experiments in chapter order. Neural training prefers CUDA and falls back to CPU when unavailable; `--device cpu` selects CPU explicitly. Artifacts are saved under the ignored `runs/learning/` directory. See the [curriculum overview](learning/README.md#an-executable-learning-path) for per-chapter commands and experiment settings.
+
+## Implemented models: Decision
+
+**EasyAI::Decision** takes a state, a question and multiple candidates, and returns candidate probabilities. The following sections describe its architecture, training workflow and measured results.
+
+```bash
+bundle exec ruby bin/easy-ai --help
+bundle exec rake test
+```
 
 Decision v0.1 is delivered as a **model-only scoring preview** for Chinese/English request domains: `runs/decision/v0.1-preview`. Load it with `EasyAI::Decision::Release.load("runs/decision/v0.1-preview", device: "auto")`. The corrected model scores **78.25% English / 81.0% Chinese** overall, and **90.32% / 91.64%** on confident decisions at **77.5% / 80.75%** coverage. The 80% target is advisory for continued optimization; the original failed strict acceptance remains recorded. See [results, charts, inference and training commands](docs/decision/v01.md). General yes/no reasoning remains unvalidated; no business integration is included.
 
@@ -94,19 +156,7 @@ easy_ai/
 `-- runs/                   # Weights, optimizers, logs and calibration results (gitignored)
 ```
 
-Requirements: Ruby 3.4, Bundler and a working LibTorch installation.
-
-```bash
-bundle install
-bundle exec ruby bin/easy-ai --help
-bundle exec rake test
-bundle exec rake test:learning
-bundle exec rake lint
-```
-
-Local validation used Torch.rb 0.23.0 and a Quadro RTX 3000 with 6 GiB VRAM. Install a compatible LibTorch version and CPU/CUDA build for Torch.rb; see the [Torch.rb installation instructions](https://github.com/ankane/torch-rb#installation). Installing the gem alone does not make CUDA available.
-
-## Train Decision with one command
+### Train Decision with one command
 
 The learning path currently emphasizes **training from scratch**. The new semantic experiment prepares 107094 Chinese/English supervised examples for a model with 6,627,841 parameters, without importing external base weights or teacher outputs. One command runs MLM pretraining, candidate supervision, input-perturbation diagnostics, calibration and plotting:
 
@@ -223,13 +273,10 @@ See the [one-command training guide](docs/decision/usage.md#%E4%B8%80%E9%94%AE%E
 - [Gold-supervised coverage round](docs/decision/coverage.md): completed six-run comparison; longer training gains 3.05 accuracy points but worsens raw probability metrics, while wording expansion loses 1.97 points. Includes exposure, memory recovery, failure probes and reproduction; no keyword-based semantic rules or pretrained LLM.
 - [Development handover](docs/decision/handover.md): current weights, user-retest evidence, next-round tasks and acceptance criteria; the starting point for continued development.
 - [Memory and VRAM](docs/decision/memory.md): resource-management fixes and consecutive measurements for long-text validation.
-- [Learning course](learning/README.md): chapters 00–16 with runnable data/training/inference experiments, training methods, diagnostics and core tests.
-- [Compact printable course](docs/learning-course-print.md): core concepts, formulas and essential code, suitable for printing (in Chinese).
-- [Logic gates and a minimal ReLU network](learning/01_basic_nn/README.md): handwritten logic, a nine-parameter XOR network, Torch.rb CUDA training, manual gradient comparisons and function plots.
 
 Configuration follows a one-parameter-per-line convention that prioritizes readability. Style follows the easy_biz RuboCop conventions, while the project retains a Ruby library layout. Store downloaded archives, training data, tokenizer files, weights and caches in the ignored directories above; `examples/` and test code can be committed normally.
 
-## Local Decision training results
+### Local Decision training results
 
 Measured results for the improved configuration (2026-09-28, eight candidates, five languages, 200 test examples each; using the same validation, calibration and test data as the old experiment):
 
@@ -273,16 +320,3 @@ These old weights have not demonstrated state-to-candidate matching; on this val
 Temperature fitting reduces calibration NLL, but Brier score and ECE do not both improve. The report retains the original curves and metrics without selecting only favorable points.
 The complete local report is at `runs/decision/pipeline-showcase/report/index.html`. Run the one-command pipeline on another machine to generate your own report.
 Raw weights, corpora and logs are not distributed through Git. README showcase images are retained separately in `docs/images/`.
-
-## Basic neural network example
-
-The most basic neural network training example requires neither a corpus nor a GPU:
-
-```bash
-bundle exec ruby learning/01_basic_nn/logic.rb
-bundle exec ruby learning/01_basic_nn/train.rb
-```
-
-Train a neural network that computes XOR, printing progress, learned parameters and unicode_plot function plots. Output is saved in the ignored `runs/learning/basic_nn/logic-gates/` directory. With the default seed 1337, a CUDA run correctly classifies all four XOR inputs after 436 updates. See the [basic neural network guide](learning/01_basic_nn/README.md).
-
-The basic neural network uses Torch.rb / CUDA by default, falling back to CPU when unavailable. The [README function plots](learning/01_basic_nn/README.md#observed-runs-and-plots) show two groups: fixed AND/OR/NAND/XOR logic functions; and the model's ReLU, training loss, score heatmap and 3D surface, and XOR prediction boundary. The terminal training report also retains a loss curve.
