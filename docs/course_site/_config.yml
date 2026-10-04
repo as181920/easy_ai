@@ -24,3 +24,11 @@ exclude:
   - .sass-cache
 
 disable_disk_cache: true
+
+# Temporary suppression for the locked Just the Docs theme's legacy Sass.
+# Compilation errors and other warning categories remain visible.
+sass:
+  silence_deprecations:
+    - import
+    - global-builtin
+    - color-functions

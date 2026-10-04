@@ -7,7 +7,7 @@ deploy_production:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      when: manual
+      when: on_success
   allow_failure: false
   resource_group: learning-production
   environment:

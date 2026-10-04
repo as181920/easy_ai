@@ -48,7 +48,7 @@ Open **http://127.0.0.1:8001/**. Use HTTP rather than opening HTML with `file://
 
 ## Deploy through GitLab CI
 
-The root `.gitlab-ci.yml` follows the existing static-project workflow: a **manual** production job on **main**, using the shell runner's SSH credentials and rsync. It installs only the separate documentation bundle with the committed lockfile, builds with `JEKYLL_ENV=production`, validates links/search/URLs, and publishes the generated static files. It never runs training or starts a Ruby service on the server.
+The root `.gitlab-ci.yml` follows the existing static-project workflow: an **automatic** production job on **main**, using the shell runner's SSH credentials and rsync. It installs only the separate documentation bundle with the committed lockfile, builds with `JEKYLL_ENV=production`, validates links/search/URLs, and publishes the generated static files. It never runs training or starts a Ruby service on the server.
 
 The production origin defaults to **https://easy-ai-learning.code-li.com** and the deployment directory to **/opt/www/easy_ai_learning**. In GitLab **Settings → CI/CD → Variables**, you can override these defaults:
 
@@ -63,7 +63,7 @@ The production origin defaults to **https://easy-ai-learning.code-li.com** and t
 
 The runner needs Ruby 3.4.x, Bundler compatible with the documentation lockfile (currently 4.0.15), native-gem build tools, `ssh`, and `rsync`. Its SSH identity and trusted `known_hosts` must allow the existing `deployer@www.code-li.com` connection without interactive prompts. The server needs rsync and a writable `/opt/www/easy_ai_learning` for that deployer; create the directory with suitable ownership first if the deployer cannot create it. Caddy needs read access to the files. The job sets directories to 755 and files to 644, and you manage the Caddy configuration separately.
 
-After pushing to `main`, open the pipeline and run `deploy_production`. The job synchronizes the **contents** of `tmp/learning-site/` to `/opt/www/easy_ai_learning/`. `--delete` removes obsolete files inside this dedicated course directory; do not share that directory with another application. A `resource_group` serializes course deployments. The static artifact remains downloadable from the job for one week.
+Pushing to `main` automatically runs `deploy_production`; deployment proceeds after the build and validation succeed. The job synchronizes the **contents** of `tmp/learning-site/` to `/opt/www/easy_ai_learning/`. `--delete` removes obsolete files inside this dedicated course directory; do not share that directory with another application. A `resource_group` serializes course deployments. The static artifact remains downloadable from the job for one week.
 
 To preview a production build locally before publishing:
 
@@ -94,6 +94,10 @@ sudo systemctl reload caddy
 ```
 
 You manage this server configuration yourself; the CI job only publishes static files. Reference: [Caddy static file server](https://caddyserver.com/docs/caddyfile/directives/file_server).
+
+## Sass deprecation messages
+
+Just the Docs 0.12.0 uses legacy Sass `@import`, global built-in functions, and color functions. With the locked compiler these emit deprecation warnings, not build failures. The `sass.silence_deprecations` setting in `_config.yml` temporarily suppresses only `import`, `global-builtin`, and `color-functions`; other warnings and compilation errors remain visible. This does not migrate the theme's Sass. Revisit the setting when upgrading to a theme version that adopts the new syntax. The committed documentation lockfile keeps CI dependency versions reproducible.
 
 ## Files and configuration
 
