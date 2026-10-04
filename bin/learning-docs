@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+require "bundler"
+
+root = File.expand_path("..", __dir__)
+command = ARGV.shift || "serve"
+abort "Usage: bin/learning-docs [setup|build|serve|static] [Jekyll options]" unless %w[setup build serve static].include?(command)
+
+Bundler.with_unbundled_env do
+  ENV["BUNDLE_GEMFILE"] = File.join(root, "docs/course_site/Gemfile")
+  ENV["BUNDLE_PATH"] = File.join(root, "tmp/learning-docs-gems")
+  Dir.chdir(root)
+  if command == "setup"
+    exec "bundle", "install", *ARGV
+  elsif command == "static"
+    exec "bundle", "exec", "ruby", "docs/course_site/static.rb", *ARGV
+  else
+    options = ["--source", "docs/course_site", "--destination", "tmp/learning-site"]
+    options += ["--host", "127.0.0.1", "--port", "8001", "--livereload"] if command == "serve"
+    exec "bundle", "exec", "jekyll", command, *options, *ARGV
+  end
+end

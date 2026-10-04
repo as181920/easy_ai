@@ -1,0 +1,8 @@
+.course-footer { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; }
+.main-content img { max-width: 100%; height: auto; }
+@media print {
+  .side-bar, .main-header, .course-footer, .search, .site-footer, .back-to-top { display: none !important; }
+  .main { margin: 0 !important; }
+  .main-content-wrap { padding: 0 !important; }
+  pre, table, img { break-inside: avoid; }
+}

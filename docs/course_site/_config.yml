@@ -1,0 +1,25 @@
+title: Easy AI Learning
+description: A progressive Ruby and Torch.rb AI learning curriculum
+theme: just-the-docs
+url: http://127.0.0.1:8001
+baseurl: ""
+search_enabled: true
+search:
+  heading_level: 3
+  previews: 3
+  focus_shortcut_key: k
+color_scheme: light
+heading_anchors: true
+enable_copy_code_button: true
+back_to_top: true
+back_to_top_text: Back to top
+footer_content: Read with Jekyll + Just the Docs. Edit the original course READMEs with Vim.
+exclude:
+  - static.rb
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - .jekyll-cache
+  - .sass-cache
+
+disable_disk_cache: true

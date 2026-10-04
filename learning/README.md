@@ -8,6 +8,10 @@ Each chapter provides a small synthetic task, reproducible data export, independ
 
 For printing, use the [compact printable course](../docs/learning-course-print.md): core concepts, formulas, and essential code without run logs or large figures.
 
+## Read in your browser
+
+Use the local Jekyll + Just the Docs site for cross-chapter links, search, source browsing, and chapter navigation. See the [installation and reading guide](../docs/learning-site.md). After the first-time setup, run `bin/learning-docs serve` from the repository root and open http://127.0.0.1:8001/.
+
 ## Chapters and prerequisites
 
 | Directory | Core topics | Minimal experiment / learning outcome | Prerequisites | Implementation |

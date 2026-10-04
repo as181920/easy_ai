@@ -1,0 +1,4 @@
+<nav class="course-footer" aria-label="Previous and next pages">
+  {% if page.previous_course %}<a href="{{ page.previous_course | relative_url }}">← Previous</a>{% endif %}
+  {% if page.next_course %}<a href="{{ page.next_course | relative_url }}">Next →</a>{% endif %}
+</nav>
