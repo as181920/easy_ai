@@ -51,6 +51,7 @@ module CourseSite
           raise Jekyll::Errors::FatalException, "Unresolved course link in #{source}: #{link}"
         end
         url = @documents.include?(repository_path) || repository_path.end_with?(".rb") ? destination(repository_path) : "/#{repository_path}"
+        url = @site.baseurl.to_s + url
         url += "?#{uri.query}" if uri.query
         url += "##{uri.fragment}" if uri.fragment
         url
@@ -78,7 +79,7 @@ module CourseSite
         source = File.read(File.join(ROOT, path))
         highlighted = Rouge.highlight(source, "ruby", "html")
         content = "<h1>#{CGI.escapeHTML(File.basename(path))}</h1><p>Source: <code>#{CGI.escapeHTML(path)}</code>. " \
-          "<a href='/#{path}'>Download original</a></p><div class='highlight'><pre>#{highlighted}</pre></div>"
+          "<a href='#{@site.baseurl}/#{path}'>Download original</a></p><div class='highlight'><pre>#{highlighted}</pre></div>"
         add_page(path, File.basename(path), content, "nav_exclude" => true, "search_exclude" => true)
       end
   end

@@ -1,0 +1,60 @@
+stages:
+  - deploy
+
+# Same shell-runner/SSH setup as the existing static project.
+# Public origin and server directory have project defaults; CI variables may override them.
+deploy_production:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  allow_failure: false
+  resource_group: learning-production
+  environment:
+    name: production
+    url: ${LEARNING_SITE_URL}${LEARNING_SITE_BASEURL}/
+  variables:
+    DEPLOY_USER: deployer
+    DEPLOY_HOST: www.code-li.com
+    DEPLOY_PORT: "22"
+    DEPLOY_PATH: /opt/www/easy_ai_learning
+    LEARNING_SITE_URL: https://easy-ai-learning.code-li.com
+    LEARNING_SITE_BASEURL: ""
+    JEKYLL_ENV: production
+    BUNDLE_FROZEN: "true"
+  cache:
+    key:
+      prefix: learning-docs-ruby-3.4
+      files:
+        - docs/course_site/Gemfile.lock
+    paths:
+      - tmp/learning-docs-gems/
+  before_script:
+    - ruby --version
+    - bundle --version
+    - command -v rsync
+    - command -v ssh
+  script:
+    - ': "${LEARNING_SITE_URL:?Set LEARNING_SITE_URL in GitLab CI/CD variables}"'
+    - bin/learning-docs setup
+    - bin/learning-docs build
+    - bin/learning-docs check
+    - |
+      # Publish only the generated static site to its dedicated directory.
+      # Keep SSH credentials/known_hosts in the runner, as in the reference job.
+      case "$DEPLOY_PATH" in
+        /opt/www/*) ;;
+        *) echo "DEPLOY_PATH must be a dedicated directory under /opt/www" >&2; exit 1 ;;
+      esac
+      case "$DEPLOY_PATH" in
+        *..*|*//*|*[!a-zA-Z0-9_/-]|/opt/www/) echo "Invalid DEPLOY_PATH" >&2; exit 1 ;;
+      esac
+      ssh -o BatchMode=yes -p "$DEPLOY_PORT" "${DEPLOY_USER}@${DEPLOY_HOST}" "mkdir -p -- '$DEPLOY_PATH'"
+      rsync -az --delete --delay-updates --chmod=D755,F644 \
+        -e "ssh -o BatchMode=yes -p $DEPLOY_PORT" \
+        tmp/learning-site/ "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
+  artifacts:
+    name: learning-site-$CI_COMMIT_SHORT_SHA
+    paths:
+      - tmp/learning-site/
+    expire_in: 1 week

@@ -1,0 +1,5 @@
+easy-ai-learning.code-li.com {
+	root * /opt/www/easy_ai_learning
+	encode zstd gzip
+	file_server
+}

@@ -16,6 +16,7 @@ back_to_top_text: Back to top
 footer_content: Read with Jekyll + Just the Docs. Edit the original course READMEs with Vim.
 exclude:
   - static.rb
+  - verify.rb
   - Gemfile
   - Gemfile.lock
   - README.md
