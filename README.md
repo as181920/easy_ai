@@ -274,38 +274,7 @@ Temperature fitting reduces calibration NLL, but Brier score and ECE do not both
 The complete local report is at `runs/decision/pipeline-showcase/report/index.html`. Run the one-command pipeline on another machine to generate your own report.
 Raw weights, corpora and logs are not distributed through Git. README showcase images are retained separately in `docs/images/`.
 
-## Learning training showcase (historical)
-
-The GPT teaching experiment curve from the original README is retained below. The historical run used a Song poetry corpus, a Qwen tokenizer and 200 updates.
-This is a historical example from the learning module, rather than a result from the Decision model above. Current scripts still print the training-loss curve and generated examples when training finishes.
-
-```
-                                        Training Loss
-           ┌──────────────────────────────────────────────────────────────────────┐
-        13 │                                                                      │
-           │⠣⠤⠢⢄⣠⢀⣀                                                               │
-           │     ⠈⠉⠈⠋⠋⠋⠲⢆⢀                                                        │
-           │               ⠉⠉⠒⠦⡀⡄                                                 │
-           │                   ⠙⠸⡰⣤⢄                                              │
-   Loss    │                       ⠓⠖⡼⠶⣀⢴  ⡀                                      │
-           │                            ⢄⠷⠻⡀⢀  ⡄  ⢀                               │
-           │                              ⠓⠹⠋⢱⣆⢿⢰⣀⢸⡀                              │
-           │                                ⠘⠹ ⠁⠉⠞⡷⢲⣤⡶⣇⣄⣤⣠⢰⣼⢰⡀ ⡀  ⡀⢀⢄⡄    ⢠⣤ ⡞⡆   │
-           │                                          ⠘⠁⠁⠟⠛⠿⠛⡎⠛⠃⣧⢷⣧⣄⣰⢧⠎⠘⣷⣆⣶⣄⡸⠏⣿⡟ ⣇│
-           │                                                    ⢿⠈⠃   ⡿⠉⠹   ⠇⠃  ⠘⢿│
-         6 │                                                                      │
-           └──────────────────────────────────────────────────────────────────────┘
-           0                                                                    200
-                                          Iteration
-```
-
-Run the teaching experiment with a self-trained byte BPE tokenizer:
-
-```bash
-bundle exec ruby learning/12_gpt/train.rb --data data/learning/song.txt --tokenizer byte --iters 200
-```
-
-This command uses a different tokenizer, so its curve should not be compared point by point with the historical example. The original notes remain in [learning/LEGACY_README.md](learning/LEGACY_README.md).
+## Basic neural network example
 
 The most basic neural network training example requires neither a corpus nor a GPU:
 

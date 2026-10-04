@@ -274,38 +274,7 @@ MLM 的训练与验证 loss 都下降；候选训练后半段出现训练 loss �
 本机完整报告位于 `runs/decision/pipeline-showcase/report/index.html`；其他机器可执行一键命令生成自己的报告。
 原始权重、语料和日志不随 Git 分发，README 的展示图单独保留在 `docs/images/`。
 
-## Learning 训练效果展示（保留）
-
-以下保留原 README 中的 GPT 教学实验曲线：历史运行使用宋词语料、Qwen tokenizer、200 次更新。
-这是 learning 模块的历史示例，不是上述 Decision 模型的训练结果。当前脚本仍会在结束时打印训练 loss 曲线及生成示例。
-
-```
-                                        Training Loss
-           ┌──────────────────────────────────────────────────────────────────────┐
-        13 │                                                                      │
-           │⠣⠤⠢⢄⣠⢀⣀                                                               │
-           │     ⠈⠉⠈⠋⠋⠋⠲⢆⢀                                                        │
-           │               ⠉⠉⠒⠦⡀⡄                                                 │
-           │                   ⠙⠸⡰⣤⢄                                              │
-   Loss    │                       ⠓⠖⡼⠶⣀⢴  ⡀                                      │
-           │                            ⢄⠷⠻⡀⢀  ⡄  ⢀                               │
-           │                              ⠓⠹⠋⢱⣆⢿⢰⣀⢸⡀                              │
-           │                                ⠘⠹ ⠁⠉⠞⡷⢲⣤⡶⣇⣄⣤⣠⢰⣼⢰⡀ ⡀  ⡀⢀⢄⡄    ⢠⣤ ⡞⡆   │
-           │                                          ⠘⠁⠁⠟⠛⠿⠛⡎⠛⠃⣧⢷⣧⣄⣰⢧⠎⠘⣷⣆⣶⣄⡸⠏⣿⡟ ⣇│
-           │                                                    ⢿⠈⠃   ⡿⠉⠹   ⠇⠃  ⠘⢿│
-         6 │                                                                      │
-           └──────────────────────────────────────────────────────────────────────┘
-           0                                                                    200
-                                          Iteration
-```
-
-自训 byte BPE 的教学运行入口：
-
-```bash
-bundle exec ruby learning/12_gpt/train.rb --data data/learning/song.txt --tokenizer byte --iters 200
-```
-
-该命令使用不同 tokenizer，曲线不应与历史示例逐点对照；原始说明保留在 [learning/LEGACY_README.md](learning/LEGACY_README.md)。
+## 基础神经网络示例
 
 最基础的神经网络训练示例（不需要语料和 GPU）：
 
