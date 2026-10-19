@@ -76,7 +76,7 @@ Decision v0.1 以**仅含模型的评分预览版**交付，面向中文和英�
 
 [已完成的 v0.4 实现](docs/decision/v04.md)增加了经审查的监督数据、完整反事实样本族、分阶段 CE 训练器和类别/分组检查。独立的 128 条样本拟合停在 87.5%：不同事件样本通过，但混合主体样本即使在训练集上也仅为 50%。全部 1,000 次更新使用 CUDA；运行与内存检查通过。按照停止规则，试验性训练和验收尚未运行，v0.1 仍为交付版本。这个训练成绩不代表泛化结果。参见[计划与流程](docs/decision/v04-plan.md)。
 
-[v0.5 开发计划](docs/decision/v05-plan.md)将在同一组经审查的核心数据上比较分离式与联合式关系编码，验证位置编码和权重迁移，并以可重复的主体绑定学习结果作为监督泛化、未知信息训练和校准的前置门槛。目前仍处于计划阶段，实现与训练尚未开始。
+[v0.5 扩展实验](docs/decision/v05.md)已完成十次拟合实验、三组完整监督训练，共 14,500 次 CUDA 更新。RoPE 的关系拟合改善已通过两个种子确认，但没有监督训练检查点同时通过中英文关系与自然表达的全部门槛。没有事实判断模型晋升交付，继续保留 v0.1 预览版。详见[结果与图表](docs/decision/v05.md)、[机器可读摘要](docs/decision/v05-results.json)和[已完成的实验范围](docs/decision/extended-optimization-plan.md)。
 
 `Release.load` 和 `Predictor.load` 的 `device:` 均接受 `:auto`、`:cpu`、`:cuda` 及对应字符串。
 `Release#probabilities(state:, question:, options:, language: nil)` 可以不传语言参数，直接接受多语言文本。各语言共用一个分词器和一个 checkpoint；`language:` 仅选择已评估的路由置信度策略。`route` 的预定义候选描述仍需要指定语言。

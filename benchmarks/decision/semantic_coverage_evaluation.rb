@@ -3,7 +3,9 @@ require_relative "../../lib/easy_ai"
 # Batched offline evaluation keeps every temporary tensor inside one method call.
 # This evaluates the existing neural model; no text rules compute an answer.
 class SemanticCoverageEvaluation
-  def initialize(model:, tokenizer:, device: "cpu", batch_size: 16)
+  def initialize(model:, tokenizer:, device: "cpu", batch_size: 16, gc_interval: 1)
+    raise ArgumentError, "gc_interval must be a positive integer" unless gc_interval.is_a?(Integer) && gc_interval.positive?
+    @gc_interval = gc_interval
     @model, @device, @batch_size = model, device, batch_size
     # Torch.rb replaces Parameters on every Module#to, even on the same device.
     # Preserve optimizer references when evaluating an already placed training model.
@@ -13,11 +15,13 @@ class SemanticCoverageEvaluation
   end
 
   def collect(rows)
-    rows.each_slice(@batch_size).flat_map do |batch|
+    rows.each_slice(@batch_size).with_index.flat_map do |batch, index|
       values = batch_logits(batch)
-      GC.start
+      GC.start if ((index + 1) % @gc_interval).zero?
       values
     end
+  ensure
+    GC.start if @gc_interval > 1
   end
 
   def evaluate(rows, permutations: false)

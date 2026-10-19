@@ -1,6 +1,6 @@
 # Decision v0.5 plan — relational encoding before scale
 
-Status: **planned, implementation not started, 2026-10-03**. The user requested this next-round scope and development plan. This document does not start a development goal or authorize an experiment automatically. v0.4 is committed as `866e59b`; see [v04.md](v04.md) for measured results and [retrospective.md](retrospective.md) for earlier lessons. v0.1 remains the delivered scoring preview.
+Status: **completed under the extended optimization goal, 2026-10-19**. See [v0.5 results](v05.md) and the [completed extended scope](extended-optimization-plan.md). The primary separate/joint comparison fails fitting; subsequent RoPE recipes confirm fitting but none of three supervised pilots qualifies for delivery. The original 7,000-update ceiling below describes the original branch; separately frozen follow-ups share the extended 20,000 ceiling, using 14,500 actual updates. The plan below is historical scope, not a request to launch more training. v0.4 is committed as `866e59b`; see [v04.md](v04.md) and [retrospective.md](retrospective.md). v0.1 remains the delivered scoring preview.
 
 ## Objective and scope
 

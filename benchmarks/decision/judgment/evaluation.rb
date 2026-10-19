@@ -47,8 +47,8 @@ module DecisionJudgment
     result
   end
 
-  def measure(model, tokenizer, rows, device)
-    _, logits = DecisionRobust.collect(model, tokenizer, rows, device)
+  def measure(model, tokenizer, rows, device, gc_interval: 1)
+    _, logits = DecisionRobust.collect(model, tokenizer, rows, device, gc_interval: gc_interval)
     metrics(rows, logits)
   end
 

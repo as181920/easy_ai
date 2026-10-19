@@ -1,9 +1,9 @@
 module DecisionRobust
   module_function
 
-  def collect(model, tokenizer, raw, requested)
+  def collect(model, tokenizer, raw, requested, gc_interval: 1)
     rows = raw.map { |row| EasyAI::Decision::Data::Example.new(row) }
-    logits = SemanticCoverageEvaluation.new(model: model, tokenizer: tokenizer, device: requested, batch_size: 4).collect(rows)
+    logits = SemanticCoverageEvaluation.new(model: model, tokenizer: tokenizer, device: requested, batch_size: 4, gc_interval: gc_interval).collect(rows)
     EasyAI::Runtime::DevicePolicy.new(requested: requested, budget_mib: 4096).check_budget!(requested)
     [rows, logits]
   rescue Torch::Error, EasyAI::Runtime::DevicePolicy::MemoryBudgetExceeded => error
@@ -12,7 +12,7 @@ module DecisionRobust
     model.to("cpu")
     GC.start
     puts "Evaluation falls back to CPU: #{error.message.lines.first}"
-    collect(model, tokenizer, raw, "cpu")
+    collect(model, tokenizer, raw, "cpu", gc_interval: gc_interval)
   end
 
   def measure(model, tokenizer, raw, requested, calibrator: EasyAI::Decision::Calibrator.new, predictions_path: nil)

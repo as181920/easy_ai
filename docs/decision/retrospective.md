@@ -1,6 +1,21 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
-## Latest learning record: a clean counterfactual fit exposes the unresolved relation (2026-10-03)
+## Latest learning record: repeatable fitting is an intermediate result (2026-10-19)
+
+See [v0.5 measured results](v05.md) and the [extended experiment scope](extended-optimization-plan.md). On exactly the reviewed 128-row core that defeated the original recipes, both joint/RoPE and separate/RoPE pass the bilingual actor **and** event gates at two random seeds. This is a reproducible fitting improvement. The original separate/joint sinusoidal recipes, candidate-only sinusoidal pooling, larger sinusoidal scale and fresh initialization retain their failed gates. Joint/RoPE candidate pooling reaches a perfect final measurement but fails the required consecutive-check gate; it is not retroactively qualified.
+
+The standard and focused joint/RoPE supervised pilots both fail known mastery. Separate/RoPE instead passes known mastery and completes 1,900 joint-stage updates, but none of its 30 development checkpoints qualifies. Final known training probes are perfect; binary development actor groups are only 39.5% EN / 37% ZH and English natural accuracy 44.828%. All registered comparisons finish at 14,500 actual CUDA updates, including 100 replayed updates. The bounded delivery conclusion is negative; calibration and reserved acceptance remain unused. v0.1 remains delivered; tiny fitting weights never initialize the supervised pilots.
+
+Lessons supported by the completed comparisons:
+
+- A working order-sensitive computation and nonzero gradients do not ensure relational learning. Equally, a failed mean-pooling recipe does not establish architectural permutation invariance: the actual encoders already use position information.
+- The selected relative-position recipes repeatedly fit the hard actor swaps. This identifies a useful recipe change for the training core, without proving a unique cause or universal failure of sinusoidal models.
+- A perfect tiny fit can still fail on new identities, events and expression variants. Report the actor and event groups independently, in both languages, rather than use aggregate accuracy to claim factual competence.
+- A focused four-query curriculum must be tested on the larger controlled corpus; tiny-fit success alone does not license unknown supervision. Keep each failed recipe's original stop rule when registering a new comparison.
+- Tokenization audits should use the actual checkpoint tokenizer. Here NativeBpe preserves different ordered actor-swap inputs, and Chinese actor spans have no boundary-crossing merges in the audited controlled core. The evidence does not support a blanket claim that Chinese actor identities were swallowed by BPE.
+- Resource-management changes need separate evidence. Deferring evaluation GC preserves actual CUDA logits and parameters exactly, and 100 replayed optimizer traces match in every field. Count the repeated work, preserve old source snapshots and disclose the runtime amendment.
+
+## Earlier learning record: a clean counterfactual fit exposes the unresolved relation (2026-10-03)
 
 The [completed v0.4 implementation](v04.md) performs a 200-example supervision screen and a separate 100-example fresh short-record review. Disputed annotations are excluded rather than treated as verified assistant relabels. All 50 sampled controlled labels agree; a complete stored-fact audit of 13,312 v03 rows finds zero label mismatches and 1,024 stale truth-pattern metadata values. These are different findings: coverage/reporting defects should not be described as proven training-label errors.
 

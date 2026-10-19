@@ -1,0 +1,868 @@
+{
+  "protocol_sha256": "922fb056e9ad123e8a493c07677d91877afe0185e5f0757f4ddb340c610aee9f",
+  "parent_weights_sha256": "a143ceacc22ae0d0184de7452554c68a7bfd71f029ef68d15f5dcd909234c135",
+  "tokenizer_fingerprint": "5461faeec44b059b21cd8dc711877c39a92e3bb66422ce9ab460f1db045c8f87",
+  "total_successful_updates": 14500,
+  "update_ceiling": 20000,
+  "acceptance_opened": false,
+  "fits": {
+    "joint-1337": {
+      "updates": 1000,
+      "passed": false,
+      "result_sha256": "ca900fa5ee901cc44f7607b90010c280552540fb54f33aa35ac4a389a3c2d46c",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 0.875,
+          "accuracy": 0.875,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.78125,
+            "no": 0.96875
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 0.875,
+          "accuracy": 0.875,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.75,
+            "no": 1.0
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.63625,
+          "accuracy": 0.63625,
+          "actor_binding_all_correct": 0.06,
+          "event_binding_all_correct": 0.325,
+          "recall": {
+            "yes": 0.885,
+            "no": 0.3875
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.629375,
+          "accuracy": 0.629375,
+          "actor_binding_all_correct": 0.01,
+          "event_binding_all_correct": 0.3,
+          "recall": {
+            "yes": 0.39125,
+            "no": 0.8675
+          }
+        }
+      }
+    },
+    "joint-candidate-1337": {
+      "updates": 1000,
+      "passed": false,
+      "result_sha256": "8abc17bab1f7e42959516d7b6c24f1757810353e41520305db96c9642d40c9f7",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 0.875,
+          "accuracy": 0.875,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.75,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 0.875,
+          "accuracy": 0.875,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 0.75
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.650625,
+          "accuracy": 0.650625,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 0.325,
+          "recall": {
+            "yes": 0.86125,
+            "no": 0.44
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.62,
+          "accuracy": 0.62,
+          "actor_binding_all_correct": 0.02,
+          "event_binding_all_correct": 0.315,
+          "recall": {
+            "yes": 0.6525,
+            "no": 0.5875
+          }
+        }
+      }
+    },
+    "joint-position-scale-1337": {
+      "updates": 1000,
+      "passed": false,
+      "result_sha256": "6a6e6d2b6d548b9462a2078230f9af23ee563107e56fa45f1155a7053edaa7bf",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 0.96875,
+          "accuracy": 0.96875,
+          "actor_binding_all_correct": 0.75,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.9375,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 0.75,
+          "accuracy": 0.75,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 0.5,
+          "recall": {
+            "yes": 0.75,
+            "no": 0.75
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.57375,
+          "accuracy": 0.57375,
+          "actor_binding_all_correct": 0.075,
+          "event_binding_all_correct": 0.19,
+          "recall": {
+            "yes": 0.9425,
+            "no": 0.205
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.485,
+          "accuracy": 0.485,
+          "actor_binding_all_correct": 0.055,
+          "event_binding_all_correct": 0.065,
+          "recall": {
+            "yes": 0.7275,
+            "no": 0.2425
+          }
+        }
+      }
+    },
+    "joint-rotary-1337": {
+      "updates": 600,
+      "passed": true,
+      "result_sha256": "959584473e5bc15b127fdf76cb3efab8c2dce7753fcd29dcee5298425c6c0bcc",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.65875,
+          "accuracy": 0.65875,
+          "actor_binding_all_correct": 0.085,
+          "event_binding_all_correct": 0.365,
+          "recall": {
+            "yes": 0.90625,
+            "no": 0.41125
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.696875,
+          "accuracy": 0.696875,
+          "actor_binding_all_correct": 0.045,
+          "event_binding_all_correct": 0.285,
+          "recall": {
+            "yes": 0.805,
+            "no": 0.58875
+          }
+        }
+      }
+    },
+    "joint-rotary-2027": {
+      "updates": 600,
+      "passed": true,
+      "result_sha256": "3c5d53e966cedbfb0ca46d9c736dfe6e102c18f6848c64a65b3e4da41b07a3ce",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.665,
+          "accuracy": 0.665,
+          "actor_binding_all_correct": 0.07,
+          "event_binding_all_correct": 0.355,
+          "recall": {
+            "yes": 0.83625,
+            "no": 0.49375
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.736875,
+          "accuracy": 0.736875,
+          "actor_binding_all_correct": 0.035,
+          "event_binding_all_correct": 0.395,
+          "recall": {
+            "yes": 0.70125,
+            "no": 0.7725
+          }
+        }
+      }
+    },
+    "joint-rotary-candidate-1337": {
+      "updates": 1000,
+      "passed": false,
+      "result_sha256": "2749a9558b61e26c612cdc4a949d3f8995912aa97d44b4486903a75e04941678",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.676875,
+          "accuracy": 0.676875,
+          "actor_binding_all_correct": 0.17,
+          "event_binding_all_correct": 0.33,
+          "recall": {
+            "yes": 0.8575,
+            "no": 0.49625
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.6950000000000001,
+          "accuracy": 0.695,
+          "actor_binding_all_correct": 0.05,
+          "event_binding_all_correct": 0.19,
+          "recall": {
+            "yes": 0.6,
+            "no": 0.79
+          }
+        }
+      }
+    },
+    "joint-scratch-1337": {
+      "updates": 1000,
+      "passed": false,
+      "result_sha256": "5d6ac06ae92c12fd2c86f093a3d9ac7b29999dd36c720d9c3861468dc80c160b",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 0.890625,
+          "accuracy": 0.890625,
+          "actor_binding_all_correct": 0.25,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.84375,
+            "no": 0.9375
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 0.75,
+          "accuracy": 0.75,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 0.5,
+          "recall": {
+            "yes": 0.625,
+            "no": 0.875
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.623125,
+          "accuracy": 0.623125,
+          "actor_binding_all_correct": 0.03,
+          "event_binding_all_correct": 0.29,
+          "recall": {
+            "yes": 0.885,
+            "no": 0.36125
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.528125,
+          "accuracy": 0.528125,
+          "actor_binding_all_correct": 0.025,
+          "event_binding_all_correct": 0.09,
+          "recall": {
+            "yes": 0.86125,
+            "no": 0.195
+          }
+        }
+      }
+    },
+    "separate-1337": {
+      "updates": 1000,
+      "passed": false,
+      "result_sha256": "02ebaf048182a2ae99ac4bb2ba7af74cb47d25127cd709697bab346f7da3b1a7",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 0.875,
+          "accuracy": 0.875,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.75,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 0.875,
+          "accuracy": 0.875,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.875,
+            "no": 0.875
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.6812499999999999,
+          "accuracy": 0.68125,
+          "actor_binding_all_correct": 0.035,
+          "event_binding_all_correct": 0.38,
+          "recall": {
+            "yes": 0.79875,
+            "no": 0.56375
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.7518750000000001,
+          "accuracy": 0.751875,
+          "actor_binding_all_correct": 0.075,
+          "event_binding_all_correct": 0.47,
+          "recall": {
+            "yes": 0.8575,
+            "no": 0.64625
+          }
+        }
+      }
+    },
+    "separate-rotary-1337": {
+      "updates": 500,
+      "passed": true,
+      "result_sha256": "19919831a25b95dd72c72a456f9b77815d60194c994dce3b1f3868804f341494",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.655,
+          "accuracy": 0.655,
+          "actor_binding_all_correct": 0.05,
+          "event_binding_all_correct": 0.33,
+          "recall": {
+            "yes": 0.9075,
+            "no": 0.4025
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.72375,
+          "accuracy": 0.72375,
+          "actor_binding_all_correct": 0.08,
+          "event_binding_all_correct": 0.315,
+          "recall": {
+            "yes": 0.74875,
+            "no": 0.69875
+          }
+        }
+      }
+    },
+    "separate-rotary-2027": {
+      "updates": 700,
+      "passed": true,
+      "result_sha256": "50996bec638bcfd4c3f2e56646cbe32779ece09f00ba3fdb61a238fadd6c496b",
+      "training": {
+        "en-US": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 64,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        }
+      },
+      "observed_development": {
+        "en-US": {
+          "count": 1600,
+          "balanced": 0.683125,
+          "accuracy": 0.683125,
+          "actor_binding_all_correct": 0.1,
+          "event_binding_all_correct": 0.405,
+          "recall": {
+            "yes": 0.6375,
+            "no": 0.72875
+          }
+        },
+        "zh-CN": {
+          "count": 1600,
+          "balanced": 0.768125,
+          "accuracy": 0.768125,
+          "actor_binding_all_correct": 0.085,
+          "event_binding_all_correct": 0.35,
+          "recall": {
+            "yes": 0.77875,
+            "no": 0.7575
+          }
+        }
+      }
+    }
+  },
+  "completed_pilots": {
+    "pilot-focused-candidate/seed-1337": {
+      "step": 3000,
+      "stage": "joint",
+      "known_mastery_passed": true,
+      "stop_reason": null,
+      "device": "cuda",
+      "known_updates": 1100,
+      "unknown_updates": 1900,
+      "examples_seen": 96000,
+      "summary_sha256": "d76912ab4dd842c4236845f149fd887d69146ced9c6d92121dc255b343418460",
+      "eligible_profiles": [],
+      "pilot_protocol_sha256": "876898fddc03d970b993912acb95556b5bef009ee01a49afb4354cf863dbe31d",
+      "actual_trace_updates": 3100,
+      "final_training_probe": {
+        "en-US": {
+          "count": 128,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        },
+        "zh-CN": {
+          "count": 128,
+          "balanced": 1.0,
+          "accuracy": 1.0,
+          "actor_binding_all_correct": 1.0,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 1.0,
+            "no": 1.0
+          }
+        }
+      },
+      "final_observed_development": {
+        "binary": {
+          "controlled": {
+            "en-US": {
+              "count": 1600,
+              "balanced": 0.8731249999999999,
+              "accuracy": 0.873125,
+              "actor_binding_all_correct": 0.395,
+              "event_binding_all_correct": 0.82,
+              "recall": {
+                "yes": 0.89625,
+                "no": 0.85
+              }
+            },
+            "zh-CN": {
+              "count": 1600,
+              "balanced": 0.86375,
+              "accuracy": 0.86375,
+              "actor_binding_all_correct": 0.37,
+              "event_binding_all_correct": 0.735,
+              "recall": {
+                "yes": 0.86375,
+                "no": 0.86375
+              }
+            }
+          },
+          "natural": {
+            "zh-CN": {
+              "count": 25,
+              "balanced": 0.6794871794871795,
+              "accuracy": 0.68,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.6666666666666666,
+                "no": 0.6923076923076923
+              }
+            },
+            "en-US": {
+              "count": 29,
+              "balanced": 0.3861111111111111,
+              "accuracy": 0.4482758620689655,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.55,
+                "no": 0.2222222222222222
+              }
+            }
+          }
+        },
+        "joint": {
+          "controlled": {
+            "en-US": {
+              "count": 3200,
+              "balanced": 0.71625,
+              "accuracy": 0.708125,
+              "actor_binding_all_correct": 0.275,
+              "event_binding_all_correct": 0.615,
+              "recall": {
+                "yes": 0.7425,
+                "no": 0.7225,
+                "unknown": 0.68375
+              }
+            },
+            "zh-CN": {
+              "count": 3200,
+              "balanced": 0.6527083333333333,
+              "accuracy": 0.641875,
+              "actor_binding_all_correct": 0.19,
+              "event_binding_all_correct": 0.435,
+              "recall": {
+                "yes": 0.6775,
+                "no": 0.67125,
+                "unknown": 0.609375
+              }
+            }
+          },
+          "natural": {
+            "zh-CN": {
+              "count": 41,
+              "balanced": 0.44551282051282054,
+              "accuracy": 0.43902439024390244,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.5,
+                "no": 0.46153846153846156,
+                "unknown": 0.375
+              }
+            },
+            "en-US": {
+              "count": 29,
+              "balanced": null,
+              "accuracy": 0.20689655172413793,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.3,
+                "no": 0.0,
+                "unknown": null
+              }
+            }
+          }
+        }
+      }
+    },
+    "pilot-focused/seed-1337": {
+      "step": 2000,
+      "stage": "known",
+      "known_mastery_passed": false,
+      "stop_reason": "Known-stage mastery failed by the 2000-update ceiling",
+      "device": "cuda",
+      "known_updates": 2000,
+      "unknown_updates": 0,
+      "examples_seen": 64000,
+      "summary_sha256": "38fe5d38b5b59d6ba5924003319d970ad8842ffc9db5df4e5c6fdd4a4b863dd5",
+      "eligible_profiles": [],
+      "pilot_protocol_sha256": "ba6e4d7782c87421df6c4af8b57d231e8c8e8cb14c038229a5b7e4450c906271",
+      "actual_trace_updates": 2000,
+      "final_training_probe": {
+        "en-US": {
+          "count": 128,
+          "balanced": 0.96875,
+          "accuracy": 0.96875,
+          "actor_binding_all_correct": 0.75,
+          "event_binding_all_correct": 1.0,
+          "recall": {
+            "yes": 0.96875,
+            "no": 0.96875
+          }
+        },
+        "zh-CN": {
+          "count": 128,
+          "balanced": 0.8828125,
+          "accuracy": 0.8828125,
+          "actor_binding_all_correct": 0.25,
+          "event_binding_all_correct": 0.875,
+          "recall": {
+            "yes": 0.90625,
+            "no": 0.859375
+          }
+        }
+      },
+      "final_observed_development": {
+        "binary": {
+          "controlled": {
+            "en-US": {
+              "count": 1600,
+              "balanced": 0.863125,
+              "accuracy": 0.863125,
+              "actor_binding_all_correct": 0.24,
+              "event_binding_all_correct": 0.85,
+              "recall": {
+                "yes": 0.85375,
+                "no": 0.8725
+              }
+            },
+            "zh-CN": {
+              "count": 1600,
+              "balanced": 0.845,
+              "accuracy": 0.845,
+              "actor_binding_all_correct": 0.08,
+              "event_binding_all_correct": 0.825,
+              "recall": {
+                "yes": 0.895,
+                "no": 0.795
+              }
+            }
+          },
+          "natural": {
+            "zh-CN": {
+              "count": 25,
+              "balanced": 0.4583333333333333,
+              "accuracy": 0.44,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.9166666666666666,
+                "no": 0.0
+              }
+            },
+            "en-US": {
+              "count": 29,
+              "balanced": 0.5,
+              "accuracy": 0.6896551724137931,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 1.0,
+                "no": 0.0
+              }
+            }
+          }
+        }
+      }
+    },
+    "pilot/seed-1337": {
+      "step": 1000,
+      "stage": "known",
+      "known_mastery_passed": false,
+      "stop_reason": "Known-stage mastery failed by the 1000-update ceiling",
+      "device": "cuda",
+      "examples_seen": 32000,
+      "summary_sha256": "100db2599cc6b06d0e7507e437dfcaa3d4785992d3e9a065b49093c2640826ee",
+      "eligible_profiles": [],
+      "pilot_protocol_sha256": "779b82a776a2f9402d89b457abd8924ba54fcf35c2232a5a8d3a6db84d2ea302",
+      "actual_trace_updates": 1000,
+      "final_training_probe": {
+        "en-US": {
+          "count": 128,
+          "balanced": 0.75,
+          "accuracy": 0.75,
+          "actor_binding_all_correct": 0.0,
+          "event_binding_all_correct": 0.0,
+          "recall": {
+            "yes": 0.75,
+            "no": 0.75
+          }
+        },
+        "zh-CN": {
+          "count": 128,
+          "balanced": 0.7578125,
+          "accuracy": 0.7578125,
+          "actor_binding_all_correct": 0.0625,
+          "event_binding_all_correct": 0.0625,
+          "recall": {
+            "yes": 0.8125,
+            "no": 0.703125
+          }
+        }
+      },
+      "final_observed_development": {
+        "binary": {
+          "controlled": {
+            "en-US": {
+              "count": 1600,
+              "balanced": 0.7506250000000001,
+              "accuracy": 0.750625,
+              "actor_binding_all_correct": 0.005,
+              "event_binding_all_correct": 0.075,
+              "recall": {
+                "yes": 0.75375,
+                "no": 0.7475
+              }
+            },
+            "zh-CN": {
+              "count": 1600,
+              "balanced": 0.77,
+              "accuracy": 0.77,
+              "actor_binding_all_correct": 0.065,
+              "event_binding_all_correct": 0.15,
+              "recall": {
+                "yes": 0.8225,
+                "no": 0.7175
+              }
+            }
+          },
+          "natural": {
+            "zh-CN": {
+              "count": 25,
+              "balanced": 0.5224358974358975,
+              "accuracy": 0.52,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.5833333333333334,
+                "no": 0.46153846153846156
+              }
+            },
+            "en-US": {
+              "count": 29,
+              "balanced": 0.5666666666666667,
+              "accuracy": 0.6551724137931034,
+              "actor_binding_all_correct": null,
+              "event_binding_all_correct": null,
+              "recall": {
+                "yes": 0.8,
+                "no": 0.3333333333333333
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "runtime_amendments_sha256": {
+    "pilot-focused-candidate/evaluation-runtime-amendment.json": "6db281b7e7221927784b4e66969717c27d6317c2adb7429d9a1185d2fdb56ce6"
+  },
+  "scope": "Compact extract from frozen local results; development is observed, not independent acceptance. Interrupted or incomplete pilots are excluded. Raw data, configs, sources and traces remain in the local experiment root."
+}
