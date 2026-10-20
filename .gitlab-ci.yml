@@ -30,6 +30,8 @@ deploy_production:
     paths:
       - tmp/learning-docs-gems/
   before_script:
+    - mise install
+    - eval "$(mise env --shell bash)"
     - ruby --version
     - bundle --version
     - command -v rsync
