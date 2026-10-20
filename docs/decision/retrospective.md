@@ -1,5 +1,23 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
+## Latest learning record: event coverage and expression retention (2026-10-20)
+
+The [v0.8 fixed comparisons](v08.md) complete six 6,000-update endpoints at **36,175 actual CUDA updates**. All arms retain the own 6.63M v0.7 model, person renaming and actor-pair loss. The primary coverage × event-loss factorial selects coverage; event loss alone regresses, and the combined arm loses the declared minimum-cell ranking. Coverage changes both event meanings and wording, so their individual contributions are not isolated.
+
+On the fixed final panel, new-event full pairs improve over matched continuation from **9.766% / 17.969% to 33.984% / 42.969%** at seed 1337 and **6.641% / 29.297% to 32.422% / 52.734%** at seed 2027 (EN/ZH). Each cell contains 256 pairs sharing only 32 event worlds. Improvement over the original parents is also present on these cells; extra continuation alone does not explain it.
+
+This is partial progress. The second-seed development confirmation fails because Chinese expression balanced accuracy drops 3.613 points, beyond the frozen three-point guard. On final expressions, English pairs decline at both seeds and Chinese pairs decline at seed 2027. The unchanged final-panel directional rule passes both seeds because it guards balanced accuracy and the minimum target event cell, not every expression-pair cell. Report both facts; a final directional pass does not erase the failed confirmation or establish robust factual reasoning.
+
+Lessons supported by the evidence:
+
+- Audit executed augmentation, not only raw files. The original isolation check missed parent/person-renaming and cross-template families. Retire that draft, replay actual histories, exclude canonical families and every reserved rendering, and preserve the repair rather than relabel the original panel as clean. All 151 numerical replay updates match exactly and count toward the budget.
+- Keep original-parent and matched continuation baselines. More updates can worsen novel-event or expression binding even while trained combinations improve. Comparing only with an old parent would hide this distinction.
+- Treat retention and transfer separately. Higher new-event pairs at both seeds coexist with expression losses, including 25 corrected versus 47 lost Chinese final-expression pairs at seed 2027. Passing one minimum-cell rule does not imply every ability improves.
+- Cross nuisance factors independently. The held expression templates are originally coupled to actor/event axes. A pre-opening registered, fixed-weight template swap diagnoses that limitation on the same worlds; it supplies no new independent samples and cannot select a new model.
+- Preserve row, pair and world denominators. A high single-question score can coexist with repeated `yes / yes` answers to opposite-label questions. Independent reconstruction, actual tokenizer checks and CPU/CUDA/public-interface agreement rule out the audited label/index inversion, without proving semantic competence.
+
+The useful next scope is independently crossed expression coverage and a retention-aware event-versus-wording comparison on newly reserved families. Existing v0.8 panels are now regression data. Neither scaling alone nor another auxiliary loss is established as the next remedy. No natural QA/unknown/calibration result or general factual release is claimed; v0.1 remains delivered.
+
 ## Latest learning record: exposure and paired identity generalization (2026-10-20)
 
 The [completed v0.7 comparison](v07.md) finishes six 6,000-update endpoints at **36,087 actual CUDA updates**. The 128-world CE references improve novel-actor full pairs between their own retained 1,500 and 6,000 checkpoints at both seeds: 9/32 → 23/32 EN and 4/32 → 12/32 ZH at seed 1337; 4/32 → 15/32 EN and 2/32 → 7/32 ZH at seed 2027. Training duration was a material limitation in these trajectories. This does not isolate data size at fixed compute, prove convergence, or remove seed variability.
