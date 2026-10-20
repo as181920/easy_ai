@@ -98,6 +98,7 @@ module EasyAI
         case value
         when Hash then value.to_h { |k, v| [k.to_s, stringify(v)] }
         when Array then value.map { |v| stringify(v) }
+        when Symbol then value.to_s
         else value
         end
       end

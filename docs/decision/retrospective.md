@@ -1,5 +1,33 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
+## Latest learning record: exposure and paired identity generalization (2026-10-20)
+
+The [completed v0.7 comparison](v07.md) finishes six 6,000-update endpoints at **36,087 actual CUDA updates**. The 128-world CE references improve novel-actor full pairs between their own retained 1,500 and 6,000 checkpoints at both seeds: 9/32 → 23/32 EN and 4/32 → 12/32 ZH at seed 1337; 4/32 → 15/32 EN and 2/32 → 7/32 ZH at seed 2027. Training duration was a material limitation in these trajectories. This does not isolate data size at fixed compute, prove convergence, or remove seed variability.
+
+Consistent renaming and actor-pair loss form a complete factorial. Neither alone beats matched CE under the frozen rule. Their combination improves the worst required actor cell from 37.5% to 50% at seed 1337, and from 21.875% to 59.375% at independent seed 2027, with no required-view/language balanced regression. Novel-actor full pairs reach 25/32 / 16/32 and 19/32 / 24/32 (EN/ZH). All six endpoints pass CPU/CUDA, independent pair reconstruction and public candidate-order checks. The source/data/parent manifests, exact replay, all failed invocations and compact results remain preserved. A primary improvement means the conditional pretrained diagnostic is not triggered.
+
+Lessons supported by this round:
+
+- A larger training set needs enough optimization exposure. A fixed short update budget can obscure a learnable relation; compare retained checkpoints on the same data as well as historical equal-mean-exposure references.
+- Test plausible interventions jointly when interaction is part of the hypothesis. Renaming alone preserves actor-insensitive shortcuts, and pair loss alone fits faster yet generalizes worse. Their combination helps at both seeds under the tested budget; this does not establish a unique causal mechanism or equal convergence.
+- Report regressions alongside gains. At seed 1337 the combination corrects 8 English / 6 Chinese novel-actor pairs and loses 6 / 2 previously correct pairs. Event binding on novel events remains weak at both seeds. Aggregate gains are not broad factual competence.
+- Treat development retention as a diagnostic. A false consecutive-probe `known_mastery` flag can coexist with good full-training fit and improved development direction; it does not justify declaring the architecture impossible.
+- Verify control-plane correctness too. Filename isolation, result-hash path resolution, runtime manifest updates and file locks protect reproducibility. Preserve failures and count all 75 replayed updates rather than silently repairing the record.
+
+The useful next question is whether this fixed recipe transfers to prospectively reserved worlds and broader event/expression coverage while retaining existing capabilities. That work needs its own scope and evaluation. v0.1 remains delivered; no calibrated factual preview or Jev parity is claimed here.
+
+## Latest learning record: scaling and metric correctness (2026-10-19)
+
+The [v0.6 scaling comparison](v06.md) grows controlled data 16-fold and model capacity from 6.63M to 20.43M parameters on the local GPU. It preserves the own tokenizer and parent, independently audits finite split allocation, and verifies function-preserving expansion and gradients into added capacity. The four initial matched-visit comparisons and paired large-data continuations provide evidence within one optimizer recipe, rather than a scaling law or a comparison at equal convergence.
+
+The user's development objective takes priority over an arbitrary near-threshold rejection. The [85% retention amendment](v06-diagnostic-policy.md) would allow the original 250/500 supervised checks to pass; the first Chinese actor score was 57/64, one pair short of the original 90% floor. Keep the historical outcome and disclose the amended diagnostic judgment. A retention-window miss does not establish an incorrect architecture.
+
+The separate held-out actor problem is much larger. After 4,000 updates on 512 worlds, both capacities obtain only 0%–3.125% **two-question full-pair correctness on mixed-truth novel-actor cases**, while single-question accuracy on that slice is 46.875%–50%. The [requested correctness investigation](v06-binding-audit.md) independently reconstructs pairs, counts zero/one/two correct answers, reproduces CUDA results on CPU, checks public candidate-ID mapping, validates gold/rendering and actual tokenized inputs, and tests the real training shuffle/cross-entropy path. No correctness/error inversion or candidate-label mismatch is identified.
+
+Independent random binary guesses have 25% expected pair correctness. These models often give identical answers to the two opposite-label questions, correctly answering exactly one and scoring zero for the pair. That correlated failure is real in the audited predictions; a stricter metric alone is not an adequate explanation. Report both row and pair scores, their denominators and a suitable baseline.
+
+The useful direction signal is partial: the small-data base model learns the training relation and improves observed controlled accuracy over its own parent. Increasing capacity/data under the tested update budgets does not consistently improve held-out binding. Nonzero added weights and working gradients rule out inactive added branches, without proving an optimal architecture or identifying the cause of poor generalization. Better hardware alone is an unverified remedy. Subsequent work should distinguish optimization/representation failures on actor-swapped pairs from general language-data limitations, using the inexpensive audited task before another broad scale search.
+
 ## Latest learning record: repeatable fitting is an intermediate result (2026-10-19)
 
 See [v0.5 measured results](v05.md) and the [extended experiment scope](extended-optimization-plan.md). On exactly the reviewed 128-row core that defeated the original recipes, both joint/RoPE and separate/RoPE pass the bilingual actor **and** event gates at two random seeds. This is a reproducible fitting improvement. The original separate/joint sinusoidal recipes, candidate-only sinusoidal pooling, larger sinusoidal scale and fresh initialization retain their failed gates. Joint/RoPE candidate pooling reaches a perfect final measurement but fails the required consecutive-check gate; it is not retroactively qualified.

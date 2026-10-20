@@ -4,6 +4,7 @@ module EasyAI
       # This oracle generates supervision. Its facts/targets are never neural inputs.
       class JudgmentCorpus
         LANGUAGES = %w[en-US zh-CN].freeze
+        DEFAULT_COUNTS = { "train" => 32, "validation" => 100, "calibration" => 40, "test" => 200 }.freeze
         OPTIONS = { "en-US" => ["supported by the record", "contradicted by the record", "insufficient evidence in the record"],
           "zh-CN" => ["记录支持该陈述", "记录否定该陈述", "记录信息不足，无法判断"] }.freeze
 
@@ -12,21 +13,37 @@ module EasyAI
           %w[yes no unknown].zip(texts).first(binary ? 2 : 3).map { |id, text| { "id" => id, "text" => text } }
         end
 
-        def self.splits(counts: { "train" => 32, "validation" => 100, "calibration" => 40, "test" => 200 })
+        def self.split_offsets(counts)
+          normalized = counts.to_h { |key, value| [key.to_s, value] }
+          unless normalized.size == counts.size && (normalized.keys - DEFAULT_COUNTS.keys).empty? && normalized.values.all? { |value| value.is_a?(Integer) && value >= 0 }
+            raise ArgumentError, "Split counts must be unique known names with nonnegative integer values"
+          end
+          cursor = 0
+          DEFAULT_COUNTS.keys.to_h do |split|
+            offset = cursor
+            cursor += normalized.fetch(split, 0)
+            [split, offset]
+          end
+        end
+
+        def self.splits(counts: DEFAULT_COUNTS)
+          offsets = split_offsets(counts)
           counts.to_h do |split, count|
-            rows = count.times.flat_map { |index| LANGUAGES.flat_map { |language| new(split, index, language).rows } }
+            split = split.to_s
+            rows = count.times.flat_map { |index| LANGUAGES.flat_map { |language| new(split, index, language, split_offsets: offsets).rows } }
             [split, rows]
           end
         end
 
-        def initialize(split, index, language)
-          @split, @index, @language = split, index, language
+        def initialize(split, index, language, split_offsets: self.class.split_offsets(DEFAULT_COUNTS))
+          @split, @index, @language = split.to_s, index, language.to_s
+          split, language = @split, @language
           @group = "judgment-v04:#{split}:#{index}"
           rng = Random.new(QualityAudit.digest(@group).to_i(16) % (2**31))
           pool = language == "zh-CN" ? RobustFacts::ZH_FIRST.product(RobustFacts::ZH_LAST).map(&:join) :
             RobustFacts::EN_FIRST.product(RobustFacts::EN_LAST).map { |first, last| "#{first} #{last}" }
           # Reserve actual actor/event combinations, not only split-prefixed IDs.
-          ordinal = { "train" => 0, "validation" => 32, "calibration" => 132, "test" => 172 }.fetch(split) + index
+          ordinal = split_offsets.fetch(split) + index
           first = pool.shuffle(random: Random.new(404)).fetch(ordinal % pool.size)
           @actors = [first, *pool.reject { |actor| actor == first }.sample(2, random: rng)]
           keys = FactualContrasts::TRAIN_EVENTS
@@ -46,7 +63,7 @@ module EasyAI
               [true, false].each do |assertion|
                 queries = facts.map { |fact| [fact.fetch("actor"), fact.fetch("event"), "known"] }
                 # Present actor, unrecorded event; absent actor, recorded event.
-                missing = @index.odd? ? (FactualContrasts::TRAIN_EVENTS - @events).first : @events.last
+                missing = @index.odd? ? (available_events - @events).first : @events.last
                 queries += [[@actors.first, missing, "missing_event"], [@actors.last, @events.first, "absent_actor"]]
                 queries.each_with_index do |(actor, event, kind), query|
                   result << row(facts, actor, event, assertion, order, assignment, query, "joint", kind)
@@ -66,6 +83,10 @@ module EasyAI
         end
 
         private
+
+        def available_events
+          FactualContrasts::TRAIN_EVENTS
+        end
 
         def clause(actor, event, truth)
           phrase = FactualContrasts::EVENTS.fetch(event).fetch((@language == "zh-CN" ? 0 : 2) + (truth ? 0 : 1))

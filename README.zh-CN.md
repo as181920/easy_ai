@@ -78,6 +78,10 @@ Decision v0.1 以**仅含模型的评分预览版**交付，面向中文和英�
 
 [v0.5 扩展实验](docs/decision/v05.md)已完成十次拟合实验、三组完整监督训练，共 14,500 次 CUDA 更新。RoPE 的关系拟合改善已通过两个种子确认，但没有监督训练检查点同时通过中英文关系与自然表达的全部门槛。没有事实判断模型晋升交付，继续保留 v0.1 预览版。详见[结果与图表](docs/decision/v05.md)、[机器可读摘要](docs/decision/v05-results.json)和[已完成的实验范围](docs/decision/extended-optimization-plan.md)。
 
+已完成的 [v0.6 扩容实验](docs/decision/v06.md)比较每种语言 32/512 个世界、663 万/2,043 万参数，共完成 14,042 次 CUDA 更新。小数据拟合与联合训练有学习进展，但已测扩容方案尚未体现稳定的人物绑定泛化改善。[代码核查](docs/decision/v06-binding-audit.md)解释了接近零的成对得分，[开发标准](docs/decision/v06-diagnostic-policy.md)将保留门槛设为 85%。当前交付预览仍为 v0.1。
+
+已完成的 [v0.7 实验](docs/decision/v07.md)在 36,087 次 CUDA 更新内确认了可重复的优化方向：人物一致重命名与绑定联合损失组合，在两个种子上均优于对应 CE 对照。新人物两题全对率（英/中）在 seed 1337 从 **71.88% / 37.50% 提升到 78.13% / 50.00%**，在 seed 2027 从 **46.88% / 21.88% 提升到 59.38% / 75.00%**。延长训练对两个 CE 对照也有效；两项干预单独使用均未达改进标准。新事件理解仍弱，已观察的合成数据结果不代表独立验收或事实判断版本交付。详见[结果与复现](docs/decision/v07.md)、[数据摘要](docs/decision/v07-results.json)及[已执行计划](docs/decision/v07-plan.md)。继续交付 v0.1。
+
 `Release.load` 和 `Predictor.load` 的 `device:` 均接受 `:auto`、`:cpu`、`:cuda` 及对应字符串。
 `Release#probabilities(state:, question:, options:, language: nil)` 可以不传语言参数，直接接受多语言文本。各语言共用一个分词器和一个 checkpoint；`language:` 仅选择已评估的路由置信度策略。`route` 的预定义候选描述仍需要指定语言。
 
