@@ -1,5 +1,22 @@
 # Decision 迭代回顾：证据、失败与下一步选择
 
+
+## Latest learning record: independent wording and structural retention (2026-10-20)
+
+The [v0.9 comparison](v09.md) completes five fixed primary arms and seven fixed final checkpoints at **30,015 actual CUDA updates**. Event and wording coverage are separated, each held template is crossed with both binding axes, and canonical replay is compared with additional wording exposure. No arm passes the complete development transfer/retention rule, so no second-seed intervention is triggered. A near-boundary guard miss is not an architectural impossibility result.
+
+On the fixed final panel, `no_replay` raises the 12-cell target minimum 16.016→38.281% and mean 45.703→65.072% against matched continuation. New-event/event full pairs improve 41→99/256 English and 74→104/256 Chinese. Each cell shares 32 worlds; repeated expression forms are not independent families. English form 11 event pairs improve 62.109→83.984%, while form 12 loses 48.828→38.281%, with 31 corrected and 58 lost pairs. The final rule also fails. These one-seed results support partial transfer gains and unresolved retention/structural robustness, not a stable general factual model.
+
+Lessons supported by the evidence:
+
+- Cross templates with both axes on the same worlds. An expression score originally coupled to an axis can conceal a specific binding weakness. Keep template/language/axis scores and paired world changes, not only a pooled row accuracy.
+- Replay needs coverage of the ability being retained. Replaying canonical sentences does not preserve every structural form. Removing replay improves many target cells but loses old actor performance relative to continuation. This compares the replay/new-form exposure tradeoff, not replay at equal new-form exposure or equal convergence.
+- Diagnose state and question variation separately. Fixed-weight historical state 5/6 × question 5/6 comparisons show severe state sensitivity, with additional question effects in some arms/languages. Form 6 changes several features together; pronoun resolution is a hypothesis rather than an isolated cause. Original-parent weaknesses and absolute losses must be separated from foregone continuation gains.
+- Audit actual histories through pure-data replay. All five checkpoint histories reproduce exactly. Inherited exact-text exclusions nevertheless cause 0.640% reference/expressions and 1.135% both/no_replay differences in renamed families, while events/both match exactly. This is a limitation of perfect causal isolation, not observed leakage into reserved families. Use form-independent semantic exclusions for a future comparison.
+- Preserve failed qualification and independent final losses alongside useful direction. No threshold is changed after observing results, no replacement winner is chosen, and unused compute is not another search authorization. All 70 device-view audits agree, while semantic performance remains incomplete.
+
+The useful next scope is targeted structural multi-rendering on hand-audited facts and a matched consistency-objective comparison, with new families, independently varied questions, per-form retention and conditional second-seed confirmation. Increasing capacity is still testable, but hardware alone is not an established remedy. v0.1 remains delivered; v0.9 panels are now observed regression material.
+
 ## Latest learning record: event coverage and expression retention (2026-10-20)
 
 The [v0.8 fixed comparisons](v08.md) complete six 6,000-update endpoints at **36,175 actual CUDA updates**. All arms retain the own 6.63M v0.7 model, person renaming and actor-pair loss. The primary coverage × event-loss factorial selects coverage; event loss alone regresses, and the combined arm loses the declared minimum-cell ranking. Coverage changes both event meanings and wording, so their individual contributions are not isolated.
